@@ -1316,6 +1316,11 @@ PLACE_COLOR = "#FF8A65"
 MOVEMENT_EDGE_COLOR = "#AB47BC"
 ASSOCIATION_EDGE_COLOR = "#90A4AE"
 
+# sentiment-based edge colors
+SENTIMENT_POSITIVE_COLOR = "#66BB6A"  # green
+SENTIMENT_NEGATIVE_COLOR = "#EF5350"  # red
+SENTIMENT_NEUTRAL_COLOR = "#90A4AE"   # gray
+
 # minor words that should not be capitalized in titles (unless first/last word).
 _TITLE_MINOR_WORDS = {
     "a", "an", "and", "as", "at", "but", "by", "for", "if", "in", "nor",
@@ -1645,6 +1650,48 @@ def _build_enhanced_styles() -> str:
             }
         }
 
+        /* === Sentiment Distribution Chart === */
+        .sentiment-chart {
+            font-size: 0.85em;
+        }
+
+        .sentiment-bar-container {
+            display: flex;
+            width: 100%;
+            height: 24px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .sentiment-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sentiment-bar:hover {
+            opacity: 0.8;
+        }
+
+        .sentiment-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sentiment-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
+        .sentiment-stat span {
+            font-weight: 600;
+        }
+
         /* === Mobile Touch Enhancements === */
         @media (hover: none) and (pointer: coarse) {
             .control-button {
@@ -1853,8 +1900,14 @@ def _build_legend_html(
     person_count: int,
     place_count: int,
     edge_count: int,
+    sentiment_counts: dict,
+    total_edges: int,
 ) -> str:
-    """build the html header with title, stats, and color legend."""
+    """build the html header with title, stats, sentiment distribution, and color legend."""
+    # calculate percentages
+    positive_pct = (sentiment_counts["POSITIVE"] / total_edges * 100) if total_edges > 0 else 0
+    negative_pct = (sentiment_counts["NEGATIVE"] / total_edges * 100) if total_edges > 0 else 0
+    neutral_pct = (sentiment_counts["NEUTRAL"] / total_edges * 100) if total_edges > 0 else 0
     return f"""
     <!-- Breadcrumb Navigation -->
     <div class="breadcrumb-nav">
@@ -1887,12 +1940,16 @@ def _build_legend_html(
                         <span>Place</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-line" style="background: {ASSOCIATION_EDGE_COLOR};"></span>
-                        <span>Person ↔ Place</span>
+                        <span class="legend-line" style="background: {SENTIMENT_POSITIVE_COLOR};"></span>
+                        <span>😊 Positive</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-line" style="background: {MOVEMENT_EDGE_COLOR};"></span>
-                        <span>Place → Place</span>
+                        <span class="legend-line" style="background: {SENTIMENT_NEGATIVE_COLOR};"></span>
+                        <span>😞 Negative</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: {SENTIMENT_NEUTRAL_COLOR};"></span>
+                        <span>😐 Neutral</span>
                     </div>
                 </div>
             </div>
@@ -1904,6 +1961,29 @@ def _build_legend_html(
                     <div><span class="stat-number" style="color: {PERSON_COLOR};">{person_count}</span> people</div>
                     <div><span class="stat-number" style="color: {PLACE_COLOR};">{place_count}</span> places</div>
                     <div><span class="stat-number">{edge_count}</span> connections</div>
+                </div>
+            </div>
+
+            <!-- Sentiment Distribution -->
+            <div class="info-box">
+                <div class="info-box-title">Sentiment Distribution</div>
+                <div class="sentiment-chart">
+                    <div class="sentiment-bar-container">
+                        <div class="sentiment-bar" style="width: {positive_pct:.1f}%; background: {SENTIMENT_POSITIVE_COLOR};" title="Positive: {positive_pct:.1f}%"></div>
+                        <div class="sentiment-bar" style="width: {negative_pct:.1f}%; background: {SENTIMENT_NEGATIVE_COLOR};" title="Negative: {negative_pct:.1f}%"></div>
+                        <div class="sentiment-bar" style="width: {neutral_pct:.1f}%; background: {SENTIMENT_NEUTRAL_COLOR};" title="Neutral: {neutral_pct:.1f}%"></div>
+                    </div>
+                    <div class="sentiment-legend">
+                        <div class="sentiment-stat">
+                            <span style="color: {SENTIMENT_POSITIVE_COLOR};">😊 {sentiment_counts['POSITIVE']}</span> ({positive_pct:.1f}%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: {SENTIMENT_NEGATIVE_COLOR};">😞 {sentiment_counts['NEGATIVE']}</span> ({negative_pct:.1f}%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: {SENTIMENT_NEUTRAL_COLOR};">😐 {sentiment_counts['NEUTRAL']}</span> ({neutral_pct:.1f}%)
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1983,18 +2063,41 @@ def visualize_graph(
         contexts = data.get("contexts", [])
         speakers = data.get("speakers", [])
 
-        # determine edge color based on relation type
-        if "traveled" in relation or "movement" in relation:
-            color = MOVEMENT_EDGE_COLOR
+        # calculate average sentiment from contexts
+        sentiments = [ctx.get("sentiment", {}).get("label", "NEUTRAL") for ctx in contexts if ctx.get("sentiment")]
+        if sentiments:
+            # count sentiment types
+            positive_count = sentiments.count("POSITIVE")
+            negative_count = sentiments.count("NEGATIVE")
+
+            # determine dominant sentiment
+            if positive_count > negative_count:
+                dominant_sentiment = "POSITIVE"
+            elif negative_count > positive_count:
+                dominant_sentiment = "NEGATIVE"
+            else:
+                dominant_sentiment = "NEUTRAL"
         else:
-            color = ASSOCIATION_EDGE_COLOR
+            dominant_sentiment = "NEUTRAL"
+
+        # determine edge color based on sentiment
+        if dominant_sentiment == "POSITIVE":
+            color = SENTIMENT_POSITIVE_COLOR
+        elif dominant_sentiment == "NEGATIVE":
+            color = SENTIMENT_NEGATIVE_COLOR
+        else:
+            color = SENTIMENT_NEUTRAL_COLOR
 
         # build rich tooltip with narrative context
+        sentiment_emoji_map = {"POSITIVE": "😊", "NEGATIVE": "😞", "NEUTRAL": "😐"}
+        dominant_emoji = sentiment_emoji_map.get(dominant_sentiment, "😐")
+
         hover_parts = [
             f"📍 {u} → {v}",
             f"━━━━━━━━━━━━━━━━━━━━",
             f"Relationship: {relation.replace('_', ' ').title()}",
             f"Mentions: {weight}",
+            f"Overall Sentiment: {dominant_sentiment} {dominant_emoji}",
         ]
 
         if travelers:
@@ -2032,6 +2135,25 @@ def visualize_graph(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     net.save_graph(str(output_path))
 
+    # calculate sentiment statistics
+    sentiment_counts = {"POSITIVE": 0, "NEGATIVE": 0, "NEUTRAL": 0}
+    total_edges = 0
+    for _, _, data in graph.edges(data=True):
+        contexts = data.get("contexts", [])
+        sentiments = [ctx.get("sentiment", {}).get("label", "NEUTRAL") for ctx in contexts if ctx.get("sentiment")]
+        if sentiments:
+            positive_count = sentiments.count("POSITIVE")
+            negative_count = sentiments.count("NEGATIVE")
+            if positive_count > negative_count:
+                sentiment_counts["POSITIVE"] += 1
+            elif negative_count > positive_count:
+                sentiment_counts["NEGATIVE"] += 1
+            else:
+                sentiment_counts["NEUTRAL"] += 1
+        else:
+            sentiment_counts["NEUTRAL"] += 1
+        total_edges += 1
+
     # inject custom header with legend into the generated html.
     person_count = sum(
         1 for _, d in graph.nodes(data=True) if d.get("entity_type") == "PERSON"
@@ -2045,6 +2167,8 @@ def visualize_graph(
         person_count=person_count,
         place_count=place_count,
         edge_count=graph.number_of_edges(),
+        sentiment_counts=sentiment_counts,
+        total_edges=total_edges,
     )
 
     # build enhanced CSS styles
