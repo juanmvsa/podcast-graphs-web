@@ -249,7 +249,7 @@ The `generate_entity_graphs.py` script accepts these options:
 The script automatically:
 1. Extracts PERSON and PLACE entities using spaCy NER
 2. Captures context for each entity mention (text snippet, speaker, timestamp)
-3. **Analyzes sentiment** of each context using `distilbert-base-uncased-finetuned-sst-2-english`
+3. **Analyzes sentiment** of each context using `distilbert/distilbert-base-uncased-finetuned-sst-2-english`
 4. Builds directed graphs modeling relationships with rich narrative context
 5. Calculates temporal positioning (early/middle/late in episode)
 6. Generates semantically labeled edges with relationship types
@@ -263,14 +263,18 @@ The script automatically:
 
 ### Model Downloads & Caching
 
-**First Run**:
-- spaCy model: `en_core_web_lg` (~800MB) - manual download required
-- Sentiment model: `distilbert-base-uncased-finetuned-sst-2-english` (~250MB) - auto-downloads
-- BERTopic embeddings model - auto-downloads
+**Models Used**:
+- **spaCy NER**: `en_core_web_lg` (~800MB) - manual download required
+  ```bash
+  uv run python -m spacy download en_core_web_lg
+  ```
+- **Sentiment Analysis**: [`distilbert/distilbert-base-uncased-finetuned-sst-2-english`](https://huggingface.co/distilbert/distilbert-base-uncased-finetuned-sst-2-english) (~250MB) - auto-downloads on first run
+- **Topic Modeling (BERTopic)**: [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) (~80MB) - auto-downloads on first run
 
-**Subsequent Runs**:
+**Caching**:
 - Models are cached in `~/.cache/huggingface/` and `~/.cache/torch/`
-- Processing is much faster (no re-downloading)
+- After first download, subsequent runs are much faster (no re-downloading)
+- Total disk space needed: ~1.2GB for all models
 
 ### Manual Index Regeneration (Rarely Needed)
 
@@ -558,7 +562,7 @@ The enhanced annotation system captures narrative context at multiple levels:
    - Context storage (up to 3 examples per edge)
 
 4. **Sentiment Analysis**:
-   - Uses `distilbert-base-uncased-finetuned-sst-2-english` (DistilBERT fine-tuned on Stanford Sentiment Treebank)
+   - Uses `distilbert/distilbert-base-uncased-finetuned-sst-2-english` (DistilBERT fine-tuned on Stanford Sentiment Treebank)
    - Classifies each context as POSITIVE, NEGATIVE, or NEUTRAL
    - Confidence scores for sentiment predictions
    - Visual indicators with emojis (😊 positive, 😞 negative, 😐 neutral)

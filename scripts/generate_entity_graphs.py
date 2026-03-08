@@ -83,6 +83,7 @@ from rich.progress import (
 )
 from rich.table import Table
 from bertopic import BERTopic
+from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 from utils.rich_utils import console, setup_logging
 
@@ -102,7 +103,7 @@ def get_sentiment_analyzer():
         logger.info("Loading sentiment analysis model...")
         _sentiment_analyzer = pipeline(
             "sentiment-analysis",
-            model="distilbert-base-uncased-finetuned-sst-2-english",
+            model="distilbert/distilbert-base-uncased-finetuned-sst-2-english",
             device=-1  # use CPU (-1), or 0 for GPU
         )
     return _sentiment_analyzer
@@ -164,7 +165,11 @@ def cluster_episode_topics(
         names = [ep["name"] for ep in episodes_data]
 
         # initialize BERTopic with conservative settings
+        # Use explicit embedding model with full organization path
+        embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
         topic_model = BERTopic(
+            embedding_model=embedding_model,
             min_topic_size=min_topic_size,
             nr_topics=nr_topics,
             calculate_probabilities=False,  # faster
