@@ -600,6 +600,8 @@
                 // Setup topic filters if topics are available
                 if (topicsData && topicsData.topics && topicsData.topics.length > 0) {
                     setupTopicFilters();
+                    setupTopicBrowser();
+                    document.getElementById('topicBrowserToggle').style.display = 'block';
                 }
             } catch (error) {
                 console.error('Error loading graphs:', error);
@@ -789,6 +791,63 @@
 
             currentTopicFilter = topicId;
             applyFilters();
+        }
+
+        function setupTopicBrowser() {
+            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) {
+                return;
+            }
+
+            const browserContent = document.getElementById('topicBrowserContent');
+            let html = '';
+
+            topicsData.topics.forEach(topic => {
+                const label = topic.topic_label || `Topic ${topic.topic_id}`;
+                const count = topic.episode_count || 0;
+                const keywords = topic.topic_words ? topic.topic_words.slice(0, 5).join(', ') : '';
+                const episodes = topic.episodes || [];
+
+                html += `
+                    <div class="topic-cluster" onclick="toggleTopicCluster(this); filterByTopicFromSidebar(${topic.topic_id});">
+                        <div class="topic-cluster-header">
+                            <div class="topic-cluster-title">${label}</div>
+                            <div class="topic-cluster-count">${count} episodes</div>
+                        </div>
+                        <div class="topic-cluster-keywords">Keywords: ${keywords}</div>
+                        <div class="topic-cluster-episodes">
+                            ${episodes.slice(0, 10).map(ep => `<div class="topic-episode-item">• ${ep.replace(/_/g, ' ')}</div>`).join('')}
+                            ${episodes.length > 10 ? `<div class="topic-episode-item" style="font-style: italic;">...and ${episodes.length - 10} more</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            browserContent.innerHTML = html;
+        }
+
+        function toggleTopicCluster(element) {
+            element.classList.toggle('expanded');
+            event.stopPropagation();
+        }
+
+        function filterByTopicFromSidebar(topicId) {
+            currentTopicFilter = topicId;
+
+            // Update active state in topic filter chips
+            document.querySelectorAll('#topicFilterChips .filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+                if (chip.dataset.topicId === String(topicId)) {
+                    chip.classList.add('active');
+                }
+            });
+
+            applyFilters();
+            scrollToTop();
+        }
+
+        function toggleTopicSidebar() {
+            const sidebar = document.getElementById('topicSidebar');
+            sidebar.classList.toggle('open');
         }
 
         function setupScrollButton() {
