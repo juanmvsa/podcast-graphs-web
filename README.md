@@ -7,10 +7,12 @@ Interactive network visualizations of entity relationships in podcast conversati
 - **🔍 Auto-Discovery**: Automatically detects and displays all graphs in `graphs/` directory - no manual HTML editing required
 - **🌐 Interactive Graphs**: vis-network powered visualizations with force-directed layouts
 - **💬 Rich Narrative Context**: Graph edges display actual transcript quotes, speaker attribution, and temporal markers
+- **😊 Sentiment Analysis**: Automatic emotional tone detection (positive/negative/neutral) for all relationship contexts
+- **🏷️ Topic Clustering**: Cross-episode semantic clustering to identify themes and group similar content
 - **🔎 Search & Filter**: Find episodes by title across all shows in real-time
 - **🎨 Entity Legend**: Color-coded Person/Place nodes with relationship connections
 - **📊 Graph Statistics**: Display counts of people, places, and connections
-- **🎯 Enhanced Tooltips**: Hover over relationships to see who discussed them, when, and actual conversation excerpts
+- **🎯 Enhanced Tooltips**: Hover over relationships to see who discussed them, when, sentiment, and actual conversation excerpts
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile
 - **🌙 Dark Theme**: Modern dark UI with gradient backgrounds
 - **⚡ Zero Maintenance**: Add new graphs simply by running the generation script
@@ -70,10 +72,45 @@ podcast-graphs-web/
 
 Each podcast episode generates three file formats:
 - `.html` - Interactive visualization (displayed on the site)
-- `.json` - Raw structured graph data
+- `.json` - Raw structured graph data with sentiment-enhanced contexts
 - `.csv` - Adjacency matrix export
 
+Additionally, the script generates:
+- `topics.json` - Cross-episode topic clustering results with episode-to-topic mappings
+
 Only HTML files are linked from the index page.
+
+### Topic Clustering Output
+
+The `topics.json` file contains:
+
+```json
+{
+  "topics": [
+    {
+      "topic_id": 0,
+      "topic_words": ["election", "voting", "campaign", "democracy", "poll"],
+      "topic_label": "election, voting, campaign",
+      "episode_count": 12,
+      "episodes": ["episode_1", "episode_5", ...]
+    }
+  ],
+  "episode_topics": {
+    "episode_name": {
+      "topic_id": 0,
+      "topic_words": ["election", "voting", "campaign"],
+      "topic_label": "election, voting, campaign"
+    }
+  },
+  "topic_info": [...]
+}
+```
+
+This enables:
+- Discovering recurring themes across your podcast catalog
+- Finding episodes that discuss similar topics
+- Understanding topical coverage and distribution
+- Building topic-based navigation features
 
 ## How It Works
 
@@ -167,13 +204,15 @@ The `generate_entity_graphs.py` script accepts these options:
 The script automatically:
 1. Extracts PERSON and PLACE entities using spaCy NER
 2. Captures context for each entity mention (text snippet, speaker, timestamp)
-3. Builds directed graphs modeling relationships with rich narrative context
-4. Calculates temporal positioning (early/middle/late in episode)
-5. Generates semantically labeled edges with relationship types
-6. Stores up to 3 context examples per relationship for tooltip display
-7. Generates per-episode and per-show summary graphs
-8. Outputs JSON, CSV, and HTML formats
-9. Updates `index.json` for the web app
+3. **Analyzes sentiment** of each context using transformer-based models
+4. Builds directed graphs modeling relationships with rich narrative context
+5. Calculates temporal positioning (early/middle/late in episode)
+6. Generates semantically labeled edges with relationship types
+7. Stores up to 3 context examples per relationship for tooltip display
+8. **Clusters episodes by topics** using BERTopic for cross-episode theme discovery
+9. Generates per-episode and per-show summary graphs
+10. Outputs JSON, CSV, HTML formats, and topic metadata
+11. Updates `index.json` for the web app
 
 ### Manual Index Regeneration
 
@@ -310,10 +349,11 @@ Discussed by: Rachel Maddow, Guest Speaker
 
 💬 Context:
 
-[EARLY] Rachel Maddow:
+[EARLY] 😞 Rachel Maddow:
   "Trump was at Mar-a-Lago when the indictment was announced, surrounded by his legal team..."
+  Sentiment: NEGATIVE
 
-[LATE] Guest Speaker:
+[LATE] 😐 Guest Speaker:
   "The documents were allegedly stored at Mar-a-Lago in unsecured locations..."
 ```
 
@@ -322,6 +362,7 @@ This provides immediate insight into:
 - **How often** it occurred (5 times)
 - **Who** discussed it (Rachel Maddow, Guest Speaker)
 - **When** in the episode (early vs. late)
+- **Sentiment** of the discussion (positive 😊, negative 😞, or neutral 😐)
 - **Evidence** from actual transcript excerpts
 
 ## Technical Details
@@ -377,9 +418,25 @@ The enhanced annotation system captures narrative context at multiple levels:
    - Speaker aggregation across mentions
    - Context storage (up to 3 examples per edge)
 
-4. **Tooltip Generation**:
+4. **Sentiment Analysis**:
+   - Uses DistilBERT transformer model for accurate emotion detection
+   - Classifies each context as POSITIVE, NEGATIVE, or NEUTRAL
+   - Confidence scores for sentiment predictions
+   - Visual indicators with emojis (😊 positive, 😞 negative, 😐 neutral)
+   - Cached model loading for performance
+
+5. **Topic Clustering** (cross-episode):
+   - BERTopic-based semantic clustering
+   - Automatic topic number detection
+   - Extracts top keywords for each topic
+   - Episode-to-topic mappings with labels
+   - Identifies themes across entire show catalogs
+   - Generates `topics.json` with full metadata
+
+6. **Tooltip Generation**:
    - Formatted display with emojis and structure
    - Temporal markers showing conversation progression
+   - Sentiment indicators for emotional context
    - Actual quotes providing evidence for relationships
    - Speaker attribution for accountability
 
@@ -590,9 +647,11 @@ git push
 
 ## Recent Enhancements
 
+- ✅ **Sentiment analysis** - Automatic emotional tone analysis for relationship contexts (positive/negative/neutral with emojis)
+- ✅ **Topic clustering** - Cross-episode topic modeling to identify themes and cluster similar episodes
 - ✅ **Rich narrative context** - Edges now display actual transcript quotes with speaker attribution
 - ✅ **Temporal markers** - Shows when in the conversation relationships occur (early/middle/late)
-- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, and context examples
+- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, context examples, and sentiment
 - ✅ **Semantic labeling** - Better relationship types ("mentioned_in", "traveled_to")
 - ✅ **Responsive graphs** - Viewport-based sizing with minimum height constraints
 
@@ -600,13 +659,15 @@ git push
 
 Potential improvements:
 - [ ] Add filters for entity types (Person/Place)
+- [ ] Add filters by sentiment (positive/negative/neutral relationships)
+- [ ] Topic-based navigation UI (browse episodes by topic)
 - [ ] Export functionality (download CSV/JSON from UI)
 - [ ] Timeline visualization of entity mentions
 - [ ] Cross-episode entity tracking
-- [ ] Advanced search (by entity, date range, etc.)
-- [ ] Graph comparison view
-- [ ] Sentiment analysis for relationship context
-- [ ] Topic clustering across episodes
+- [ ] Advanced search (by entity, date range, sentiment, topic)
+- [ ] Graph comparison view (compare episode graphs side-by-side)
+- [ ] Sentiment trend analysis over time
+- [ ] Interactive topic exploration dashboard
 
 ## License
 
