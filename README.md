@@ -6,9 +6,11 @@ Interactive network visualizations of entity relationships in podcast conversati
 
 - **🔍 Auto-Discovery**: Automatically detects and displays all graphs in `graphs/` directory - no manual HTML editing required
 - **🌐 Interactive Graphs**: vis-network powered visualizations with force-directed layouts
+- **💬 Rich Narrative Context**: Graph edges display actual transcript quotes, speaker attribution, and temporal markers
 - **🔎 Search & Filter**: Find episodes by title across all shows in real-time
 - **🎨 Entity Legend**: Color-coded Person/Place nodes with relationship connections
 - **📊 Graph Statistics**: Display counts of people, places, and connections
+- **🎯 Enhanced Tooltips**: Hover over relationships to see who discussed them, when, and actual conversation excerpts
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile
 - **🌙 Dark Theme**: Modern dark UI with gradient backgrounds
 - **⚡ Zero Maintenance**: Add new graphs simply by running the generation script
@@ -29,7 +31,10 @@ Interactive network visualizations of entity relationships in podcast conversati
 
 ```bash
 # Generate graphs from transcripts (outputs to graphs/)
-uv run scripts/generate_entity_graphs.py
+uv run scripts/generate_entity_graphs.py --visualize
+
+# Regenerate the index
+uv run scripts/generate_index.py
 
 # Start local server
 python3 -m http.server 8000
@@ -99,43 +104,76 @@ Transcripts → generate_entity_graphs.py → graphs/
 
 ## Generating Graphs
 
+### Input Format
+
+The script expects JSON transcript files with speaker labels in the following format:
+
+```json
+{
+  "segments": [
+    {
+      "speaker": "SPEAKER_00",
+      "speaker_name": "Rachel Maddow",
+      "text": "Welcome to the show...",
+      "start": 0.0,
+      "end": 5.2
+    },
+    {
+      "speaker": "SPEAKER_01",
+      "speaker_name": "Guest Name",
+      "text": "Thanks for having me...",
+      "start": 5.5,
+      "end": 10.0
+    }
+  ]
+}
+```
+
+Required fields:
+- `segments`: Array of conversation segments
+- `text`: Transcript text for entity extraction
+- `speaker` or `speaker_name`: For attribution (optional but recommended)
+- `start`: Timestamp for temporal analysis (optional but recommended)
+
 ### From Transcript Files
 
 ```bash
-# Process all transcripts in default directory
-uv run scripts/generate_entity_graphs.py
+# Process all transcripts in default directory (graphs/)
+uv run scripts/generate_entity_graphs.py --visualize
 
 # Process specific directory
-uv run scripts/generate_entity_graphs.py --input-dir path/to/transcripts
+uv run scripts/generate_entity_graphs.py --transcripts-dir path/to/transcripts --visualize
 
 # Process specific shows only
-uv run scripts/generate_entity_graphs.py --shows show_name_1 --shows show_name_2
+uv run scripts/generate_entity_graphs.py --shows show_name_1 --shows show_name_2 --visualize
 
 # Force reprocessing of all files
-uv run scripts/generate_entity_graphs.py --force
-
-# Generate with visualizations
-uv run scripts/generate_entity_graphs.py --visualize
+uv run scripts/generate_entity_graphs.py --force --visualize
 ```
 
 ### Script Options
 
 The `generate_entity_graphs.py` script accepts these options:
 
-- `--input-dir` or `-d`: Recursively process all subdirectories as shows
-- `--input` or `-i`: Process a specific file or directory
-- `--output-dir`: Output directory (default: `graphs/`)
-- `--shows`: Process only specific shows (can be repeated)
-- `--force`: Force reprocessing of existing files
-- `--visualize`: Generate interactive HTML visualizations
-- `--spacy-model`: spaCy NER model (default: `en_core_web_lg`)
+- `--transcripts-dir`: Directory containing transcript JSON files (default: `graphs/`)
+- `--output-dir`: Output directory for generated graphs (default: `graphs/`)
+- `--shows`: Process only specific shows by name (can be repeated)
+- `--force`: Force reprocessing of existing files (skip caching)
+- `--visualize`: Generate interactive HTML visualizations (required for web viewing)
+- `--spacy-model`: spaCy NER model to use (default: `en_core_web_lg`)
+
+**Important**: Always use `--visualize` to generate the HTML files needed for the web app!
 
 The script automatically:
 1. Extracts PERSON and PLACE entities using spaCy NER
-2. Builds directed graphs modeling movement between places
-3. Generates per-episode and per-show summary graphs
-4. Outputs JSON, CSV, and HTML formats
-5. Updates `index.json` for the web app
+2. Captures context for each entity mention (text snippet, speaker, timestamp)
+3. Builds directed graphs modeling relationships with rich narrative context
+4. Calculates temporal positioning (early/middle/late in episode)
+5. Generates semantically labeled edges with relationship types
+6. Stores up to 3 context examples per relationship for tooltip display
+7. Generates per-episode and per-show summary graphs
+8. Outputs JSON, CSV, and HTML formats
+9. Updates `index.json` for the web app
 
 ### Manual Index Regeneration
 
@@ -213,24 +251,31 @@ The web app automatically discovers new graphs - no manual HTML editing needed!
 ### Simple Update Workflow
 
 ```bash
-# 1. Generate new graphs (automatically updates index.json)
-uv run scripts/generate_entity_graphs.py
+# 1. Generate new graphs with visualizations
+uv run scripts/generate_entity_graphs.py --visualize
 
-# 2. Commit and deploy
-git add .
-git commit -m "Add new episodes"
+# 2. Update the index
+uv run scripts/generate_index.py
+
+# 3. Commit and deploy
+git add graphs/ index.json
+git commit -m "Add new episodes with enhanced annotations"
 git push  # Auto-deploys to Cloudflare if connected
 ```
 
-That's it! New graphs appear automatically on your site.
+That's it! New graphs with rich narrative context appear automatically on your site.
 
-### What Happens Automatically
+### What Happens During Graph Generation
 
-When you run `generate_entity_graphs.py`:
-1. Processes transcript files and generates graphs in `graphs/`
-2. Automatically runs `generate_index.py` to update the catalog
-3. `index.json` is regenerated with all discovered graphs
-4. Web app fetches the updated index and displays new content
+When you run `generate_entity_graphs.py --visualize`:
+1. Extracts PERSON and PLACE entities from transcript text
+2. Captures context snippets, speakers, and timestamps for each mention
+3. Builds directed graphs with semantically labeled relationships
+4. Generates interactive HTML visualizations with rich tooltips
+5. Creates JSON and CSV exports for data analysis
+6. Outputs files to `graphs/` directory organized by show
+
+Then `generate_index.py` scans and catalogs all graphs for the web app.
 
 ## Local Development
 
@@ -252,6 +297,33 @@ Open http://localhost:8000 to view the site.
 - **Summary graph**: http://localhost:8000/graphs/summaries/a_bit_fruity_with_matt_bernstein_graph.html
 - **Episode graph**: http://localhost:8000/graphs/a_bit_fruity_with_matt_bernstein/introducing_a_bit_fruity_with_matt_bernstein_graph.html
 
+### Enhanced Tooltip Example
+
+When hovering over a relationship edge in the graph, you'll see rich context like:
+
+```
+📍 Donald Trump → Mar-a-Lago
+━━━━━━━━━━━━━━━━━━━━
+Relationship: Mentioned In
+Mentions: 5
+Discussed by: Rachel Maddow, Guest Speaker
+
+💬 Context:
+
+[EARLY] Rachel Maddow:
+  "Trump was at Mar-a-Lago when the indictment was announced, surrounded by his legal team..."
+
+[LATE] Guest Speaker:
+  "The documents were allegedly stored at Mar-a-Lago in unsecured locations..."
+```
+
+This provides immediate insight into:
+- **What** the relationship is (mentioned in a place)
+- **How often** it occurred (5 times)
+- **Who** discussed it (Rachel Maddow, Guest Speaker)
+- **When** in the episode (early vs. late)
+- **Evidence** from actual transcript excerpts
+
 ## Technical Details
 
 ### Entity Graph Generation
@@ -264,10 +336,18 @@ The graph generation process uses:
 
 #### Graph Structure
 
-- **Nodes**: PERSON and PLACE entities
-- **Edges**: Two types of relationships:
-  - **Association**: Person ↔ Place (person mentioned with a place)
-  - **Movement**: Place → Place (person moves from one place to another)
+- **Nodes**: PERSON and PLACE entities with color coding (Person: blue, Place: orange)
+- **Edges**: Semantically labeled relationships with rich narrative context:
+  - **mentioned_in**: Person ↔ Place (person discussed in context of a place)
+  - **traveled_to**: Place → Place (person moves from one place to another)
+
+Each edge captures:
+- **Relationship type**: Semantic label describing the connection
+- **Weight**: Number of times the relationship occurs
+- **Speakers**: List of people who discussed this relationship
+- **Context examples**: Up to 3 actual transcript quotes showing where the relationship occurs
+- **Temporal markers**: When in the episode (early/middle/late) each mention happens
+- **Timestamps**: Exact timing of each context example
 
 #### Entity Resolution
 
@@ -275,6 +355,33 @@ The script performs multi-pass entity normalization:
 1. **Episode-level**: Resolves partial names and abbreviations within each episode
 2. **Show-level**: Cross-episode normalization for consistent entity naming
 3. **Deduplication**: Removes overlapping entities (e.g., entity tagged as both PERSON and PLACE)
+
+#### Rich Annotation Pipeline
+
+The enhanced annotation system captures narrative context at multiple levels:
+
+1. **Context Extraction** (during entity processing):
+   - Text snippet (200 char max) showing surrounding conversation
+   - Speaker attribution from transcript metadata
+   - Segment index for temporal positioning
+   - Timestamp for precise timing
+
+2. **Temporal Analysis** (during graph building):
+   - Calculates position within episode (0-100%)
+   - Categorizes as early (<33%), middle (33-66%), or late (>66%)
+   - Enables understanding of narrative flow
+
+3. **Relationship Modeling**:
+   - Semantic labeling (e.g., "mentioned_in", "traveled_to")
+   - Weight calculation (number of co-occurrences)
+   - Speaker aggregation across mentions
+   - Context storage (up to 3 examples per edge)
+
+4. **Tooltip Generation**:
+   - Formatted display with emojis and structure
+   - Temporal markers showing conversation progression
+   - Actual quotes providing evidence for relationships
+   - Speaker attribution for accountability
 
 ### Web App Components
 
@@ -288,10 +395,15 @@ The script performs multi-pass entity normalization:
 #### Graph Visualizations
 - Interactive network graphs using vis.js 9.1.2
 - Color-coded nodes (Person: blue, Place: orange)
-- Edge colors indicate relationship type
-- Hover interactions show node/edge details
-- Force-directed physics layout
-- Zoom and pan controls
+- Edge colors indicate relationship type (associations vs. movements)
+- Rich hover tooltips showing:
+  - Relationship type and mention count
+  - Speakers who discussed the relationship
+  - 1-2 actual transcript excerpts with temporal markers
+  - Context showing when in the conversation it occurred
+- Force-directed physics layout with smooth animations
+- Zoom and pan controls for exploration
+- Responsive sizing adapting to viewport height
 
 #### JavaScript Dependencies
 - **vis-network 9.1.2**: Network visualization
@@ -307,14 +419,27 @@ The script performs multi-pass entity normalization:
 
 ### Optimization Tips
 
-1. **Reduce file size**: Only deploy HTML files, exclude CSV/JSON
+1. **Reduce file size**: Only deploy HTML files, exclude large data files
    ```bash
    # In .gitignore
    graphs/**/*.csv
    graphs/**/*.json
+   *.csv
+   *.json
+
+   # EXCEPTION: Keep index.json (required for site to function)
+   !index.json
+
+   # Exclude very large summary graphs (>25 MB causes deployment issues)
+   site/graphs/summaries/*.html
    ```
 
-2. **Cloudflare automatic optimizations**:
+2. **Cloudflare Pages limits**:
+   - Maximum file size: 25 MB
+   - Large summary graphs should be excluded from deployment
+   - Individual episode graphs are typically well under the limit
+
+3. **Cloudflare automatic optimizations**:
    - HTML minification
    - Asset compression (gzip/brotli)
    - Image optimization
@@ -427,18 +552,26 @@ Your site is backed up in multiple locations:
 ## Common Commands
 
 ```bash
-# Generate graphs from transcripts
-uv run scripts/generate_entity_graphs.py
+# Generate graphs from transcripts with rich annotations
+uv run scripts/generate_entity_graphs.py --visualize
 
-# Regenerate index manually
+# Regenerate index after adding graphs
 uv run scripts/generate_index.py
+
+# Force regenerate all graphs (skip cache)
+uv run scripts/generate_entity_graphs.py --visualize --force
+
+# Process specific shows only
+uv run scripts/generate_entity_graphs.py --visualize --shows show_name
 
 # Test locally
 python3 -m http.server 8000
 
 # Deploy changes
-git add .
-git commit -m "Update graphs"
+git add graphs/ index.json
+git commit -m "Update graphs with enhanced narrative context
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 git push
 ```
 
@@ -455,6 +588,14 @@ git push
 - Static site - no server-side filtering or dynamic data loading
 - Graph files can be large for episodes with many entities
 
+## Recent Enhancements
+
+- ✅ **Rich narrative context** - Edges now display actual transcript quotes with speaker attribution
+- ✅ **Temporal markers** - Shows when in the conversation relationships occur (early/middle/late)
+- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, and context examples
+- ✅ **Semantic labeling** - Better relationship types ("mentioned_in", "traveled_to")
+- ✅ **Responsive graphs** - Viewport-based sizing with minimum height constraints
+
 ## Future Enhancements
 
 Potential improvements:
@@ -464,6 +605,8 @@ Potential improvements:
 - [ ] Cross-episode entity tracking
 - [ ] Advanced search (by entity, date range, etc.)
 - [ ] Graph comparison view
+- [ ] Sentiment analysis for relationship context
+- [ ] Topic clustering across episodes
 
 ## License
 
