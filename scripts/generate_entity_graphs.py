@@ -19,19 +19,33 @@ graph structure:
 
 usage:
     # run with default settings.
-    uv run python scripts/generate_entity_graphs.py
+    uv run scripts/generate_entity_graphs.py
+
+    # process a specific file.
+    uv run scripts/generate_entity_graphs.py --input path/to/transcript.json
+
+    # process a specific file with custom output path.
+    uv run scripts/generate_entity_graphs.py \\
+        --input path/to/transcript.json \\
+        --output path/to/output_graph.json
+
+    # process a specific directory.
+    uv run scripts/generate_entity_graphs.py --input path/to/transcripts
+
+    # recursively process all subdirectories.
+    uv run scripts/generate_entity_graphs.py --input-dir path/to/parent/directory
 
     # run with custom input/output directories.
-    uv run python scripts/generate_entity_graphs.py \\
+    uv run scripts/generate_entity_graphs.py \\
         --transcripts-dir outputs/transcripts_with_speaker_labels_postprocessed \\
-        --output-dir outputs/graphs
+        --output-dir graphs
 
     # process specific shows only.
-    uv run python scripts/generate_entity_graphs.py \\
+    uv run scripts/generate_entity_graphs.py \\
         --shows the_daily --shows candace
 
     # force reprocessing of all files.
-    uv run python scripts/generate_entity_graphs.py --force
+    uv run scripts/generate_entity_graphs.py --force
 """
 
 from __future__ import annotations
@@ -971,7 +985,9 @@ def graph_to_adjacency_matrix(graph: nx.DiGraph) -> tuple[list[str], list[list[i
     nodes = sorted(graph.nodes())
     if not nodes:
         return [], []
-    matrix = nx.adjacency_matrix(graph, nodelist=nodes).todense().tolist()
+    # convert sparse matrix to dense array, then to list
+    sparse_matrix = nx.adjacency_matrix(graph, nodelist=nodes)
+    matrix = sparse_matrix.toarray().tolist()
     return nodes, matrix
 
 
@@ -1070,6 +1086,511 @@ def humanize_title(snake_text: str) -> str:
     return " ".join(result)
 
 
+def _build_enhanced_styles() -> str:
+    """build enhanced CSS styles for improved UI/UX."""
+    return """
+        /* === Breadcrumb Navigation === */
+        .breadcrumb-nav {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 12px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .breadcrumb-nav a {
+            color: #4FC3F7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            color: #9e9e9e;
+            margin: 0 8px;
+        }
+
+        .breadcrumb-current {
+            color: #e0e0e0;
+        }
+
+        /* === Graph Header === */
+        #graph-header {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        #graph-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        #graph-header .subtitle {
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        }
+
+        .toggle-header {
+            display: none;
+            cursor: pointer;
+            color: #4FC3F7;
+            font-size: 0.9em;
+            margin-top: 8px;
+            user-select: none;
+        }
+
+        .header-details {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-top: 16px;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            min-width: 180px;
+        }
+
+        .info-box-title {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9e9e9e;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .legend-items, .stats-items, .controls-items {
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .stat-number {
+            font-weight: 600;
+        }
+
+        .controls-items div {
+            color: #bbb;
+        }
+
+        /* === Entity Search === */
+        .entity-search-container {
+            margin: 16px 32px;
+        }
+
+        .entity-search {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e0e0;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .entity-search:focus {
+            outline: none;
+            border-color: #4FC3F7;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .entity-search::placeholder {
+            color: #9e9e9e;
+        }
+
+        /* === Graph Controls === */
+        .graph-controls {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 0 32px 16px;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            color: #9e9e9e;
+            font-size: 0.85rem;
+            margin-right: 4px;
+        }
+
+        .control-button {
+            background: rgba(79, 195, 247, 0.2);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: #4FC3F7;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .control-button:hover {
+            background: rgba(79, 195, 247, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+        }
+
+        /* === Loading Overlay === */
+        .graph-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .graph-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4FC3F7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4FC3F7;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(79, 195, 247, 0.2);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: #4FC3F7;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* === Mobile Responsive === */
+        @media (max-width: 768px) {
+            .breadcrumb-nav {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+            }
+
+            #graph-header {
+                padding: 16px 20px;
+            }
+
+            #graph-header h1 {
+                font-size: 1.2em;
+            }
+
+            .toggle-header {
+                display: inline-block;
+            }
+
+            .header-details {
+                display: none;
+                margin-top: 12px;
+            }
+
+            .header-details.expanded {
+                display: flex;
+            }
+
+            .entity-search-container {
+                margin: 12px 16px;
+            }
+
+            .graph-controls {
+                margin: 0 16px 12px;
+                padding: 10px 12px;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .info-box {
+                min-width: 140px;
+            }
+
+            #mynetwork {
+                height: 70vh !important;
+                min-height: 300px !important;
+            }
+        }
+
+        /* === Mobile Touch Enhancements === */
+        @media (hover: none) and (pointer: coarse) {
+            .control-button {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+
+            .entity-search {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+    """
+
+
+def _build_enhanced_scripts() -> str:
+    """build enhanced JavaScript for improved interactivity."""
+    return """
+    <script>
+        // === Global Variables ===
+        let physicsEnabled = true;
+
+        // === Header Toggle (Mobile) ===
+        function toggleDetails() {
+            const details = document.querySelector('.header-details');
+            const toggle = document.querySelector('.toggle-header');
+            details.classList.toggle('expanded');
+            toggle.textContent = details.classList.contains('expanded')
+                ? '▲ Hide Details'
+                : '▼ Show Details';
+        }
+
+        // === Graph Control Functions ===
+        function resetView() {
+            if (typeof network !== 'undefined') {
+                network.moveTo({ scale: 1, position: {x: 0, y: 0}, animation: true });
+            }
+        }
+
+        function fitToView() {
+            if (typeof network !== 'undefined') {
+                network.fit({ animation: true });
+            }
+        }
+
+        function togglePhysics() {
+            if (typeof network !== 'undefined') {
+                physicsEnabled = !physicsEnabled;
+                network.setOptions({ physics: { enabled: physicsEnabled } });
+                document.getElementById('physicsLabel').textContent =
+                    physicsEnabled ? 'Pause' : 'Resume';
+            }
+        }
+
+        function showPersonOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#4FC3F7'
+                });
+            });
+        }
+
+        function showPlaceOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#FF8A65'
+                });
+            });
+        }
+
+        function showAll() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                nodes.update({ id: id, hidden: false });
+            });
+            // Reset search
+            document.getElementById('entitySearch').value = '';
+        }
+
+        // === Entity Search ===
+        function searchEntities(query) {
+            if (typeof nodes === 'undefined') return;
+
+            if (!query) {
+                showAll();
+                return;
+            }
+
+            const lowerQuery = query.toLowerCase();
+            const nodeIds = nodes.getIds();
+            const matchingIds = [];
+
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                const matches = node.label.toLowerCase().includes(lowerQuery);
+                nodes.update({
+                    id: id,
+                    hidden: !matches,
+                    borderWidth: matches ? 3 : 1,
+                    color: {
+                        background: node.color,
+                        border: matches ? '#FFD700' : node.color
+                    }
+                });
+                if (matches) matchingIds.push(id);
+            });
+
+            // Focus on matching nodes
+            if (matchingIds.length > 0 && typeof network !== 'undefined') {
+                network.fit({
+                    nodes: matchingIds,
+                    animation: true
+                });
+            }
+        }
+
+        // === Loading State Management ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for network to be defined
+            const checkNetwork = setInterval(function() {
+                if (typeof network !== 'undefined') {
+                    clearInterval(checkNetwork);
+
+                    // Setup loading progress
+                    network.on('stabilizationProgress', function(params) {
+                        const progress = Math.round((params.iterations / params.total) * 100);
+                        const progressBar = document.getElementById('loadingProgress');
+                        const loadingText = document.querySelector('.loading-text');
+                        if (progressBar) progressBar.style.width = progress + '%';
+                        if (loadingText) loadingText.textContent = `Stabilizing layout... ${progress}%`;
+                    });
+
+                    network.on('stabilizationIterationsDone', function() {
+                        const loadingText = document.querySelector('.loading-text');
+                        if (loadingText) loadingText.textContent = 'Complete!';
+                        setTimeout(() => {
+                            const loading = document.getElementById('graphLoading');
+                            if (loading) loading.classList.add('hidden');
+                        }, 300);
+                    });
+
+                    // Enable navigation buttons for mobile
+                    network.setOptions({
+                        interaction: {
+                            navigationButtons: window.innerWidth <= 768,
+                            keyboard: {
+                                enabled: true,
+                                bindToWindow: false
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // === Mobile Touch Enhancements ===
+        if ('ontouchstart' in window) {
+            window.addEventListener('load', function() {
+                const networkDiv = document.getElementById('mynetwork');
+                if (networkDiv) {
+                    // Prevent pull-to-refresh when panning graph
+                    let lastY = 0;
+                    networkDiv.addEventListener('touchmove', function(e) {
+                        const currentY = e.touches[0].clientY;
+                        if (lastY < currentY && window.scrollY === 0) {
+                            e.preventDefault();
+                        }
+                        lastY = currentY;
+                    }, { passive: false });
+
+                    // Disable double-tap zoom on network canvas
+                    networkDiv.addEventListener('touchstart', function(e) {
+                        if (e.touches.length > 1) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+                }
+            });
+        }
+
+        // === Responsive Navigation Buttons ===
+        window.addEventListener('resize', function() {
+            if (typeof network !== 'undefined') {
+                network.setOptions({
+                    interaction: {
+                        navigationButtons: window.innerWidth <= 768
+                    }
+                });
+            }
+        });
+    </script>
+    """
+
+
 def _build_legend_html(
     title: str,
     subtitle: str,
@@ -1079,127 +1600,96 @@ def _build_legend_html(
 ) -> str:
     """build the html header with title, stats, and color legend."""
     return f"""
-    <div id="graph-header" style="
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
-            Roboto, Helvetica, Arial, sans-serif;
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        color: #e0e0e0;
-        padding: 24px 32px 20px;
-        border-bottom: 1px solid #333;
-    ">
-        <h1 style="
-            margin: 0 0 4px 0;
-            font-size: 1.6em;
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: -0.02em;
-        ">{title}</h1>
-        <p style="
-            margin: 0 0 16px 0;
-            font-size: 0.95em;
-            color: #9e9e9e;
-        ">{subtitle}</p>
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="../../index.html">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{subtitle}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{title}</span>
+    </div>
 
-        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
-            <!-- color legend -->
-            <div style="
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 8px;
-                padding: 12px 16px;
-                min-width: 220px;
-            ">
-                <div style="
-                    font-size: 0.75em;
-                    text-transform: uppercase;
-                    letter-spacing: 0.08em;
-                    color: #9e9e9e;
-                    margin-bottom: 8px;
-                    font-weight: 600;
-                ">Legend</div>
+    <!-- Graph Header -->
+    <div id="graph-header">
+        <h1>{title}</h1>
+        <p class="subtitle">{subtitle}</p>
+        <span class="toggle-header" onclick="toggleDetails()">
+            ▼ Show Details
+        </span>
 
-                <div style="font-size: 0.85em; line-height: 1.8;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="
-                            display: inline-block; width: 12px; height: 12px;
-                            border-radius: 50%; background: {PERSON_COLOR};
-                        "></span>
+        <div class="header-details">
+            <!-- Legend -->
+            <div class="info-box">
+                <div class="info-box-title">Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: {PERSON_COLOR};"></span>
                         <span>Person</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="
-                            display: inline-block; width: 12px; height: 12px;
-                            border-radius: 50%; background: {PLACE_COLOR};
-                        "></span>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: {PLACE_COLOR};"></span>
                         <span>Place</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="
-                            display: inline-block; width: 20px; height: 3px;
-                            background: {ASSOCIATION_EDGE_COLOR}; border-radius: 2px;
-                        "></span>
-                        <span>Person \u2194 Place association</span>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: {ASSOCIATION_EDGE_COLOR};"></span>
+                        <span>Person ↔ Place</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="
-                            display: inline-block; width: 20px; height: 3px;
-                            background: {MOVEMENT_EDGE_COLOR}; border-radius: 2px;
-                        "></span>
-                        <span>Place \u2192 Place movement</span>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: {MOVEMENT_EDGE_COLOR};"></span>
+                        <span>Place → Place</span>
                     </div>
                 </div>
             </div>
 
-            <!-- graph stats -->
-            <div style="
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 8px;
-                padding: 12px 16px;
-                min-width: 160px;
-            ">
-                <div style="
-                    font-size: 0.75em;
-                    text-transform: uppercase;
-                    letter-spacing: 0.08em;
-                    color: #9e9e9e;
-                    margin-bottom: 8px;
-                    font-weight: 600;
-                ">Stats</div>
-
-                <div style="font-size: 0.85em; line-height: 1.8;">
-                    <div><span style="color: {PERSON_COLOR}; font-weight: 600;">\
-{person_count}</span> people</div>
-                    <div><span style="color: {PLACE_COLOR}; font-weight: 600;">\
-{place_count}</span> places</div>
-                    <div><span style="color: #ccc; font-weight: 600;">\
-{edge_count}</span> connections</div>
+            <!-- Stats -->
+            <div class="info-box">
+                <div class="info-box-title">Stats</div>
+                <div class="stats-items">
+                    <div><span class="stat-number" style="color: {PERSON_COLOR};">{person_count}</span> people</div>
+                    <div><span class="stat-number" style="color: {PLACE_COLOR};">{place_count}</span> places</div>
+                    <div><span class="stat-number">{edge_count}</span> connections</div>
                 </div>
             </div>
 
-            <!-- interaction hints -->
-            <div style="
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 8px;
-                padding: 12px 16px;
-                min-width: 180px;
-            ">
-                <div style="
-                    font-size: 0.75em;
-                    text-transform: uppercase;
-                    letter-spacing: 0.08em;
-                    color: #9e9e9e;
-                    margin-bottom: 8px;
-                    font-weight: 600;
-                ">Controls</div>
-
-                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
-                    <div>\U0001f5b1\ufe0f Drag nodes to rearrange</div>
-                    <div>\U0001f50d Scroll to zoom in/out</div>
-                    <div>\U0001f4ac Hover for details</div>
+            <!-- Controls -->
+            <div class="info-box">
+                <div class="info-box-title">Controls</div>
+                <div class="controls-items">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Entity Search -->
+    <div class="entity-search-container">
+        <input
+            type="text"
+            class="entity-search"
+            id="entitySearch"
+            placeholder="🔍 Search entities (people, places)..."
+            oninput="searchEntities(this.value)"
+        >
+    </div>
+
+    <!-- Graph Controls -->
+    <div class="graph-controls">
+        <div class="control-group">
+            <span class="control-label">View:</span>
+            <button class="control-button" onclick="resetView()">Reset Zoom</button>
+            <button class="control-button" onclick="fitToView()">Fit All</button>
+            <button class="control-button" onclick="togglePhysics()">
+                <span id="physicsLabel">Pause</span> Physics
+            </button>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Filter:</span>
+            <button class="control-button" onclick="showPersonOnly()">People Only</button>
+            <button class="control-button" onclick="showPlaceOnly()">Places Only</button>
+            <button class="control-button" onclick="showAll()">Show All</button>
         </div>
     </div>
     """
@@ -1213,7 +1703,7 @@ def visualize_graph(
 ) -> None:
     """render an interactive pyvis html visualization of a graph."""
     net = Network(
-        height="850px",
+        height="85vh",  # Responsive height
         width="100%",
         directed=True,
         bgcolor="#1e1e1e",
@@ -1258,7 +1748,14 @@ def visualize_graph(
         edge_count=graph.number_of_edges(),
     )
 
+    # build enhanced CSS styles
+    enhanced_styles = _build_enhanced_styles()
+
+    # build enhanced JavaScript
+    enhanced_scripts = _build_enhanced_scripts()
+
     html = output_path.read_text(encoding="utf-8")
+
     # remove the default pyvis heading.
     html = re.sub(
         r"<center>\s*<h1>.*?</h1>\s*</center>",
@@ -1266,8 +1763,46 @@ def visualize_graph(
         html,
         flags=re.DOTALL,
     )
-    # inject legend after <body> tag.
+
+    # inject enhanced styles in <head>
+    html = html.replace("</style>", f"{enhanced_styles}\n</style>", 1)
+
+    # inject legend and controls after <body> tag.
     html = html.replace("<body>", f"<body>\n{legend_html}", 1)
+
+    # add loading overlay to #mynetwork div
+    loading_overlay = """
+    <div class="graph-loading" id="graphLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing graph...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgress"></div>
+        </div>
+    </div>
+    """
+    html = html.replace(
+        '<div id="mynetwork"',
+        '<div id="mynetwork" style="position: relative;">' + loading_overlay + '<div style="width: 100%; height: 100%;"',
+        1
+    )
+    # close the wrapper div before the original closing div
+    html = re.sub(
+        r'(</div>\s*</body>)',
+        r'</div>\1',
+        html,
+        count=1
+    )
+
+    # inject enhanced scripts before </body>
+    html = html.replace("</body>", f"{enhanced_scripts}\n</body>", 1)
+
+    # update network container height to responsive
+    html = re.sub(
+        r'height:\s*\d+px;',
+        'height: 85vh; min-height: 400px; max-height: 900px;',
+        html
+    )
+
     output_path.write_text(html, encoding="utf-8")
 
 
@@ -1448,6 +1983,27 @@ def save_adjacency_csv(graph: nx.DiGraph, output_path: Path) -> None:
 
 @click.command()
 @click.option(
+    "--input",
+    "-i",
+    "input_path",
+    type=click.Path(path_type=Path),
+    help="input file or directory with transcripts (overrides --transcripts-dir).",
+)
+@click.option(
+    "--input-dir",
+    "-d",
+    "input_dir_path",
+    type=click.Path(path_type=Path),
+    help="recursively process all subdirectories as shows (overrides --transcripts-dir).",
+)
+@click.option(
+    "--output",
+    "-o",
+    "output_path",
+    type=click.Path(path_type=Path),
+    help="output file path (overrides --output-dir for single file processing).",
+)
+@click.option(
     "--transcripts-dir",
     type=click.Path(path_type=Path),
     default=Path("outputs/transcripts_with_speaker_labels_postprocessed"),
@@ -1456,7 +2012,7 @@ def save_adjacency_csv(graph: nx.DiGraph, output_path: Path) -> None:
 @click.option(
     "--output-dir",
     type=click.Path(path_type=Path),
-    default=Path("outputs/graphs"),
+    default=Path("graphs"),
     help="output directory for graph files.",
 )
 @click.option(
@@ -1487,6 +2043,9 @@ def save_adjacency_csv(graph: nx.DiGraph, output_path: Path) -> None:
     help="logging level.",
 )
 def generate_entity_graphs(
+    input_path: Path | None,
+    input_dir_path: Path | None,
+    output_path: Path | None,
     transcripts_dir: Path,
     output_dir: Path,
     shows: tuple[str, ...],
@@ -1497,6 +2056,61 @@ def generate_entity_graphs(
 ) -> None:
     """extract PERSON/PLACE entities and generate movement graphs."""
     setup_logging(log_level)
+
+    # track if we're processing a single file
+    single_file_mode = False
+    single_file_path: Path | None = None
+    recursive_mode = False
+
+    # handle input-dir flag for recursive processing (highest priority)
+    if input_dir_path:
+        input_dir_path = input_dir_path.resolve()
+        if not input_dir_path.exists():
+            console.print(
+                f"[bold red]Error: input directory not found: {input_dir_path}[/bold red]"
+            )
+            sys.exit(1)
+
+        if not input_dir_path.is_dir():
+            console.print(
+                f"[bold red]Error: --input-dir must be a directory: {input_dir_path}[/bold red]"
+            )
+            sys.exit(1)
+
+        transcripts_dir = input_dir_path
+        recursive_mode = True
+        console.print(f"[dim]Recursive mode: scanning {input_dir_path} for subdirectories[/dim]")
+
+    # handle input path flag (overrides transcripts-dir)
+    elif input_path:
+        input_path = input_path.resolve()
+        if not input_path.exists():
+            console.print(
+                f"[bold red]Error: input path not found: {input_path}[/bold red]"
+            )
+            sys.exit(1)
+
+        if input_path.is_file():
+            # process single file
+            single_file_mode = True
+            single_file_path = input_path
+            transcripts_dir = input_path.parent
+            shows = (input_path.parent.name,)  # use parent directory as show name
+        else:
+            # input is a directory
+            transcripts_dir = input_path
+
+    # handle output path flag
+    if output_path:
+        output_path = output_path.resolve()
+        if not single_file_mode:
+            console.print(
+                "[bold yellow]Warning: --output flag is only used with single file input. "
+                "Using --output-dir for directory processing.[/bold yellow]"
+            )
+        else:
+            # for single file mode, use output_path's directory as output_dir
+            output_dir = output_path.parent
 
     transcripts_dir = transcripts_dir.resolve()
     output_dir = output_dir.resolve()
@@ -1519,9 +2133,22 @@ def generate_entity_graphs(
         sys.exit(1)
 
     # collect show directories.
-    show_dirs = sorted(
-        [d for d in transcripts_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
-    )
+    if recursive_mode:
+        # recursively find all subdirectories with JSON files
+        show_dirs = []
+        for root, dirs, files in transcripts_dir.walk():
+            # skip hidden directories
+            dirs[:] = [d for d in dirs if not d.startswith(".")]
+            # if this directory contains JSON files, it's a show directory
+            if any(f.endswith(".json") for f in files):
+                show_dirs.append(Path(root))
+        show_dirs = sorted(show_dirs)
+        console.print(f"[dim]Found {len(show_dirs)} directories with JSON files[/dim]")
+    else:
+        # only look at immediate subdirectories
+        show_dirs = sorted(
+            [d for d in transcripts_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
+        )
 
     if shows:
         show_dirs = [d for d in show_dirs if d.name in shows]
@@ -1602,10 +2229,15 @@ def generate_entity_graphs(
             for episode_file in episode_files:
                 total_episodes += 1
                 episode_name = episode_file.stem
-                output_path = show_output_dir / f"{episode_name}_graph.json"
+
+                # determine output path (use custom path if in single file mode and specified)
+                if single_file_mode and output_path and episode_file == single_file_path:
+                    episode_output_path = output_path
+                else:
+                    episode_output_path = show_output_dir / f"{episode_name}_graph.json"
 
                 # skip if output exists and not forcing.
-                if output_path.exists() and not force:
+                if episode_output_path.exists() and not force:
                     total_skipped += 1
                     progress.advance(task)
                     continue
@@ -1626,13 +2258,19 @@ def generate_entity_graphs(
 
                 graph_data, graph = result
 
-                save_graph_data(graph_data, output_path)
-                save_adjacency_csv(graph, show_output_dir / f"{episode_name}_graph")
+                save_graph_data(graph_data, episode_output_path)
+                save_adjacency_csv(graph, episode_output_path.parent / episode_output_path.stem)
 
                 if visualize and graph.number_of_nodes() > 0:
+                    # use custom output path for visualization if specified
+                    if single_file_mode and output_path and episode_file == single_file_path:
+                        viz_path = episode_output_path.with_suffix(".html")
+                    else:
+                        viz_path = show_output_dir / f"{episode_name}_graph.html"
+
                     visualize_graph(
                         graph,
-                        show_output_dir / f"{episode_name}_graph.html",
+                        viz_path,
                         title=humanize_title(episode_name),
                         subtitle=humanize_title(show_name),
                     )
@@ -1702,6 +2340,28 @@ def generate_entity_graphs(
 
     console.print(f"\n[bold green]Output:[/bold green] {output_dir}")
     console.print(f"[bold green]Show summaries:[/bold green] {summaries_dir}")
+
+    # regenerate index.json for the web app
+    if total_processed > 0:
+        console.print("\n[bold cyan]Updating web app index...[/bold cyan]")
+        try:
+            import subprocess
+            index_script = script_dir / "generate_index.py"
+            if index_script.exists():
+                result = subprocess.run(
+                    ["uv", "run", str(index_script)],
+                    cwd=project_root,
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0:
+                    console.print("[bold green]✓[/bold green] Web app index updated")
+                else:
+                    console.print(
+                        f"[bold yellow]Warning: Failed to update index.json[/bold yellow]\n{result.stderr}"
+                    )
+        except Exception as e:
+            console.print(f"[bold yellow]Warning: Could not update index.json: {e}[/bold yellow]")
 
 
 if __name__ == "__main__":
