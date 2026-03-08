@@ -1350,6 +1350,24 @@ def humanize_title(snake_text: str) -> str:
 def _build_enhanced_styles() -> str:
     """build enhanced CSS styles for improved UI/UX."""
     return """
+        /* === Reset and Base === */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
         /* === Breadcrumb Navigation === */
         .breadcrumb-nav {
             background: rgba(26, 26, 46, 0.95);
@@ -1405,67 +1423,88 @@ def _build_enhanced_styles() -> str:
             display: none;
             cursor: pointer;
             color: #4FC3F7;
-            font-size: 0.9em;
+            font-size: 1rem;
             margin-top: 8px;
             user-select: none;
+            padding: 8px 12px;
+            background: rgba(79, 195, 247, 0.15);
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-header:hover {
+            background: rgba(79, 195, 247, 0.25);
+        }
+
+        .toggle-header:active {
+            transform: scale(0.98);
         }
 
         .header-details {
             display: flex;
-            gap: 32px;
+            gap: 16px;
             flex-wrap: wrap;
-            align-items: flex-start;
+            align-items: stretch;
             margin-top: 16px;
         }
 
         .info-box {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 12px 16px;
-            min-width: 180px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 16px 20px;
+            min-width: 200px;
+            flex: 1 1 auto;
         }
 
         .info-box-title {
-            font-size: 0.75em;
+            font-size: 0.85em;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #9e9e9e;
-            margin-bottom: 8px;
-            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: #4FC3F7;
+            margin-bottom: 12px;
+            font-weight: 700;
         }
 
         .legend-items, .stats-items, .controls-items {
-            font-size: 0.85em;
-            line-height: 1.8;
+            font-size: 0.95em;
+            line-height: 2;
+            color: #e8e8e8;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            padding: 4px 0;
         }
 
         .legend-dot {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .legend-line {
             display: inline-block;
-            width: 20px;
-            height: 3px;
+            width: 28px;
+            height: 4px;
             border-radius: 2px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .stat-number {
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 1.1em;
         }
 
         .controls-items div {
-            color: #bbb;
+            color: #d0d0d0;
         }
 
         /* === Entity Search === */
@@ -1475,35 +1514,37 @@ def _build_enhanced_styles() -> str:
 
         .entity-search {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #e0e0e0;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 1rem;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.2s ease;
         }
 
         .entity-search:focus {
             outline: none;
             border-color: #4FC3F7;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
         }
 
         .entity-search::placeholder {
-            color: #9e9e9e;
+            color: #a0a0a0;
         }
 
         /* === Graph Controls === */
         .graph-controls {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 12px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
             margin: 0 32px 16px;
             display: flex;
-            gap: 24px;
+            gap: 20px;
             flex-wrap: wrap;
             align-items: center;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -1511,36 +1552,42 @@ def _build_enhanced_styles() -> str:
 
         .control-group {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
         }
 
         .control-label {
-            color: #9e9e9e;
-            font-size: 0.85rem;
-            margin-right: 4px;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-right: 6px;
+            font-weight: 500;
         }
 
         .control-button {
-            background: rgba(79, 195, 247, 0.2);
+            background: rgba(79, 195, 247, 0.15);
             border: 1px solid rgba(79, 195, 247, 0.4);
             color: #4FC3F7;
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 500;
             transition: all 0.2s ease;
             font-family: inherit;
+            white-space: nowrap;
         }
 
         .control-button:hover {
-            background: rgba(79, 195, 247, 0.3);
-            transform: translateY(-1px);
+            background: rgba(79, 195, 247, 0.25);
+            border-color: rgba(79, 195, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .control-button:active {
             transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         /* === Loading Overlay === */
@@ -1602,101 +1649,229 @@ def _build_enhanced_styles() -> str:
         /* === Mobile Responsive === */
         @media (max-width: 768px) {
             .breadcrumb-nav {
-                padding: 10px 16px;
-                font-size: 0.85rem;
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                white-space: nowrap;
             }
 
             #graph-header {
-                padding: 16px 20px;
+                padding: 20px 16px;
             }
 
             #graph-header h1 {
-                font-size: 1.2em;
+                font-size: 1.35em;
+                line-height: 1.3;
+            }
+
+            #graph-header .subtitle {
+                font-size: 0.9em;
             }
 
             .toggle-header {
                 display: inline-block;
+                width: 100%;
+                text-align: center;
+                margin-top: 12px;
+                padding: 12px;
+                font-size: 1rem;
             }
 
             .header-details {
                 display: none;
-                margin-top: 12px;
+                margin-top: 16px;
+                gap: 12px;
             }
 
             .header-details.expanded {
                 display: flex;
             }
 
+            .info-box {
+                min-width: 100%;
+                width: 100%;
+                padding: 16px;
+                flex: 1 1 100%;
+            }
+
+            .info-box-title {
+                font-size: 0.9em;
+                margin-bottom: 12px;
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 1rem;
+                line-height: 2.2;
+            }
+
+            .legend-item {
+                gap: 14px;
+                padding: 6px 0;
+            }
+
+            .legend-dot {
+                width: 18px;
+                height: 18px;
+            }
+
+            .legend-line {
+                width: 32px;
+                height: 5px;
+            }
+
+            .stat-number {
+                font-size: 1.2em;
+            }
+
             .entity-search-container {
-                margin: 12px 16px;
+                margin: 16px;
             }
 
             .graph-controls {
-                margin: 0 16px 12px;
-                padding: 10px 12px;
+                margin: 0 16px 16px;
+                padding: 12px;
+                gap: 12px;
             }
 
             .control-group {
                 width: 100%;
-            }
-
-            .info-box {
-                min-width: 140px;
+                justify-content: center;
             }
 
             #mynetwork {
-                height: 70vh !important;
-                min-height: 300px !important;
+                height: calc(100vh - 80px) !important;
+                min-height: 400px !important;
+            }
+
+            /* Make graph container take full width */
+            .card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* === Tablet Responsive === */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-details {
+                gap: 20px;
+            }
+
+            .info-box {
+                min-width: 220px;
+                flex: 1 1 calc(50% - 10px);
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 0.9em;
+            }
+
+            .legend-dot {
+                width: 14px;
+                height: 14px;
+            }
+
+            .legend-line {
+                width: 24px;
+            }
+        }
+
+        /* === Large Screen Optimization === */
+        @media (min-width: 1440px) {
+            #graph-header {
+                padding: 28px 48px 24px;
+            }
+
+            .breadcrumb-nav {
+                padding: 14px 48px;
+            }
+
+            .header-details {
+                gap: 24px;
+            }
+
+            .info-box {
+                padding: 18px 22px;
+            }
+
+            .entity-search-container {
+                margin: 20px 48px;
+            }
+
+            .graph-controls {
+                margin: 0 48px 20px;
             }
         }
 
         /* === Sentiment Distribution Chart === */
         .sentiment-chart {
-            font-size: 0.85em;
+            font-size: 0.95em;
         }
 
         .sentiment-bar-container {
             display: flex;
             width: 100%;
-            height: 24px;
-            border-radius: 4px;
+            height: 28px;
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 12px;
-            background: rgba(0,0,0,0.2);
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .sentiment-bar {
             height: 100%;
-            transition: width 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
 
         .sentiment-bar:hover {
-            opacity: 0.8;
+            opacity: 0.85;
+            transform: scaleY(1.1);
         }
 
         .sentiment-legend {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .sentiment-stat {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.9em;
+            font-size: 0.95em;
+            padding: 4px 0;
         }
 
         .sentiment-stat span {
-            font-weight: 600;
+            font-weight: 700;
         }
 
         /* === Mobile Touch Enhancements === */
         @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets for mobile */
             .control-button {
-                padding: 10px 16px;
-                font-size: 0.9rem;
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-height: 44px;
+            }
+
+            .toggle-header {
+                min-height: 48px;
+                padding: 14px;
+            }
+
+            .sentiment-bar-container {
+                height: 36px;
+            }
+
+            /* Prevent text selection on interactive elements */
+            .control-button, .toggle-header, .legend-item {
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
             }
 
             .entity-search {
@@ -2190,6 +2365,11 @@ def visualize_graph(
     # inject enhanced styles in <head>
     html = html.replace("</style>", f"{enhanced_styles}\n</style>", 1)
 
+    # inject viewport meta tag if not present for mobile responsiveness
+    if '<meta name="viewport"' not in html:
+        viewport_meta = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">'
+        html = html.replace("<head>", f"<head>\n    {viewport_meta}", 1)
+
     # inject legend and controls after <body> tag.
     html = html.replace("<body>", f"<body>\n{legend_html}", 1)
 
@@ -2222,7 +2402,14 @@ def visualize_graph(
     # update network container height to responsive
     html = re.sub(
         r'height:\s*\d+px;',
-        'height: 85vh; min-height: 400px; max-height: 900px;',
+        'height: 85vh; min-height: 450px;',
+        html
+    )
+
+    # ensure graph container uses full width
+    html = re.sub(
+        r'width:\s*\d+%;',
+        'width: 100%;',
         html
     )
 
