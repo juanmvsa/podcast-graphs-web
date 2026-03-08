@@ -2404,6 +2404,152 @@ def save_adjacency_csv(graph: nx.DiGraph, output_path: Path) -> None:
     df.write_csv(csv_path)
 
 
+def generate_per_topic_summaries(
+    topic_results: dict,
+    all_episode_graphs: dict[str, dict],  # episode_name -> {"graph": nx.DiGraph, "show": str}
+    output_dir: Path,
+    visualize: bool = True,
+    topics_per_graph: int = 3
+) -> None:
+    """generate summary graphs grouped by topics.
+
+    args:
+        topic_results: output from cluster_episode_topics()
+        all_episode_graphs: mapping of episode names to graph data
+        output_dir: base output directory
+        visualize: whether to generate HTML visualizations
+        topics_per_graph: number of topics to combine per summary graph
+    """
+    topics = topic_results.get("topics", [])
+    episode_topics = topic_results.get("episode_topics", {})
+
+    if not topics or not all_episode_graphs:
+        return
+
+    console.print("\n[bold cyan]Generating per-topic summary graphs...[/bold cyan]")
+
+    # group episodes by show and topic
+    show_topic_episodes: dict[str, dict[int, list[str]]] = {}
+
+    for episode_name, topic_data in episode_topics.items():
+        if episode_name not in all_episode_graphs:
+            continue
+
+        show_name = all_episode_graphs[episode_name]["show"]
+        topic_id = topic_data["topic_id"]
+
+        if show_name not in show_topic_episodes:
+            show_topic_episodes[show_name] = {}
+        if topic_id not in show_topic_episodes[show_name]:
+            show_topic_episodes[show_name][topic_id] = []
+
+        show_topic_episodes[show_name][topic_id].append(episode_name)
+
+    # generate summary graphs for each show
+    for show_name, topic_episodes in show_topic_episodes.items():
+        show_summaries_dir = output_dir / "summaries" / show_name
+        show_summaries_dir.mkdir(parents=True, exist_ok=True)
+
+        # sort topics by number of episodes (descending)
+        sorted_topics = sorted(topic_episodes.items(), key=lambda x: len(x[1]), reverse=True)
+
+        # group topics into batches
+        topic_batches = []
+        current_batch = []
+        current_batch_topics = []
+
+        for topic_id, episodes in sorted_topics:
+            current_batch.extend(episodes)
+            current_batch_topics.append(topic_id)
+
+            if len(current_batch_topics) >= topics_per_graph:
+                topic_batches.append((current_batch_topics, current_batch))
+                current_batch = []
+                current_batch_topics = []
+
+        # add remaining topics as final batch
+        if current_batch_topics:
+            topic_batches.append((current_batch_topics, current_batch))
+
+        # generate graphs for each batch
+        for batch_idx, (batch_topic_ids, batch_episodes) in enumerate(topic_batches):
+            # collect graphs for this batch
+            batch_graphs = []
+            for ep_name in batch_episodes:
+                if ep_name in all_episode_graphs:
+                    batch_graphs.append(all_episode_graphs[ep_name]["graph"])
+
+            if not batch_graphs:
+                continue
+
+            # merge graphs
+            merged = merge_graphs(batch_graphs)
+
+            if merged.number_of_nodes() == 0:
+                continue
+
+            # get topic labels for subtitle
+            topic_labels = []
+            for tid in batch_topic_ids:
+                topic_info = next((t for t in topics if t["topic_id"] == tid), None)
+                if topic_info:
+                    topic_labels.append(topic_info["topic_label"])
+
+            # create filename based on topic IDs
+            if len(batch_topic_ids) == 1:
+                filename = f"topic_{batch_topic_ids[0]}_graph"
+                subtitle = f"Topic: {topic_labels[0]} ({len(batch_episodes)} episodes)"
+            else:
+                topic_ids_str = "_".join(map(str, batch_topic_ids))
+                filename = f"topics_{topic_ids_str}_graph"
+                subtitle = f"Topics {batch_idx + 1}: {len(batch_episodes)} episodes"
+
+            # save JSON and CSV
+            nodes, matrix = graph_to_adjacency_matrix(merged)
+            edges = []
+            for u, v, data in merged.edges(data=True):
+                edge = {"source": u, "target": v, "weight": data.get("weight", 1)}
+                if "relation" in data:
+                    edge["relation"] = data["relation"]
+                if "travelers" in data:
+                    edge["travelers"] = data["travelers"]
+                edges.append(edge)
+
+            summary_data = ShowGraphData(
+                show=show_name,
+                episode_count=len(batch_episodes),
+                persons=sorted({n for n in merged.nodes() if merged.nodes[n].get("type") == "PERSON"}),
+                places=sorted({n for n in merged.nodes() if merged.nodes[n].get("type") == "PLACE"}),
+                nodes=nodes,
+                adjacency_matrix=matrix,
+                edges=edges,
+            )
+
+            json_path = show_summaries_dir / f"{filename}.json"
+            save_graph_data(summary_data, json_path)
+            save_adjacency_csv(merged, show_summaries_dir / filename)
+
+            # generate visualization
+            if visualize:
+                html_path = show_summaries_dir / f"{filename}.html"
+                visualize_graph(
+                    merged,
+                    html_path,
+                    title=humanize_title(show_name),
+                    subtitle=subtitle,
+                )
+
+            logger.info(
+                f"  Generated topic summary: {show_name}/{filename} "
+                f"({merged.number_of_nodes()} nodes, {merged.number_of_edges()} edges)"
+            )
+
+    console.print(
+        f"[bold green]✓[/bold green] Generated per-topic summaries for "
+        f"{len(show_topic_episodes)} shows"
+    )
+
+
 @click.command()
 @click.option(
     "--input",
@@ -2596,6 +2742,9 @@ def generate_entity_graphs(
     # collect episode data for topic clustering
     episodes_for_clustering: list[dict] = []
 
+    # collect all episode graphs for per-topic summaries
+    all_episode_graphs: dict[str, dict] = {}
+
     for show_dir in show_dirs:
         show_name = show_dir.name
         episode_files = sorted(show_dir.glob("*.json"))
@@ -2705,6 +2854,12 @@ def generate_entity_graphs(
                 show_persons.update(graph_data.persons)
                 show_places.update(graph_data.places)
 
+                # store episode graph for per-topic summaries
+                all_episode_graphs[episode_name] = {
+                    "graph": graph,
+                    "show": show_name
+                }
+
                 # collect episode data for topic clustering
                 try:
                     # read transcript to get text for topic modeling
@@ -2794,6 +2949,20 @@ def generate_entity_graphs(
                 f"across {num_clustered} episodes"
             )
             console.print(f"[dim]Topics saved to: {topics_output_path}[/dim]")
+
+            # generate per-topic summary graphs
+            if all_episode_graphs and visualize:
+                try:
+                    generate_per_topic_summaries(
+                        topic_results=topic_results,
+                        all_episode_graphs=all_episode_graphs,
+                        output_dir=output_dir,
+                        visualize=True,
+                        topics_per_graph=3  # group 3 topics per summary graph
+                    )
+                except Exception as e:
+                    console.print(f"[bold yellow]Warning: Per-topic summary generation failed: {e}[/bold yellow]")
+                    logger.exception("Per-topic summary error")
 
         except Exception as e:
             console.print(f"[bold yellow]Warning: Topic clustering failed: {e}[/bold yellow]")

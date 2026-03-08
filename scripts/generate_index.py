@@ -82,18 +82,32 @@ def scan_graphs_directory(graphs_dir: Path) -> dict:
             })
 
         if episodes:
-            # Check for summary file
+            # Check for legacy summary file (all episodes)
             summary_file = graphs_dir / "summaries" / f"{show_name}_graph.html"
             summary_path = None
             if summary_file.exists():
                 summary_path = f"graphs/summaries/{summary_file.name}"
+
+            # Check for per-topic summaries
+            topic_summaries = []
+            show_summaries_dir = graphs_dir / "summaries" / show_name
+            if show_summaries_dir.exists() and show_summaries_dir.is_dir():
+                for topic_file in sorted(show_summaries_dir.glob("*_graph.html")):
+                    topic_title = humanize_filename(topic_file.stem)
+                    topic_path = f"graphs/summaries/{show_name}/{topic_file.name}"
+                    topic_summaries.append({
+                        "title": topic_title,
+                        "path": topic_path,
+                        "filename": topic_file.name
+                    })
 
             shows.append({
                 "name": show_name,
                 "displayName": humanize_show_name(show_name),
                 "episodeCount": len(episodes),
                 "episodes": episodes,
-                "summaryPath": summary_path
+                "summaryPath": summary_path,
+                "topicSummaries": topic_summaries
             })
 
     from datetime import datetime
@@ -127,7 +141,13 @@ def main():
 
     # Print summary
     for show in index_data["shows"]:
-        print(f"  - {show['displayName']}: {show['episodeCount']} episodes")
+        topic_count = len(show.get("topicSummaries", []))
+        summary_info = ""
+        if show.get("summaryPath"):
+            summary_info += " [legacy summary]"
+        if topic_count > 0:
+            summary_info += f" [{topic_count} topic summaries]"
+        print(f"  - {show['displayName']}: {show['episodeCount']} episodes{summary_info}")
 
 
 if __name__ == "__main__":

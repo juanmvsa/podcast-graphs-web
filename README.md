@@ -2,6 +2,24 @@
 
 Interactive network visualizations of entity relationships in podcast conversations. This static website automatically discovers and showcases conversation graphs with interactive search and exploration features.
 
+## TL;DR - Quick Workflow
+
+```bash
+# 1. Setup (one-time)
+uv sync && uv run python -m spacy download en_core_web_lg
+
+# 2. Generate graphs from transcripts
+uv run scripts/generate_entity_graphs.py --visualize
+
+# 3. Preview locally
+python3 -m http.server 8000  # Visit http://localhost:8000
+
+# 4. Deploy to production
+git add . && git commit -m "New episodes" && git push
+```
+
+After Cloudflare Pages setup, every `git push` automatically deploys your site. No build commands, no configuration needed.
+
 ## Features
 
 - **🔍 Auto-Discovery**: Automatically detects and displays all graphs in `graphs/` directory - no manual HTML editing required
@@ -27,9 +45,23 @@ Interactive network visualizations of entity relationships in podcast conversati
 
 ### Prerequisites
 
-- Python 3.12+ with `uv` package manager
+- Python 3.10+ with `uv` package manager
 - GitHub account (for deployment)
 - Cloudflare account (free tier, for hosting)
+
+### Installation & Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/podcast-graphs-web.git
+cd podcast-graphs-web
+
+# Install dependencies with uv (automatically creates virtual environment)
+uv sync
+
+# Download the spaCy language model
+uv run python -m spacy download en_core_web_lg
+```
 
 ### Generate and View Graphs Locally
 
@@ -37,8 +69,8 @@ Interactive network visualizations of entity relationships in podcast conversati
 # Generate graphs from transcripts (outputs to graphs/)
 uv run scripts/generate_entity_graphs.py --visualize
 
-# Regenerate the index
-uv run scripts/generate_index.py
+# Note: First run will download the sentiment model (~250MB)
+# You'll see some 404 warnings - these are normal and can be ignored
 
 # Start local server
 python3 -m http.server 8000
@@ -47,6 +79,16 @@ python3 -m http.server 8000
 ```
 
 That's it! The web app automatically discovers all graphs in the `graphs/` directory.
+
+### Deployment Summary
+
+**After initial Cloudflare Pages setup** (one-time, see [Deployment](#deployment) section):
+
+1. Generate graphs: `uv run scripts/generate_entity_graphs.py --visualize`
+2. Commit changes: `git add . && git commit -m "New episodes"`
+3. Deploy: `git push origin main`
+
+**Done!** Site rebuilds automatically in 2-3 minutes. No manual build steps, no configuration files to edit.
 
 ## Project Structure
 
@@ -66,8 +108,9 @@ podcast-graphs-web/
 │   ├── generate_index.py       # Graph index generator
 │   └── utils/                  # Utility modules
 ├── README.md                   # This file
-├── pyproject.toml              # Python dependencies
-└── uv.lock                     # Dependency lock file
+├── pyproject.toml              # Python dependencies (managed by uv)
+├── uv.lock                     # Dependency lock file
+└── wrangler.toml               # Cloudflare Pages configuration
 ```
 
 ### Graph File Formats
@@ -206,7 +249,7 @@ The `generate_entity_graphs.py` script accepts these options:
 The script automatically:
 1. Extracts PERSON and PLACE entities using spaCy NER
 2. Captures context for each entity mention (text snippet, speaker, timestamp)
-3. **Analyzes sentiment** of each context using transformer-based models
+3. **Analyzes sentiment** of each context using `distilbert-base-uncased-finetuned-sst-2-english`
 4. Builds directed graphs modeling relationships with rich narrative context
 5. Calculates temporal positioning (early/middle/late in episode)
 6. Generates semantically labeled edges with relationship types
@@ -216,9 +259,22 @@ The script automatically:
 10. Outputs JSON, CSV, HTML formats, and topic metadata
 11. Updates `index.json` for the web app
 
-### Manual Index Regeneration
+**Note**: During first run, the sentiment model will download automatically (~250MB). You may see 404 warnings for optional model files (tokenizer.json, added_tokens.json, etc.) - these are normal and can be safely ignored.
 
-The index is automatically updated after graph generation. To manually regenerate:
+### Model Downloads & Caching
+
+**First Run**:
+- spaCy model: `en_core_web_lg` (~800MB) - manual download required
+- Sentiment model: `distilbert-base-uncased-finetuned-sst-2-english` (~250MB) - auto-downloads
+- BERTopic embeddings model - auto-downloads
+
+**Subsequent Runs**:
+- Models are cached in `~/.cache/huggingface/` and `~/.cache/torch/`
+- Processing is much faster (no re-downloading)
+
+### Manual Index Regeneration (Rarely Needed)
+
+The index is automatically updated when you run `generate_entity_graphs.py`. You only need to manually regenerate if you've modified graph files directly:
 
 ```bash
 uv run scripts/generate_index.py
@@ -253,12 +309,14 @@ git push -u origin main
 3. Authorize GitHub and select `podcast-graphs-web`
 4. Configure settings:
    - **Production branch**: `main`
-   - **Build command**: (leave empty)
-   - **Build output directory**: `/`
+   - **Build command**: (leave empty - no build needed, files are pre-generated)
+   - **Build output directory**: `/` (deploy from root)
    - **Root directory**: (leave empty)
 5. Click **Save and Deploy**
 
 Your site will be live at `https://podcast-graphs-web.pages.dev` in 2-3 minutes.
+
+**After setup, deployments are automatic**: Every `git push` to main triggers a new deployment. No manual intervention needed!
 
 #### Step 3: Add Custom Domain (Optional)
 
@@ -285,38 +343,78 @@ wrangler pages deploy . --project-name=podcast-graphs
 wrangler pages domain add podcast-graphs graphs.yourdomain.com
 ```
 
-## Updating Graphs
+## Complete Workflow: Generate, Update & Deploy
 
 The web app automatically discovers new graphs - no manual HTML editing needed!
 
-### Simple Update Workflow
+### 1. Generate Graphs from Transcripts
 
 ```bash
-# 1. Generate new graphs with visualizations
+# Generate graphs with interactive visualizations
 uv run scripts/generate_entity_graphs.py --visualize
 
-# 2. Update the index
-uv run scripts/generate_index.py
+# Or force regenerate all graphs (skip cache)
+uv run scripts/generate_entity_graphs.py --visualize --force
 
-# 3. Commit and deploy
-git add graphs/ index.json
-git commit -m "Add new episodes with enhanced annotations"
-git push  # Auto-deploys to Cloudflare if connected
+# Or process specific shows only
+uv run scripts/generate_entity_graphs.py --visualize --shows show_name_1 --shows show_name_2
 ```
 
-That's it! New graphs with rich narrative context appear automatically on your site.
+**What this does**:
+- Extracts entities and builds graphs
+- Performs sentiment analysis on all contexts
+- Clusters episodes by topics using BERTopic
+- Generates HTML visualizations in `graphs/` directory
+- Creates `topics.json` with theme metadata
+- Automatically updates `index.json`
+
+### 2. Preview Locally (Optional)
+
+```bash
+# Start local server
+python3 -m http.server 8000
+
+# Open http://localhost:8000 in your browser
+```
+
+### 3. Deploy to Cloudflare Pages
+
+```bash
+# Commit your changes
+git add graphs/ index.json index.html
+git commit -m "Add new episodes with sentiment analysis and topic clustering
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+# Push to GitHub (auto-deploys if Cloudflare Pages is connected)
+git push origin main
+```
+
+**That's it!** Your site will automatically rebuild and deploy in 2-3 minutes.
+
+### What Gets Deployed
+
+- ✅ `index.html` - Landing page
+- ✅ `index.json` - Graph metadata
+- ✅ `graphs/` - All HTML visualizations
+- ✅ `lib/` - JavaScript dependencies
+- ❌ CSV and JSON data files (excluded via .gitignore for size optimization)
 
 ### What Happens During Graph Generation
 
 When you run `generate_entity_graphs.py --visualize`:
-1. Extracts PERSON and PLACE entities from transcript text
+1. Extracts PERSON and PLACE entities from transcript text using spaCy NER
 2. Captures context snippets, speakers, and timestamps for each mention
-3. Builds directed graphs with semantically labeled relationships
-4. Generates interactive HTML visualizations with rich tooltips
-5. Creates JSON and CSV exports for data analysis
-6. Outputs files to `graphs/` directory organized by show
+3. Analyzes sentiment of each context using DistilBERT (positive/negative/neutral)
+4. Builds directed graphs with semantically labeled relationships
+5. Performs cross-episode topic clustering using BERTopic
+6. Generates interactive HTML visualizations with rich tooltips and sentiment colors
+7. Creates JSON and CSV exports for data analysis
+8. Outputs files to `graphs/` directory organized by show
+9. Generates `topics.json` with theme metadata
+10. Automatically updates `index.json` for the web app
 
-Then `generate_index.py` scans and catalogs all graphs for the web app.
+**No separate index generation needed** - `generate_entity_graphs.py` handles everything!
 
 ## Local Development
 
@@ -408,9 +506,13 @@ This provides immediate insight into:
 
 The graph generation process uses:
 
-- **spaCy NER**: Extracts PERSON and PLACE entities from transcripts
-- **NetworkX**: Builds directed graphs modeling entity relationships
-- **PyVis**: Generates interactive HTML visualizations
+- **spaCy NER** (`>=3.7.0`): Extracts PERSON and PLACE entities from transcripts
+- **NetworkX** (`>=3.0`): Builds directed graphs modeling entity relationships
+- **PyVis** (`>=0.3.0`): Generates interactive HTML visualizations
+- **Transformers** (`>=4.30.0`) + **PyTorch** (`>=2.0.0`): Sentiment analysis pipeline
+- **BERTopic** (`>=0.15.0`): Cross-episode topic clustering and theme discovery
+- **Polars** (`>=0.20.0`): Fast data processing
+- **scikit-learn** (`>=1.3.0`): Supporting ML utilities for clustering
 
 #### Graph Structure
 
@@ -456,11 +558,12 @@ The enhanced annotation system captures narrative context at multiple levels:
    - Context storage (up to 3 examples per edge)
 
 4. **Sentiment Analysis**:
-   - Uses DistilBERT transformer model for accurate emotion detection
+   - Uses `distilbert-base-uncased-finetuned-sst-2-english` (DistilBERT fine-tuned on Stanford Sentiment Treebank)
    - Classifies each context as POSITIVE, NEGATIVE, or NEUTRAL
    - Confidence scores for sentiment predictions
    - Visual indicators with emojis (😊 positive, 😞 negative, 😐 neutral)
    - Cached model loading for performance
+   - Note: 404 warnings during model loading (for optional files) are expected and non-critical
 
 5. **Topic Clustering** (cross-episode):
    - BERTopic-based semantic clustering
@@ -540,6 +643,21 @@ The enhanced annotation system captures narrative context at multiple levels:
    - Cache-Control headers
 
 ## Troubleshooting
+
+### Sentiment model 404 warnings
+
+**Problem**: When running `generate_entity_graphs.py`, you see HTTP 404 errors for files like `tokenizer.json`, `added_tokens.json`, `special_tokens_map.json`.
+
+**Solution**: These warnings are **normal and expected**. The DistilBERT model uses an older tokenizer format (`vocab.txt`) and doesn't include these optional files. The transformers library gracefully handles their absence by using defaults. Your sentiment analysis will work perfectly fine.
+
+Example of expected (non-critical) warnings:
+```
+INFO HTTP Request: HEAD https://huggingface.co/.../tokenizer.json "HTTP/1.1 404 Not Found"
+INFO HTTP Request: HEAD https://huggingface.co/.../added_tokens.json "HTTP/1.1 404 Not Found"
+INFO HTTP Request: HEAD https://huggingface.co/.../special_tokens_map.json "HTTP/1.1 404 Not Found"
+```
+
+**What matters**: Model weights loading successfully (100%) and `tokenizer_config.json` + `vocab.txt` returning 200 OK.
 
 ### Graphs not displaying
 
@@ -643,30 +761,51 @@ Your site is backed up in multiple locations:
 2. **GitHub**: Remote repository with full history
 3. **Cloudflare**: Last 100 deployments preserved
 
-## Common Commands
+## Quick Reference
+
+### Essential Commands
 
 ```bash
-# Generate graphs from transcripts with rich annotations
+# 1. GENERATE: Create graphs from transcripts
 uv run scripts/generate_entity_graphs.py --visualize
 
-# Regenerate index after adding graphs
-uv run scripts/generate_index.py
+# 2. PREVIEW: Test locally before deploying
+python3 -m http.server 8000  # Open http://localhost:8000
 
+# 3. DEPLOY: Push to production
+git add graphs/ index.json index.html
+git commit -m "Add new episodes"
+git push origin main  # Auto-deploys to Cloudflare Pages
+```
+
+### Advanced Options
+
+```bash
 # Force regenerate all graphs (skip cache)
 uv run scripts/generate_entity_graphs.py --visualize --force
 
 # Process specific shows only
-uv run scripts/generate_entity_graphs.py --visualize --shows show_name
+uv run scripts/generate_entity_graphs.py --visualize --shows "show_name_1" --shows "show_name_2"
 
-# Test locally
-python3 -m http.server 8000
+# Custom transcript directory
+uv run scripts/generate_entity_graphs.py --transcripts-dir path/to/transcripts --visualize
 
-# Deploy changes
-git add graphs/ index.json
-git commit -m "Update graphs with enhanced narrative context
+# Manually regenerate index (usually not needed, auto-updated by generate script)
+uv run scripts/generate_index.py
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
-git push
+# Deploy without git push (using Wrangler CLI)
+npx wrangler pages deploy . --project-name=podcast-graphs
+```
+
+### Typical Workflow
+
+```bash
+# Add new transcript JSON files to your transcripts directory
+# Then run:
+
+uv run scripts/generate_entity_graphs.py --visualize   # Generate graphs + update index
+python3 -m http.server 8000                            # Preview locally
+git add . && git commit -m "New episodes" && git push  # Deploy
 ```
 
 ## Resources
@@ -682,19 +821,29 @@ git push
 - Static site - no server-side filtering or dynamic data loading
 - Graph files can be large for episodes with many entities
 
-## Recent Enhancements
+## Current Features (v0.1.0)
 
-- ✅ **Sentiment visualization** - Color-coded edges (green=positive, red=negative, gray=neutral) with distribution charts
-- ✅ **Topic clustering** - BERTopic-based semantic clustering with cross-episode theme discovery
-- ✅ **Topic browser sidebar** - Collapsible sidebar with topic clusters, keywords, and episode lists
-- ✅ **Topic filtering** - Filter episodes by topic with visual tags and filter chips
-- ✅ **Multi-level filtering** - Combine search, type, and topic filters simultaneously
-- ✅ **Sentiment distribution chart** - Visual bar chart showing emotional tone breakdown in graphs
-- ✅ **Rich narrative context** - Edges display actual transcript quotes with speaker attribution
-- ✅ **Temporal markers** - Shows when in the conversation relationships occur (early/middle/late)
-- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, sentiment, and context examples
-- ✅ **Semantic labeling** - Better relationship types ("mentioned_in", "traveled_to")
-- ✅ **Responsive graphs** - Viewport-based sizing with minimum height constraints
+### Graph Analysis & Visualization
+- ✅ **Entity extraction** - spaCy NER for PERSON and PLACE entities
+- ✅ **Sentiment analysis** - DistilBERT-based emotion detection (positive/negative/neutral)
+- ✅ **Sentiment visualization** - Color-coded edges with distribution charts
+- ✅ **Topic clustering** - BERTopic-based semantic clustering across episodes
+- ✅ **Rich tooltips** - Hover shows speakers, sentiment, temporal markers, and quotes
+- ✅ **Temporal markers** - Track when in episodes relationships occur (early/middle/late)
+- ✅ **Interactive graphs** - vis-network with zoom, pan, force-directed layout
+
+### Web Interface
+- ✅ **Auto-discovery** - Automatically detects all graphs in `graphs/` directory
+- ✅ **Topic browser** - Collapsible sidebar with clusters, keywords, episodes
+- ✅ **Multi-level filtering** - Combine search, type, and topic filters
+- ✅ **Responsive design** - Works on desktop and mobile
+- ✅ **Dark theme** - Modern UI with gradient backgrounds
+
+### Deployment & Performance
+- ✅ **Zero-config deployment** - Push to GitHub, auto-deploys to Cloudflare Pages
+- ✅ **Global CDN** - Served from Cloudflare's edge network
+- ✅ **Free hosting** - $0 cost on Cloudflare Pages free tier
+- ✅ **Automatic HTTPS** - Free SSL/TLS encryption included
 
 ## Future Enhancements
 
