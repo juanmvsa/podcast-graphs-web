@@ -328,6 +328,157 @@
         #noResults {
             background: transparent;
         }
+
+        /* === Topic Browser Sidebar === */
+        .topic-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            box-shadow: -4px 0 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .topic-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            position: sticky;
+            top: 0;
+            background: rgba(26, 26, 46, 0.98);
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #ffffff;
+        }
+
+        .close-sidebar {
+            background: transparent;
+            border: none;
+            color: #9e9e9e;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .close-sidebar:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+        }
+
+        .topic-cluster {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .topic-cluster:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(156, 39, 176, 0.4);
+        }
+
+        .topic-cluster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .topic-cluster-title {
+            font-weight: 600;
+            color: #CE93D8;
+            font-size: 0.95rem;
+        }
+
+        .topic-cluster-count {
+            background: rgba(156, 39, 176, 0.3);
+            color: #E1BEE7;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .topic-cluster-keywords {
+            font-size: 0.8rem;
+            color: #9e9e9e;
+            margin-bottom: 0.5rem;
+        }
+
+        .topic-cluster-episodes {
+            font-size: 0.75rem;
+            color: #757575;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .topic-cluster.expanded .topic-cluster-episodes {
+            max-height: 500px;
+            margin-top: 0.5rem;
+        }
+
+        .topic-episode-item {
+            padding: 0.3rem 0;
+            color: #9e9e9e;
+        }
+
+        .topic-browser-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            background: rgba(156, 39, 176, 0.9);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-size: 0.9rem;
+            z-index: 99;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .topic-browser-toggle:hover {
+            background: rgba(156, 39, 176, 1);
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .topic-sidebar {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -372,6 +523,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Topic Browser Sidebar -->
+    <div id="topicSidebar" class="topic-sidebar" style="display: none;">
+        <div class="sidebar-header">
+            <h3>📚 Topics Browser</h3>
+            <button class="close-sidebar" onclick="toggleTopicSidebar()">✕</button>
+        </div>
+        <div class="sidebar-content" id="topicBrowserContent">
+            <!-- Topic clusters populated here -->
+        </div>
+    </div>
+
+    <!-- Topic Browser Toggle Button -->
+    <button id="topicBrowserToggle" class="topic-browser-toggle" onclick="toggleTopicSidebar()" style="display: none;">
+        📚 Topics
+    </button>
 
     <div class="container">
         <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search episodes...">
@@ -579,6 +746,49 @@
                 top: 0,
                 behavior: 'smooth'
             });
+        }
+
+        function setupTopicFilters() {
+            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) {
+                return;
+            }
+
+            const topicFiltersContainer = document.getElementById('topicFilters');
+            const topicFilterChips = document.getElementById('topicFilterChips');
+
+            // Add "All Topics" chip
+            let html = `
+                <div class="filter-chip active" data-topic-id="all" onclick="filterByTopic(null, this)">
+                    All Topics
+                </div>
+            `;
+
+            // Add chips for each topic
+            topicsData.topics.forEach(topic => {
+                const label = topic.topic_label || `Topic ${topic.topic_id}`;
+                const count = topic.episode_count || 0;
+                html += `
+                    <div class="filter-chip" data-topic-id="${topic.topic_id}" onclick="filterByTopic(${topic.topic_id}, this)">
+                        ${label} (${count})
+                    </div>
+                `;
+            });
+
+            topicFilterChips.innerHTML = html;
+            topicFiltersContainer.style.display = 'block';
+        }
+
+        function filterByTopic(topicId, element) {
+            // Update active state for topic chips
+            document.querySelectorAll('#topicFilterChips .filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            if (element) {
+                element.classList.add('active');
+            }
+
+            currentTopicFilter = topicId;
+            applyFilters();
         }
 
         function setupScrollButton() {
