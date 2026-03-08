@@ -82,12 +82,150 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
+from bertopic import BERTopic
+from transformers import pipeline
 from utils.rich_utils import console, setup_logging
 
 logger = logging.getLogger(__name__)
 
 # spacy entity labels that map to PLACE.
 PLACE_LABELS = {"GPE", "LOC", "FAC"}
+
+# global sentiment analyzer (initialized lazily)
+_sentiment_analyzer = None
+
+
+def get_sentiment_analyzer():
+    """get or initialize the sentiment analysis pipeline."""
+    global _sentiment_analyzer
+    if _sentiment_analyzer is None:
+        logger.info("Loading sentiment analysis model...")
+        _sentiment_analyzer = pipeline(
+            "sentiment-analysis",
+            model="distilbert-base-uncased-finetuned-sst-2-english",
+            device=-1  # use CPU (-1), or 0 for GPU
+        )
+    return _sentiment_analyzer
+
+
+def analyze_sentiment(text: str) -> dict:
+    """analyze sentiment of a text snippet.
+
+    returns a dict with 'label' (POSITIVE/NEGATIVE) and 'score' (confidence).
+    """
+    if not text or len(text.strip()) < 10:
+        return {"label": "NEUTRAL", "score": 0.0, "emoji": "😐"}
+
+    try:
+        analyzer = get_sentiment_analyzer()
+        # truncate to 512 tokens (model limit)
+        result = analyzer(text[:512])[0]
+
+        # map labels to emojis
+        emoji_map = {
+            "POSITIVE": "😊",
+            "NEGATIVE": "😞",
+        }
+
+        return {
+            "label": result["label"],
+            "score": result["score"],
+            "emoji": emoji_map.get(result["label"], "😐")
+        }
+    except Exception as e:
+        logger.warning(f"Sentiment analysis failed: {e}")
+        return {"label": "NEUTRAL", "score": 0.0, "emoji": "😐"}
+
+
+def cluster_episode_topics(
+    episodes_data: list[dict],
+    min_topic_size: int = 2,
+    nr_topics: int | None = None
+) -> dict:
+    """cluster episodes by topics using BERTopic.
+
+    args:
+        episodes_data: list of dicts with 'name', 'text', and optionally 'show' keys
+        min_topic_size: minimum number of documents per topic
+        nr_topics: number of topics to extract (None = auto)
+
+    returns:
+        dict with 'topics', 'episode_topics', and 'topic_info' keys
+    """
+    if len(episodes_data) < min_topic_size:
+        logger.warning(f"Not enough episodes ({len(episodes_data)}) for topic clustering")
+        return {"topics": [], "episode_topics": {}, "topic_info": []}
+
+    try:
+        logger.info(f"Clustering {len(episodes_data)} episodes into topics...")
+
+        # extract texts and metadata
+        texts = [ep["text"] for ep in episodes_data]
+        names = [ep["name"] for ep in episodes_data]
+
+        # initialize BERTopic with conservative settings
+        topic_model = BERTopic(
+            min_topic_size=min_topic_size,
+            nr_topics=nr_topics,
+            calculate_probabilities=False,  # faster
+            verbose=False
+        )
+
+        # fit the model
+        topics, probabilities = topic_model.fit_transform(texts)
+
+        # get topic info
+        topic_info = topic_model.get_topic_info()
+
+        # build episode -> topic mapping
+        episode_topics = {}
+        for name, topic_id in zip(names, topics):
+            if topic_id != -1:  # -1 is the outlier topic
+                # get topic words
+                topic_words = topic_model.get_topic(topic_id)
+                top_words = [word for word, _ in topic_words[:5]] if topic_words else []
+
+                episode_topics[name] = {
+                    "topic_id": int(topic_id),
+                    "topic_words": top_words,
+                    "topic_label": ", ".join(top_words[:3]) if top_words else f"Topic {topic_id}"
+                }
+
+        # build topic summaries
+        topics_summary = []
+        for _, row in topic_info.iterrows():
+            topic_id = int(row["Topic"])
+            if topic_id == -1:  # skip outliers
+                continue
+
+            topic_words = topic_model.get_topic(topic_id)
+            top_words = [word for word, _ in topic_words[:10]] if topic_words else []
+
+            # find episodes in this topic
+            episodes_in_topic = [
+                name for name, data in episode_topics.items()
+                if data["topic_id"] == topic_id
+            ]
+
+            topics_summary.append({
+                "topic_id": topic_id,
+                "topic_words": top_words,
+                "topic_label": ", ".join(top_words[:3]) if top_words else f"Topic {topic_id}",
+                "episode_count": len(episodes_in_topic),
+                "episodes": episodes_in_topic
+            })
+
+        logger.info(f"Identified {len(topics_summary)} topics across {len(episode_topics)} episodes")
+
+        return {
+            "topics": topics_summary,
+            "episode_topics": episode_topics,
+            "topic_info": topic_info.to_dict(orient="records") if not topic_info.empty else []
+        }
+
+    except Exception as e:
+        logger.error(f"Topic clustering failed: {e}")
+        return {"topics": [], "episode_topics": {}, "topic_info": []}
 
 
 @dataclass
@@ -945,16 +1083,19 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                     edge_data["weight"] += 1
                     # append context if not too many already
                     if len(edge_data.get("contexts", [])) < 3:
+                        sentiment = analyze_sentiment(text)
                         edge_data.setdefault("contexts", []).append({
                             "text": text,
                             "speaker": speaker,
                             "temporal": temporal,
-                            "timestamp": timestamp
+                            "timestamp": timestamp,
+                            "sentiment": sentiment
                         })
                     # track speakers
                     if speaker and speaker not in edge_data.get("speakers", []):
                         edge_data.setdefault("speakers", []).append(speaker)
                 else:
+                    sentiment = analyze_sentiment(text)
                     graph.add_edge(
                         person,
                         place,
@@ -964,7 +1105,8 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                             "text": text,
                             "speaker": speaker,
                             "temporal": temporal,
-                            "timestamp": timestamp
+                            "timestamp": timestamp,
+                            "sentiment": sentiment
                         }],
                         speakers=[speaker] if speaker else []
                     )
@@ -982,17 +1124,20 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                                 edge_data["travelers"] = travelers
                             # append context
                             if len(edge_data.get("contexts", [])) < 3:
+                                sentiment = analyze_sentiment(text)
                                 edge_data.setdefault("contexts", []).append({
                                     "text": text,
                                     "speaker": speaker,
                                     "temporal": temporal,
                                     "timestamp": timestamp,
-                                    "person": person
+                                    "person": person,
+                                    "sentiment": sentiment
                                 })
                             # track speakers
                             if speaker and speaker not in edge_data.get("speakers", []):
                                 edge_data.setdefault("speakers", []).append(speaker)
                         else:
+                            sentiment = analyze_sentiment(text)
                             graph.add_edge(
                                 prev_place,
                                 place,
@@ -1004,7 +1149,8 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                                     "speaker": speaker,
                                     "temporal": temporal,
                                     "timestamp": timestamp,
-                                    "person": person
+                                    "person": person,
+                                    "sentiment": sentiment
                                 }],
                                 speakers=[speaker] if speaker else []
                             )
@@ -1024,13 +1170,16 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                         edge_data = graph[speaker_normalized][place]
                         edge_data["weight"] += 1
                         if len(edge_data.get("contexts", [])) < 3:
+                            sentiment = analyze_sentiment(text)
                             edge_data.setdefault("contexts", []).append({
                                 "text": text,
                                 "speaker": speaker_name,
                                 "temporal": temporal,
-                                "timestamp": timestamp
+                                "timestamp": timestamp,
+                                "sentiment": sentiment
                             })
                     else:
+                        sentiment = analyze_sentiment(text)
                         graph.add_edge(
                             speaker_normalized,
                             place,
@@ -1040,7 +1189,8 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
                                 "text": text,
                                 "speaker": speaker_name,
                                 "temporal": temporal,
-                                "timestamp": timestamp
+                                "timestamp": timestamp,
+                                "sentiment": sentiment
                             }],
                             speakers=[speaker_name]
                         )
@@ -1861,15 +2011,21 @@ def visualize_graph(
                 speaker = ctx.get("speaker", "Unknown")
                 text = ctx.get("text", "")
                 person_ctx = ctx.get("person", "")
+                sentiment = ctx.get("sentiment", {})
+                sentiment_emoji = sentiment.get("emoji", "")
+                sentiment_label = sentiment.get("label", "")
 
                 # truncate text if too long
                 if len(text) > 120:
                     text = text[:120] + "..."
 
-                hover_parts.append(f"\n[{temporal.upper()}] {speaker}:")
+                sentiment_str = f" {sentiment_emoji}" if sentiment_emoji else ""
+                hover_parts.append(f"\n[{temporal.upper()}]{sentiment_str} {speaker}:")
                 if person_ctx:
                     hover_parts.append(f"  ({person_ctx})")
                 hover_parts.append(f'  "{text}"')
+                if sentiment_label and sentiment_label != "NEUTRAL":
+                    hover_parts.append(f"  Sentiment: {sentiment_label}")
 
         net.add_edge(u, v, value=weight, color=color, title="\n".join(hover_parts))
 
@@ -2313,6 +2469,9 @@ def generate_entity_graphs(
     total_skipped = 0
     total_failed = 0
 
+    # collect episode data for topic clustering
+    episodes_for_clustering: list[dict] = []
+
     for show_dir in show_dirs:
         show_name = show_dir.name
         episode_files = sorted(show_dir.glob("*.json"))
@@ -2422,6 +2581,26 @@ def generate_entity_graphs(
                 show_persons.update(graph_data.persons)
                 show_places.update(graph_data.places)
 
+                # collect episode data for topic clustering
+                try:
+                    # read transcript to get text for topic modeling
+                    with episode_file.open() as f:
+                        ep_data = json.load(f)
+                        segments = ep_data.get("segments", [])
+                        # combine all segment text
+                        episode_text = " ".join(
+                            seg.get("text", "") for seg in segments if seg.get("text")
+                        )
+                        if episode_text.strip():
+                            episodes_for_clustering.append({
+                                "name": episode_name,
+                                "show": show_name,
+                                "text": episode_text,
+                                "file": str(episode_file)
+                            })
+                except Exception as e:
+                    logger.warning(f"Could not collect text for {episode_name}: {e}")
+
                 total_processed += 1
                 progress.advance(task)
 
@@ -2468,6 +2647,33 @@ def generate_entity_graphs(
                 len(show_places),
                 merged.number_of_edges(),
             )
+
+    # perform topic clustering across all episodes
+    if episodes_for_clustering and len(episodes_for_clustering) >= 3:
+        console.print("\n[bold cyan]Clustering episodes by topics...[/bold cyan]")
+        try:
+            topic_results = cluster_episode_topics(
+                episodes_for_clustering,
+                min_topic_size=2,
+                nr_topics=None  # auto-detect number of topics
+            )
+
+            # save topics to JSON
+            topics_output_path = output_dir / "topics.json"
+            with topics_output_path.open("w") as f:
+                json.dump(topic_results, f, indent=2)
+
+            num_topics = len(topic_results.get("topics", []))
+            num_clustered = len(topic_results.get("episode_topics", {}))
+            console.print(
+                f"[bold green]✓[/bold green] Identified {num_topics} topics "
+                f"across {num_clustered} episodes"
+            )
+            console.print(f"[dim]Topics saved to: {topics_output_path}[/dim]")
+
+        except Exception as e:
+            console.print(f"[bold yellow]Warning: Topic clustering failed: {e}[/bold yellow]")
+            logger.exception("Topic clustering error")
 
     # print summary table.
     console.print()
