@@ -810,17 +810,17 @@ def extract_episode_entities(
     segment_entities: list[dict] = []
 
     # collect non-empty segments and their texts for batched NER.
-    valid_segments: list[dict] = []
+    valid_segments: list[tuple[int, dict]] = []
     texts: list[str] = []
-    for segment in segments:
+    for seg_idx, segment in enumerate(segments):
         text = segment.get("text", "")
         if not text.strip():
             continue
-        valid_segments.append(segment)
+        valid_segments.append((seg_idx, segment))
         texts.append(text)
 
     # batch NER with nlp.pipe().
-    for segment, doc in zip(
+    for (seg_idx, segment), doc in zip(
         valid_segments,
         nlp.pipe(texts, batch_size=_NLP_PIPE_BATCH_SIZE),
     ):
@@ -828,12 +828,20 @@ def extract_episode_entities(
         all_persons.update(persons)
         all_places.update(places)
 
+        # truncate text for context snippets (max 200 chars)
+        text_snippet = segment.get("text", "")[:200]
+        if len(segment.get("text", "")) > 200:
+            text_snippet += "..."
+
         segment_entities.append(
             {
                 "speaker": segment.get("speaker", ""),
                 "speaker_name": segment.get("speaker_name", ""),
                 "persons": sorted(persons),
                 "places": sorted(places),
+                "text": text_snippet,
+                "segment_index": seg_idx,
+                "timestamp": segment.get("start", 0),
             }
         )
 
@@ -892,6 +900,9 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
     tracks person-place associations across segments. when a person appears
     with different places in successive mentions, a directed edge is created
     from the previous place to the new place, with the person as an attribute.
+
+    enhanced with narrative context including text snippets, speaker attribution,
+    and temporal markers.
     """
     graph = nx.DiGraph()
 
@@ -904,9 +915,24 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
     # track last known place per person to detect movement.
     person_last_place: dict[str, str] = {}
 
+    total_segments = len(entity_result.segment_entities)
+
     for seg_ents in entity_result.segment_entities:
         persons_in_seg = seg_ents["persons"]
         places_in_seg = seg_ents["places"]
+        speaker = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
+        text = seg_ents.get("text", "")
+        seg_idx = seg_ents.get("segment_index", 0)
+        timestamp = seg_ents.get("timestamp", 0)
+
+        # calculate temporal position (early/mid/late)
+        position_pct = (seg_idx / total_segments) * 100 if total_segments > 0 else 0
+        if position_pct < 33:
+            temporal = "early"
+        elif position_pct < 66:
+            temporal = "middle"
+        else:
+            temporal = "late"
 
         if not places_in_seg:
             continue
@@ -915,27 +941,72 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
             for place in places_in_seg:
                 # create person -> place edge (person is associated with place).
                 if graph.has_edge(person, place):
-                    graph[person][place]["weight"] += 1
+                    edge_data = graph[person][place]
+                    edge_data["weight"] += 1
+                    # append context if not too many already
+                    if len(edge_data.get("contexts", [])) < 3:
+                        edge_data.setdefault("contexts", []).append({
+                            "text": text,
+                            "speaker": speaker,
+                            "temporal": temporal,
+                            "timestamp": timestamp
+                        })
+                    # track speakers
+                    if speaker and speaker not in edge_data.get("speakers", []):
+                        edge_data.setdefault("speakers", []).append(speaker)
                 else:
-                    graph.add_edge(person, place, weight=1, relation="associated_with")
+                    graph.add_edge(
+                        person,
+                        place,
+                        weight=1,
+                        relation="mentioned_in",
+                        contexts=[{
+                            "text": text,
+                            "speaker": speaker,
+                            "temporal": temporal,
+                            "timestamp": timestamp
+                        }],
+                        speakers=[speaker] if speaker else []
+                    )
 
                 # detect movement: previous place -> new place via person.
                 if person in person_last_place:
                     prev_place = person_last_place[person]
                     if prev_place != place:
                         if graph.has_edge(prev_place, place):
-                            graph[prev_place][place]["weight"] += 1
-                            travelers = graph[prev_place][place].get("travelers", [])
+                            edge_data = graph[prev_place][place]
+                            edge_data["weight"] += 1
+                            travelers = edge_data.get("travelers", [])
                             if person not in travelers:
                                 travelers.append(person)
-                                graph[prev_place][place]["travelers"] = travelers
+                                edge_data["travelers"] = travelers
+                            # append context
+                            if len(edge_data.get("contexts", [])) < 3:
+                                edge_data.setdefault("contexts", []).append({
+                                    "text": text,
+                                    "speaker": speaker,
+                                    "temporal": temporal,
+                                    "timestamp": timestamp,
+                                    "person": person
+                                })
+                            # track speakers
+                            if speaker and speaker not in edge_data.get("speakers", []):
+                                edge_data.setdefault("speakers", []).append(speaker)
                         else:
                             graph.add_edge(
                                 prev_place,
                                 place,
                                 weight=1,
-                                relation="movement",
+                                relation="traveled_to",
                                 travelers=[person],
+                                contexts=[{
+                                    "text": text,
+                                    "speaker": speaker,
+                                    "temporal": temporal,
+                                    "timestamp": timestamp,
+                                    "person": person
+                                }],
+                                speakers=[speaker] if speaker else []
                             )
 
                 person_last_place[person] = place
@@ -943,34 +1014,69 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
         # also handle segments with places but no named persons:
         # attribute to the speaker if available.
         if not persons_in_seg and places_in_seg:
-            speaker = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
-            if speaker:
-                speaker_normalized = normalize_entity(speaker)
+            speaker_name = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
+            if speaker_name:
+                speaker_normalized = normalize_entity(speaker_name)
                 if not graph.has_node(speaker_normalized):
                     graph.add_node(speaker_normalized, entity_type="PERSON")
                 for place in places_in_seg:
                     if graph.has_edge(speaker_normalized, place):
-                        graph[speaker_normalized][place]["weight"] += 1
+                        edge_data = graph[speaker_normalized][place]
+                        edge_data["weight"] += 1
+                        if len(edge_data.get("contexts", [])) < 3:
+                            edge_data.setdefault("contexts", []).append({
+                                "text": text,
+                                "speaker": speaker_name,
+                                "temporal": temporal,
+                                "timestamp": timestamp
+                            })
                     else:
                         graph.add_edge(
-                            speaker_normalized, place, weight=1, relation="associated_with"
+                            speaker_normalized,
+                            place,
+                            weight=1,
+                            relation="mentioned_in",
+                            contexts=[{
+                                "text": text,
+                                "speaker": speaker_name,
+                                "temporal": temporal,
+                                "timestamp": timestamp
+                            }],
+                            speakers=[speaker_name]
                         )
                     if speaker_normalized in person_last_place:
                         prev_place = person_last_place[speaker_normalized]
                         if prev_place != place:
                             if graph.has_edge(prev_place, place):
-                                graph[prev_place][place]["weight"] += 1
-                                travelers = graph[prev_place][place].get("travelers", [])
+                                edge_data = graph[prev_place][place]
+                                edge_data["weight"] += 1
+                                travelers = edge_data.get("travelers", [])
                                 if speaker_normalized not in travelers:
                                     travelers.append(speaker_normalized)
-                                    graph[prev_place][place]["travelers"] = travelers
+                                    edge_data["travelers"] = travelers
+                                if len(edge_data.get("contexts", [])) < 3:
+                                    edge_data.setdefault("contexts", []).append({
+                                        "text": text,
+                                        "speaker": speaker_name,
+                                        "temporal": temporal,
+                                        "timestamp": timestamp,
+                                        "person": speaker_normalized
+                                    })
                             else:
                                 graph.add_edge(
                                     prev_place,
                                     place,
                                     weight=1,
-                                    relation="movement",
+                                    relation="traveled_to",
                                     travelers=[speaker_normalized],
+                                    contexts=[{
+                                        "text": text,
+                                        "speaker": speaker_name,
+                                        "temporal": temporal,
+                                        "timestamp": timestamp,
+                                        "person": speaker_normalized
+                                    }],
+                                    speakers=[speaker_name]
                                 )
                     person_last_place[speaker_normalized] = place
 
@@ -1724,10 +1830,47 @@ def visualize_graph(
         relation = data.get("relation", "")
         weight = data.get("weight", 1)
         travelers = data.get("travelers", [])
-        color = MOVEMENT_EDGE_COLOR if relation == "movement" else ASSOCIATION_EDGE_COLOR
-        hover_parts = [f"{u} → {v}", f"Weight: {weight}", f"Type: {relation}"]
+        contexts = data.get("contexts", [])
+        speakers = data.get("speakers", [])
+
+        # determine edge color based on relation type
+        if "traveled" in relation or "movement" in relation:
+            color = MOVEMENT_EDGE_COLOR
+        else:
+            color = ASSOCIATION_EDGE_COLOR
+
+        # build rich tooltip with narrative context
+        hover_parts = [
+            f"📍 {u} → {v}",
+            f"━━━━━━━━━━━━━━━━━━━━",
+            f"Relationship: {relation.replace('_', ' ').title()}",
+            f"Mentions: {weight}",
+        ]
+
         if travelers:
-            hover_parts.append(f"Travelers: {', '.join(travelers)}")
+            hover_parts.append(f"People: {', '.join(travelers)}")
+
+        if speakers:
+            hover_parts.append(f"Discussed by: {', '.join(set(speakers))}")
+
+        # add narrative context snippets
+        if contexts:
+            hover_parts.append(f"\n💬 Context:")
+            for idx, ctx in enumerate(contexts[:2], 1):  # limit to 2 examples
+                temporal = ctx.get("temporal", "")
+                speaker = ctx.get("speaker", "Unknown")
+                text = ctx.get("text", "")
+                person_ctx = ctx.get("person", "")
+
+                # truncate text if too long
+                if len(text) > 120:
+                    text = text[:120] + "..."
+
+                hover_parts.append(f"\n[{temporal.upper()}] {speaker}:")
+                if person_ctx:
+                    hover_parts.append(f"  ({person_ctx})")
+                hover_parts.append(f'  "{text}"')
+
         net.add_edge(u, v, value=weight, color=color, title="\n".join(hover_parts))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
