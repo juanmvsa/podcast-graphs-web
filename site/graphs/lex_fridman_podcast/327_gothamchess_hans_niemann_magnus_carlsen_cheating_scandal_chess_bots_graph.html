@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">327 Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">Lex Fridman Podcast</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">92</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">23</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">146</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alexei Shirov", "label": "Alexei Shirov", "shape": "dot", "size": 15, "title": "Alexei Shirov\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ali Reza Faruja", "label": "Ali Reza Faruja", "shape": "dot", "size": 21, "title": "Ali Reza Faruja\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alicia Vikander", "label": "Alicia Vikander", "shape": "dot", "size": 15, "title": "Alicia Vikander\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Amon Hambleton", "label": "Amon Hambleton", "shape": "dot", "size": 21, "title": "Amon Hambleton\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anarchy Chaz", "label": "Anarchy Chaz", "shape": "dot", "size": 15, "title": "Anarchy Chaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anatoly Karpov", "label": "Anatoly Karpov", "shape": "dot", "size": 15, "title": "Anatoly Karpov\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andrea Botez", "label": "Andrea Botez", "shape": "dot", "size": 21, "title": "Andrea Botez\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anna Kremling", "label": "Anna Kremling", "shape": "dot", "size": 21, "title": "Anna Kremling\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anna Rudolph", "label": "Anna Rudolph", "shape": "dot", "size": 21, "title": "Anna Rudolph\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Artur Yusupov", "label": "Artur Yusupov", "shape": "dot", "size": 23, "title": "Artur Yusupov\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Athletic Greens", "label": "Athletic Greens", "shape": "dot", "size": 15, "title": "Athletic Greens\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ben Johnson", "label": "Ben Johnson", "shape": "dot", "size": 15, "title": "Ben Johnson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ben Joss", "label": "Ben Joss", "shape": "dot", "size": 15, "title": "Ben Joss\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bobby Fischer", "label": "Bobby Fischer", "shape": "dot", "size": 15, "title": "Bobby Fischer\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Botezes", "label": "Botezes", "shape": "dot", "size": 21, "title": "Botezes\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Braveheart", "label": "Braveheart", "shape": "dot", "size": 15, "title": "Braveheart\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Breyer", "label": "Breyer", "shape": "dot", "size": 15, "title": "Breyer\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "C. Grimes", "label": "C. Grimes", "shape": "dot", "size": 15, "title": "C. Grimes\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Capablanca", "label": "Capablanca", "shape": "dot", "size": 15, "title": "Capablanca\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chessbrah", "label": "Chessbrah", "shape": "dot", "size": 21, "title": "Chessbrah\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cognito", "label": "Cognito", "shape": "dot", "size": 15, "title": "Cognito\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Corbusier", "label": "Corbusier", "shape": "dot", "size": 17, "title": "Corbusier\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Daniel Negreanu", "label": "Daniel Negreanu", "shape": "dot", "size": 15, "title": "Daniel Negreanu\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Danny Wrench", "label": "Danny Wrench", "shape": "dot", "size": 21, "title": "Danny Wrench\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ding Liran", "label": "Ding Liran", "shape": "dot", "size": 17, "title": "Ding Liran\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Horton", "label": "Donald Horton", "shape": "dot", "size": 15, "title": "Donald Horton\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Trump", "label": "Donald Trump", "shape": "dot", "size": 17, "title": "Donald Trump\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elise Magnus", "label": "Elise Magnus", "shape": "dot", "size": 15, "title": "Elise Magnus\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Hansen", "label": "Eric Hansen", "shape": "dot", "size": 17, "title": "Eric Hansen\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Rosen", "label": "Eric Rosen", "shape": "dot", "size": 21, "title": "Eric Rosen\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fabiano Caruana", "label": "Fabiano Caruana", "shape": "dot", "size": 15, "title": "Fabiano Caruana\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ferugia", "label": "Ferugia", "shape": "dot", "size": 17, "title": "Ferugia\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Garry Kasparov", "label": "Garry Kasparov", "shape": "dot", "size": 17, "title": "Garry Kasparov\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George St. Pierre", "label": "George St. Pierre", "shape": "dot", "size": 15, "title": "George St. Pierre\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Grandmaster", "label": "Grandmaster", "shape": "dot", "size": 15, "title": "Grandmaster\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hans Nieman", "label": "Hans Nieman", "shape": "dot", "size": 15, "title": "Hans Nieman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hans Niemann", "label": "Hans Niemann", "shape": "dot", "size": 25, "title": "Hans Niemann\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hikaru Nakamura", "label": "Hikaru Nakamura", "shape": "dot", "size": 23, "title": "Hikaru Nakamura\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hitler", "label": "Hitler", "shape": "dot", "size": 17, "title": "Hitler\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ilya Levidov", "label": "Ilya Levidov", "shape": "dot", "size": 15, "title": "Ilya Levidov\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Insidetracker.Com Slash Lex", "label": "Insidetracker.Com Slash Lex", "shape": "dot", "size": 15, "title": "Insidetracker.Com Slash Lex\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Irene Sukandar", "label": "Irene Sukandar", "shape": "dot", "size": 17, "title": "Irene Sukandar\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jake Paul", "label": "Jake Paul", "shape": "dot", "size": 21, "title": "Jake Paul\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus Christ", "label": "Jesus Christ", "shape": "dot", "size": 17, "title": "Jesus Christ\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 21, "title": "Joe Rogan\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jose Mourinho", "label": "Jose Mourinho", "shape": "dot", "size": 17, "title": "Jose Mourinho\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kanye West", "label": "Kanye West", "shape": "dot", "size": 15, "title": "Kanye West\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Karo Khan", "label": "Karo Khan", "shape": "dot", "size": 15, "title": "Karo Khan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Karo-Kan", "label": "Karo-Kan", "shape": "dot", "size": 15, "title": "Karo-Kan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Khabib Nurmagomedov", "label": "Khabib Nurmagomedov", "shape": "dot", "size": 15, "title": "Khabib Nurmagomedov\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kick Your Ass", "label": "Kick Your Ass", "shape": "dot", "size": 21, "title": "Kick Your Ass\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kim Kardashian", "label": "Kim Kardashian", "shape": "dot", "size": 17, "title": "Kim Kardashian\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lars Skendorf", "label": "Lars Skendorf", "shape": "dot", "size": 15, "title": "Lars Skendorf\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lawrence Trent", "label": "Lawrence Trent", "shape": "dot", "size": 21, "title": "Lawrence Trent\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Le Quang Liem", "label": "Le Quang Liem", "shape": "dot", "size": 17, "title": "Le Quang Liem\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leach", "label": "Leach", "shape": "dot", "size": 15, "title": "Leach\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leachess", "label": "Leachess", "shape": "dot", "size": 15, "title": "Leachess\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lee Chaz", "label": "Lee Chaz", "shape": "dot", "size": 15, "title": "Lee Chaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lee Chess", "label": "Lee Chess", "shape": "dot", "size": 17, "title": "Lee Chess\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lee Chess\u0027", "label": "Lee Chess\u0027", "shape": "dot", "size": 15, "title": "Lee Chess\u0027\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Levi Rosman", "label": "Levi Rosman", "shape": "dot", "size": 15, "title": "Levi Rosman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Levon Aronian", "label": "Levon Aronian", "shape": "dot", "size": 23, "title": "Levon Aronian\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lex Fridman", "label": "Lex Fridman", "shape": "dot", "size": 25, "title": "Lex Fridman\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lex Friedman", "label": "Lex Friedman", "shape": "dot", "size": 15, "title": "Lex Friedman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnetons", "label": "Magnetons", "shape": "dot", "size": 17, "title": "Magnetons\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus", "label": "Magnus", "shape": "dot", "size": 41, "title": "Magnus\nType: PERSON\nConnections: 13"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus Carlsen", "label": "Magnus Carlsen", "shape": "dot", "size": 19, "title": "Magnus Carlsen\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus Carlson", "label": "Magnus Carlson", "shape": "dot", "size": 15, "title": "Magnus Carlson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus Hans", "label": "Magnus Hans", "shape": "dot", "size": 17, "title": "Magnus Hans\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mamed Yarev", "label": "Mamed Yarev", "shape": "dot", "size": 17, "title": "Mamed Yarev\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mamedyarov", "label": "Mamedyarov", "shape": "dot", "size": 23, "title": "Mamedyarov\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matthew Sadler", "label": "Matthew Sadler", "shape": "dot", "size": 15, "title": "Matthew Sadler\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mcgregor", "label": "Mcgregor", "shape": "dot", "size": 21, "title": "Mcgregor\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Jackson", "label": "Michael Jackson", "shape": "dot", "size": 15, "title": "Michael Jackson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nelson", "label": "Nelson", "shape": "dot", "size": 15, "title": "Nelson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Othello", "label": "Othello", "shape": "dot", "size": 15, "title": "Othello\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Phil Ivey", "label": "Phil Ivey", "shape": "dot", "size": 15, "title": "Phil Ivey\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rex Singfield", "label": "Rex Singfield", "shape": "dot", "size": 23, "title": "Rex Singfield\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Richard Wall", "label": "Richard Wall", "shape": "dot", "size": 15, "title": "Richard Wall\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Scrolls Skyrim", "label": "Scrolls Skyrim", "shape": "dot", "size": 15, "title": "Scrolls Skyrim\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stalin", "label": "Stalin", "shape": "dot", "size": 17, "title": "Stalin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steinitz", "label": "Steinitz", "shape": "dot", "size": 15, "title": "Steinitz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stephen Colbert", "label": "Stephen Colbert", "shape": "dot", "size": 17, "title": "Stephen Colbert\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Prefontaine", "label": "Steve Prefontaine", "shape": "dot", "size": 15, "title": "Steve Prefontaine\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stockfish", "label": "Stockfish", "shape": "dot", "size": 17, "title": "Stockfish\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stuyvesant", "label": "Stuyvesant", "shape": "dot", "size": 17, "title": "Stuyvesant\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trevor Noah", "label": "Trevor Noah", "shape": "dot", "size": 17, "title": "Trevor Noah\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vincent Keimer", "label": "Vincent Keimer", "shape": "dot", "size": 21, "title": "Vincent Keimer\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vishwanathan Anand", "label": "Vishwanathan Anand", "shape": "dot", "size": 15, "title": "Vishwanathan Anand\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vladimir Kramnik", "label": "Vladimir Kramnik", "shape": "dot", "size": 15, "title": "Vladimir Kramnik\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "White", "label": "White", "shape": "dot", "size": 15, "title": "White\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "China", "label": "China", "shape": "dot", "size": 21, "title": "China\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Colby Spain", "label": "Colby Spain", "shape": "dot", "size": 23, "title": "Colby Spain\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Columbus Circle", "label": "Columbus Circle", "shape": "dot", "size": 19, "title": "Columbus Circle\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Europe", "label": "Europe", "shape": "dot", "size": 25, "title": "Europe\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Indonesia", "label": "Indonesia", "shape": "dot", "size": 37, "title": "Indonesia\nType: PLACE\nConnections: 11"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "London", "label": "London", "shape": "dot", "size": 27, "title": "London\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Los Angeles", "label": "Los Angeles", "shape": "dot", "size": 43, "title": "Los Angeles\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Malibu Fractal", "label": "Malibu Fractal", "shape": "dot", "size": 21, "title": "Malibu Fractal\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Miami Beach", "label": "Miami Beach", "shape": "dot", "size": 43, "title": "Miami Beach\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 60, "title": "New York\nType: PLACE\nConnections: 24"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York City", "label": "New York City", "shape": "dot", "size": 21, "title": "New York City\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North And South India", "label": "North And South India", "shape": "dot", "size": 29, "title": "North And South India\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Olympic Village", "label": "Olympic Village", "shape": "dot", "size": 31, "title": "Olympic Village\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Philadelphia", "label": "Philadelphia", "shape": "dot", "size": 25, "title": "Philadelphia\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Russia", "label": "Russia", "shape": "dot", "size": 41, "title": "Russia\nType: PLACE\nConnections: 13"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Singfield Cup", "label": "Singfield Cup", "shape": "dot", "size": 29, "title": "Singfield Cup\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Soviet Union", "label": "Soviet Union", "shape": "dot", "size": 23, "title": "Soviet Union\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "St. Louis", "label": "St. Louis", "shape": "dot", "size": 51, "title": "St. Louis\nType: PLACE\nConnections: 18"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Stingfield Cup", "label": "Stingfield Cup", "shape": "dot", "size": 29, "title": "Stingfield Cup\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Switzerland", "label": "Switzerland", "shape": "dot", "size": 21, "title": "Switzerland\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ukraine", "label": "Ukraine", "shape": "dot", "size": 29, "title": "Ukraine\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 21, "title": "United States\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Us Hall Of Fame", "label": "Us Hall Of Fame", "shape": "dot", "size": 29, "title": "Us Hall Of Fame\nType: PLACE\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "label": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "shape": "dot", "size": 21, "title": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots\nType: PERSON\nConnections: 3"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Ali Reza Faruja", "title": "Ali Reza Faruja \u2192 London\nWeight: 1\nType: associated_with", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ali Reza Faruja", "title": "Ali Reza Faruja \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ali Reza Faruja", "title": "Ali Reza Faruja \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Amon Hambleton", "title": "Amon Hambleton \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Amon Hambleton", "title": "Amon Hambleton \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Amon Hambleton", "title": "Amon Hambleton \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrea Botez", "title": "Andrea Botez \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrea Botez", "title": "Andrea Botez \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrea Botez", "title": "Andrea Botez \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Kremling", "title": "Anna Kremling \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Kremling", "title": "Anna Kremling \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Kremling", "title": "Anna Kremling \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Rudolph", "title": "Anna Rudolph \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Rudolph", "title": "Anna Rudolph \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anna Rudolph", "title": "Anna Rudolph \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Artur Yusupov", "title": "Artur Yusupov \u2192 Miami Beach\nWeight: 1\nType: associated_with", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Artur Yusupov", "title": "Artur Yusupov \u2192 London\nWeight: 1\nType: associated_with", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Artur Yusupov", "title": "Artur Yusupov \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Artur Yusupov", "title": "Artur Yusupov \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Botezes", "title": "Botezes \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Botezes", "title": "Botezes \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Botezes", "title": "Botezes \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chessbrah", "title": "Chessbrah \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chessbrah", "title": "Chessbrah \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chessbrah", "title": "Chessbrah \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Corbusier", "title": "Corbusier \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Danny Wrench", "title": "Danny Wrench \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Danny Wrench", "title": "Danny Wrench \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Danny Wrench", "title": "Danny Wrench \u2192 Olympic Village\nWeight: 1\nType: associated_with", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ding Liran", "title": "Ding Liran \u2192 Colby Spain\nWeight: 1\nType: associated_with", "to": "Colby Spain", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Donald Trump", "title": "Donald Trump \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Hansen", "title": "Eric Hansen \u2192 China\nWeight: 1\nType: associated_with", "to": "China", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Rosen", "title": "Eric Rosen \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Rosen", "title": "Eric Rosen \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Rosen", "title": "Eric Rosen \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ferugia", "title": "Ferugia \u2192 Europe\nWeight: 1\nType: associated_with", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Garry Kasparov", "title": "Garry Kasparov \u2192 Miami Beach\nWeight: 1\nType: associated_with", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hans Niemann", "title": "Hans Niemann \u2192 Miami Beach\nWeight: 2\nType: associated_with", "to": "Miami Beach", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Hans Niemann", "title": "Hans Niemann \u2192 Singfield Cup\nWeight: 1\nType: associated_with", "to": "Singfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hans Niemann", "title": "Hans Niemann \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hans Niemann", "title": "Hans Niemann \u2192 Stingfield Cup\nWeight: 1\nType: associated_with", "to": "Stingfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hans Niemann", "title": "Hans Niemann \u2192 Us Hall Of Fame\nWeight: 1\nType: associated_with", "to": "Us Hall Of Fame", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hikaru Nakamura", "title": "Hikaru Nakamura \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hikaru Nakamura", "title": "Hikaru Nakamura \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hikaru Nakamura", "title": "Hikaru Nakamura \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hikaru Nakamura", "title": "Hikaru Nakamura \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hitler", "title": "Hitler \u2192 Ukraine\nWeight: 1\nType: associated_with", "to": "Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Irene Sukandar", "title": "Irene Sukandar \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jake Paul", "title": "Jake Paul \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jake Paul", "title": "Jake Paul \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jake Paul", "title": "Jake Paul \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jesus Christ", "title": "Jesus Christ \u2192 London\nWeight: 1\nType: associated_with", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Ukraine\nWeight: 1\nType: associated_with", "to": "Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Indonesia\nWeight: 2\nType: associated_with", "to": "Indonesia", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Jose Mourinho", "title": "Jose Mourinho \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kick Your Ass", "title": "Kick Your Ass \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kick Your Ass", "title": "Kick Your Ass \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kick Your Ass", "title": "Kick Your Ass \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kim Kardashian", "title": "Kim Kardashian \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lawrence Trent", "title": "Lawrence Trent \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lawrence Trent", "title": "Lawrence Trent \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lawrence Trent", "title": "Lawrence Trent \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Le Quang Liem", "title": "Le Quang Liem \u2192 Europe\nWeight: 1\nType: associated_with", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lee Chess", "title": "Lee Chess \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Levon Aronian", "title": "Levon Aronian \u2192 Singfield Cup\nWeight: 1\nType: associated_with", "to": "Singfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Levon Aronian", "title": "Levon Aronian \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Levon Aronian", "title": "Levon Aronian \u2192 Stingfield Cup\nWeight: 1\nType: associated_with", "to": "Stingfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Levon Aronian", "title": "Levon Aronian \u2192 Us Hall Of Fame\nWeight: 1\nType: associated_with", "to": "Us Hall Of Fame", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Ukraine\nWeight: 1\nType: associated_with", "to": "Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Olympic Village\nWeight: 1\nType: associated_with", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Malibu Fractal\nWeight: 1\nType: associated_with", "to": "Malibu Fractal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnetons", "title": "Magnetons \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Colby Spain\nWeight: 1\nType: associated_with", "to": "Colby Spain", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Miami Beach\nWeight: 3\nType: associated_with", "to": "Miami Beach", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Olympic Village\nWeight: 1\nType: associated_with", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Singfield Cup\nWeight: 1\nType: associated_with", "to": "Singfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 St. Louis\nWeight: 3\nType: associated_with", "to": "St. Louis", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Stingfield Cup\nWeight: 1\nType: associated_with", "to": "Stingfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Us Hall Of Fame\nWeight: 1\nType: associated_with", "to": "Us Hall Of Fame", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Europe\nWeight: 1\nType: associated_with", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus", "title": "Magnus \u2192 Columbus Circle\nWeight: 1\nType: associated_with", "to": "Columbus Circle", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus Carlsen", "title": "Magnus Carlsen \u2192 Miami Beach\nWeight: 1\nType: associated_with", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus Carlsen", "title": "Magnus Carlsen \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magnus Hans", "title": "Magnus Hans \u2192 Miami Beach\nWeight: 1\nType: associated_with", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mamed Yarev", "title": "Mamed Yarev \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mamedyarov", "title": "Mamedyarov \u2192 Singfield Cup\nWeight: 1\nType: associated_with", "to": "Singfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mamedyarov", "title": "Mamedyarov \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mamedyarov", "title": "Mamedyarov \u2192 Stingfield Cup\nWeight: 1\nType: associated_with", "to": "Stingfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mamedyarov", "title": "Mamedyarov \u2192 Us Hall Of Fame\nWeight: 1\nType: associated_with", "to": "Us Hall Of Fame", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcgregor", "title": "Mcgregor \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcgregor", "title": "Mcgregor \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcgregor", "title": "Mcgregor \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rex Singfield", "title": "Rex Singfield \u2192 Singfield Cup\nWeight: 1\nType: associated_with", "to": "Singfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rex Singfield", "title": "Rex Singfield \u2192 St. Louis\nWeight: 1\nType: associated_with", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rex Singfield", "title": "Rex Singfield \u2192 Stingfield Cup\nWeight: 1\nType: associated_with", "to": "Stingfield Cup", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rex Singfield", "title": "Rex Singfield \u2192 Us Hall Of Fame\nWeight: 1\nType: associated_with", "to": "Us Hall Of Fame", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stalin", "title": "Stalin \u2192 Ukraine\nWeight: 1\nType: associated_with", "to": "Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen Colbert", "title": "Stephen Colbert \u2192 China\nWeight: 1\nType: associated_with", "to": "China", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stockfish", "title": "Stockfish \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stuyvesant", "title": "Stuyvesant \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Trevor Noah", "title": "Trevor Noah \u2192 China\nWeight: 1\nType: associated_with", "to": "China", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vincent Keimer", "title": "Vincent Keimer \u2192 London\nWeight: 1\nType: associated_with", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vincent Keimer", "title": "Vincent Keimer \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vincent Keimer", "title": "Vincent Keimer \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Colby Spain", "title": "Colby Spain \u2192 United States\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Europe", "title": "Europe \u2192 Columbus Circle\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Columbus Circle", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Indonesia", "title": "Indonesia \u2192 New York\nWeight: 2\nType: movement\nTravelers: Danny Wrench, Magnus", "to": "New York", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "London", "title": "London \u2192 North And South India\nWeight: 3\nType: movement\nTravelers: Ali Reza Faruja, Artur Yusupov, Vincent Keimer", "to": "North And South India", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 New York\nWeight: 12\nType: movement\nTravelers: Amon Hambleton, Andrea Botez, Anna Kremling, Anna Rudolph, Botezes, Chessbrah, Eric Rosen, Hikaru Nakamura, Jake Paul, Kick Your Ass, Lawrence Trent, Mcgregor", "to": "New York", "value": 12}, {"arrows": "to", "color": "#AB47BC", "from": "Malibu Fractal", "title": "Malibu Fractal \u2192 New York\nWeight: 1\nType: movement\nTravelers: Lex Fridman", "to": "New York", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Miami Beach", "title": "Miami Beach \u2192 Indonesia\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Miami Beach", "title": "Miami Beach \u2192 London\nWeight: 1\nType: movement\nTravelers: Artur Yusupov", "to": "London", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Miami Beach", "title": "Miami Beach \u2192 Olympic Village\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Miami Beach", "title": "Miami Beach \u2192 Singfield Cup\nWeight: 2\nType: movement\nTravelers: Hans Niemann, Magnus", "to": "Singfield Cup", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Miami Beach", "title": "Miami Beach \u2192 St. Louis\nWeight: 1\nType: movement\nTravelers: Magnus Carlsen", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 Switzerland\nWeight: 1\nType: movement\nTravelers: Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "to": "Switzerland", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 Miami Beach\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 Olympic Village\nWeight: 1\nType: movement\nTravelers: Danny Wrench", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 Russia\nWeight: 12\nType: movement\nTravelers: Amon Hambleton, Andrea Botez, Anna Kremling, Anna Rudolph, Botezes, Chessbrah, Eric Rosen, Hikaru Nakamura, Jake Paul, Kick Your Ass, Lawrence Trent, Mcgregor", "to": "Russia", "value": 12}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 New York\nWeight: 1\nType: movement\nTravelers: Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "to": "New York", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North And South India", "title": "North And South India \u2192 Ukraine\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Ukraine", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North And South India", "title": "North And South India \u2192 Philadelphia\nWeight: 3\nType: movement\nTravelers: Ali Reza Faruja, Artur Yusupov, Vincent Keimer", "to": "Philadelphia", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Olympic Village", "title": "Olympic Village \u2192 Miami Beach\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Olympic Village", "title": "Olympic Village \u2192 St. Louis\nWeight: 1\nType: movement\nTravelers: Lex Fridman", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Singfield Cup", "title": "Singfield Cup \u2192 St. Louis\nWeight: 5\nType: movement\nTravelers: Hans Niemann, Levon Aronian, Magnus, Mamedyarov, Rex Singfield", "to": "St. Louis", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Soviet Union", "title": "Soviet Union \u2192 Colby Spain\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Colby Spain", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "St. Louis", "title": "St. Louis \u2192 Stingfield Cup\nWeight: 5\nType: movement\nTravelers: Hans Niemann, Levon Aronian, Magnus, Mamedyarov, Rex Singfield", "to": "Stingfield Cup", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "St. Louis", "title": "St. Louis \u2192 Europe\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "St. Louis", "title": "St. Louis \u2192 Los Angeles\nWeight: 1\nType: movement\nTravelers: Hikaru Nakamura", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "St. Louis", "title": "St. Louis \u2192 Malibu Fractal\nWeight: 1\nType: movement\nTravelers: Lex Fridman", "to": "Malibu Fractal", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Stingfield Cup", "title": "Stingfield Cup \u2192 Us Hall Of Fame\nWeight: 5\nType: movement\nTravelers: Hans Niemann, Levon Aronian, Magnus, Mamedyarov, Rex Singfield", "to": "Us Hall Of Fame", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Switzerland", "title": "Switzerland \u2192 New York City\nWeight: 1\nType: movement\nTravelers: Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Ukraine", "title": "Ukraine \u2192 Indonesia\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Ukraine", "title": "Ukraine \u2192 Olympic Village\nWeight: 1\nType: movement\nTravelers: Lex Fridman", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Miami Beach\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "Miami Beach", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Us Hall Of Fame", "title": "Us Hall Of Fame \u2192 St. Louis\nWeight: 1\nType: movement\nTravelers: Magnus", "to": "St. Louis", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "title": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots \u2192 New York\nWeight: 3\nType: associated_with", "to": "New York", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "title": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots \u2192 Switzerland\nWeight: 1\nType: associated_with", "to": "Switzerland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots", "title": "Gothamchess Hans Niemann Magnus Carlsen Cheating Scandal Chess Bots \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

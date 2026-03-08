@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">1389 Chris Kresser Debunks the Gamechangers Documentary</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">The Joe Rogan Experience</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">82</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">20</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">51</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Aaron Spitz", "label": "Aaron Spitz", "shape": "dot", "size": 15, "title": "Aaron Spitz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alan Savory", "label": "Alan Savory", "shape": "dot", "size": 15, "title": "Alan Savory\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andy Ruiz", "label": "Andy Ruiz", "shape": "dot", "size": 15, "title": "Andy Ruiz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anthony Bourdain", "label": "Anthony Bourdain", "shape": "dot", "size": 15, "title": "Anthony Bourdain\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Arnie", "label": "Arnie", "shape": "dot", "size": 15, "title": "Arnie\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Arnold Schwarzenegger", "label": "Arnold Schwarzenegger", "shape": "dot", "size": 15, "title": "Arnold Schwarzenegger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bio Lane", "label": "Bio Lane", "shape": "dot", "size": 15, "title": "Bio Lane\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bobby Geist", "label": "Bobby Geist", "shape": "dot", "size": 15, "title": "Bobby Geist\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian Jennings", "label": "Brian Jennings", "shape": "dot", "size": 15, "title": "Brian Jennings\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carl Grosschmidt", "label": "Carl Grosschmidt", "shape": "dot", "size": 15, "title": "Carl Grosschmidt\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Kresser", "label": "Chris Kresser", "shape": "dot", "size": 15, "title": "Chris Kresser\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Comanches", "label": "Comanches", "shape": "dot", "size": 17, "title": "Comanches\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Connor", "label": "Connor", "shape": "dot", "size": 15, "title": "Connor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Conor", "label": "Conor", "shape": "dot", "size": 15, "title": "Conor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Damien Lillard", "label": "Damien Lillard", "shape": "dot", "size": 15, "title": "Damien Lillard\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dana Pearls", "label": "Dana Pearls", "shape": "dot", "size": 15, "title": "Dana Pearls\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Deontay Wilder", "label": "Deontay Wilder", "shape": "dot", "size": 15, "title": "Deontay Wilder\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Diana Rogers", "label": "Diana Rogers", "shape": "dot", "size": 17, "title": "Diana Rogers\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dottie Bausch", "label": "Dottie Bausch", "shape": "dot", "size": 15, "title": "Dottie Bausch\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ed Loomis", "label": "Ed Loomis", "shape": "dot", "size": 15, "title": "Ed Loomis\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ellen White", "label": "Ellen White", "shape": "dot", "size": 19, "title": "Ellen White\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Epic Mealtime", "label": "Epic Mealtime", "shape": "dot", "size": 15, "title": "Epic Mealtime\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fabian Kanz", "label": "Fabian Kanz", "shape": "dot", "size": 15, "title": "Fabian Kanz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fogo De Chao", "label": "Fogo De Chao", "shape": "dot", "size": 15, "title": "Fogo De Chao\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gerald Mccoy", "label": "Gerald Mccoy", "shape": "dot", "size": 15, "title": "Gerald Mccoy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gregor Gillespie", "label": "Gregor Gillespie", "shape": "dot", "size": 15, "title": "Gregor Gillespie\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ilya Ilyin", "label": "Ilya Ilyin", "shape": "dot", "size": 15, "title": "Ilya Ilyin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jack Norris", "label": "Jack Norris", "shape": "dot", "size": 15, "title": "Jack Norris\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jackie Chan", "label": "Jackie Chan", "shape": "dot", "size": 15, "title": "Jackie Chan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "James", "label": "James", "shape": "dot", "size": 19, "title": "James\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "James Cameron", "label": "James Cameron", "shape": "dot", "size": 19, "title": "James Cameron\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "James Wilkes", "label": "James Wilkes", "shape": "dot", "size": 17, "title": "James Wilkes\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jamie", "label": "Jamie", "shape": "dot", "size": 35, "title": "Jamie\nType: PERSON\nConnections: 10"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus Christ", "label": "Jesus Christ", "shape": "dot", "size": 15, "title": "Jesus Christ\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jiu-Jitsu", "label": "Jiu-Jitsu", "shape": "dot", "size": 15, "title": "Jiu-Jitsu\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joel Kahn", "label": "Joel Kahn", "shape": "dot", "size": 15, "title": "Joel Kahn\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joel Salatin", "label": "Joel Salatin", "shape": "dot", "size": 15, "title": "Joel Salatin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joel Wallach", "label": "Joel Wallach", "shape": "dot", "size": 15, "title": "Joel Wallach\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kendrick Farris", "label": "Kendrick Farris", "shape": "dot", "size": 15, "title": "Kendrick Farris\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lane Norton", "label": "Lane Norton", "shape": "dot", "size": 15, "title": "Lane Norton\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lena Cooper", "label": "Lena Cooper", "shape": "dot", "size": 19, "title": "Lena Cooper\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leon Festinger", "label": "Leon Festinger", "shape": "dot", "size": 15, "title": "Leon Festinger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Liz Frank", "label": "Liz Frank", "shape": "dot", "size": 15, "title": "Liz Frank\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus Von Magnussen", "label": "Magnus Von Magnussen", "shape": "dot", "size": 15, "title": "Magnus Von Magnussen\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Sisson", "label": "Mark Sisson", "shape": "dot", "size": 15, "title": "Mark Sisson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matsis", "label": "Matsis", "shape": "dot", "size": 17, "title": "Matsis\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matt Tybee", "label": "Matt Tybee", "shape": "dot", "size": 15, "title": "Matt Tybee\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Phelps", "label": "Michael Phelps", "shape": "dot", "size": 15, "title": "Michael Phelps\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nate Diaz", "label": "Nate Diaz", "shape": "dot", "size": 15, "title": "Nate Diaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nate Diaz-Conor Mcgregor", "label": "Nate Diaz-Conor Mcgregor", "shape": "dot", "size": 15, "title": "Nate Diaz-Conor Mcgregor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nick Diaz", "label": "Nick Diaz", "shape": "dot", "size": 15, "title": "Nick Diaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Novak Djokovic", "label": "Novak Djokovic", "shape": "dot", "size": 15, "title": "Novak Djokovic\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Patrick", "label": "Patrick", "shape": "dot", "size": 15, "title": "Patrick\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Patrick Baboomian", "label": "Patrick Baboomian", "shape": "dot", "size": 15, "title": "Patrick Baboomian\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Patrick Baboumian", "label": "Patrick Baboumian", "shape": "dot", "size": 15, "title": "Patrick Baboumian\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Popeye", "label": "Popeye", "shape": "dot", "size": 15, "title": "Popeye\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rafael Dos Anjos", "label": "Rafael Dos Anjos", "shape": "dot", "size": 15, "title": "Rafael Dos Anjos\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Reefer Madness", "label": "Reefer Madness", "shape": "dot", "size": 15, "title": "Reefer Madness\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rhonda Patrick", "label": "Rhonda Patrick", "shape": "dot", "size": 15, "title": "Rhonda Patrick\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Richard Teague", "label": "Richard Teague", "shape": "dot", "size": 15, "title": "Richard Teague\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rob Wolf", "label": "Rob Wolf", "shape": "dot", "size": 17, "title": "Rob Wolf\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robert Oberst", "label": "Robert Oberst", "shape": "dot", "size": 15, "title": "Robert Oberst\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ryan Lowry", "label": "Ryan Lowry", "shape": "dot", "size": 15, "title": "Ryan Lowry\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sam Harris", "label": "Sam Harris", "shape": "dot", "size": 15, "title": "Sam Harris\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Scott Jurek", "label": "Scott Jurek", "shape": "dot", "size": 15, "title": "Scott Jurek\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Scott Stoll", "label": "Scott Stoll", "shape": "dot", "size": 15, "title": "Scott Stoll\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sean Baker", "label": "Sean Baker", "shape": "dot", "size": 15, "title": "Sean Baker\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Serena", "label": "Serena", "shape": "dot", "size": 15, "title": "Serena\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stan Hazen", "label": "Stan Hazen", "shape": "dot", "size": 17, "title": "Stan Hazen\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Susie Cameron", "label": "Susie Cameron", "shape": "dot", "size": 19, "title": "Susie Cameron\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Sheaf", "label": "Tim Sheaf", "shape": "dot", "size": 15, "title": "Tim Sheaf\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tom Brady", "label": "Tom Brady", "shape": "dot", "size": 15, "title": "Tom Brady\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tony Gonzalez", "label": "Tony Gonzalez", "shape": "dot", "size": 15, "title": "Tony Gonzalez\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Travis Barker", "label": "Travis Barker", "shape": "dot", "size": 17, "title": "Travis Barker\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Universe", "label": "Universe", "shape": "dot", "size": 15, "title": "Universe\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vladimir Klitschko", "label": "Vladimir Klitschko", "shape": "dot", "size": 15, "title": "Vladimir Klitschko\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Walter Willett", "label": "Walter Willett", "shape": "dot", "size": 23, "title": "Walter Willett\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "White Oak Pastures", "label": "White Oak Pastures", "shape": "dot", "size": 15, "title": "White Oak Pastures\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Williams", "label": "Williams", "shape": "dot", "size": 15, "title": "Williams\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zach Bitter", "label": "Zach Bitter", "shape": "dot", "size": 17, "title": "Zach Bitter\nType: PERSON\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Adventist", "label": "Adventist", "shape": "dot", "size": 35, "title": "Adventist\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Appalachian Trail", "label": "Appalachian Trail", "shape": "dot", "size": 17, "title": "Appalachian Trail\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Arctic", "label": "Arctic", "shape": "dot", "size": 17, "title": "Arctic\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Beijing Olympics", "label": "Beijing Olympics", "shape": "dot", "size": 19, "title": "Beijing Olympics\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Canada", "label": "Canada", "shape": "dot", "size": 21, "title": "Canada\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Cowspiracy", "label": "Cowspiracy", "shape": "dot", "size": 19, "title": "Cowspiracy\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Crossroads", "label": "Crossroads", "shape": "dot", "size": 17, "title": "Crossroads\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Denmark", "label": "Denmark", "shape": "dot", "size": 23, "title": "Denmark\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Hadza", "label": "Hadza", "shape": "dot", "size": 23, "title": "Hadza\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Italy", "label": "Italy", "shape": "dot", "size": 21, "title": "Italy\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "La Gravette", "label": "La Gravette", "shape": "dot", "size": 21, "title": "La Gravette\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Loma Linda University", "label": "Loma Linda University", "shape": "dot", "size": 27, "title": "Loma Linda University\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Los Angeles", "label": "Los Angeles", "shape": "dot", "size": 17, "title": "Los Angeles\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mediterranean", "label": "Mediterranean", "shape": "dot", "size": 19, "title": "Mediterranean\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Norway", "label": "Norway", "shape": "dot", "size": 23, "title": "Norway\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Philadelphia", "label": "Philadelphia", "shape": "dot", "size": 21, "title": "Philadelphia\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Robot Netherlands", "label": "Robot Netherlands", "shape": "dot", "size": 21, "title": "Robot Netherlands\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Scandinavia", "label": "Scandinavia", "shape": "dot", "size": 23, "title": "Scandinavia\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sweden", "label": "Sweden", "shape": "dot", "size": 27, "title": "Sweden\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 19, "title": "United States\nType: PLACE\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Kresser Debunks", "label": "Chris Kresser Debunks", "shape": "dot", "size": 17, "title": "Chris Kresser Debunks\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 23, "title": "Joe Rogan\nType: PERSON\nConnections: 4"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Comanches", "title": "Comanches \u2192 Arctic\nWeight: 1\nType: associated_with", "to": "Arctic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Diana Rogers", "title": "Diana Rogers \u2192 Cowspiracy\nWeight: 1\nType: associated_with", "to": "Cowspiracy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ellen White", "title": "Ellen White \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ellen White", "title": "Ellen White \u2192 Loma Linda University\nWeight: 1\nType: associated_with", "to": "Loma Linda University", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "James", "title": "James \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "James", "title": "James \u2192 Loma Linda University\nWeight: 1\nType: associated_with", "to": "Loma Linda University", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "James Cameron", "title": "James Cameron \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "James Cameron", "title": "James Cameron \u2192 Loma Linda University\nWeight: 1\nType: associated_with", "to": "Loma Linda University", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "James Wilkes", "title": "James Wilkes \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Denmark\nWeight: 1\nType: associated_with", "to": "Denmark", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Norway\nWeight: 1\nType: associated_with", "to": "Norway", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Scandinavia\nWeight: 1\nType: associated_with", "to": "Scandinavia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Sweden\nWeight: 2\nType: associated_with", "to": "Sweden", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Italy\nWeight: 1\nType: associated_with", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Robot Netherlands\nWeight: 1\nType: associated_with", "to": "Robot Netherlands", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Hadza\nWeight: 1\nType: associated_with", "to": "Hadza", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lena Cooper", "title": "Lena Cooper \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lena Cooper", "title": "Lena Cooper \u2192 Loma Linda University\nWeight: 1\nType: associated_with", "to": "Loma Linda University", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Matsis", "title": "Matsis \u2192 Hadza\nWeight: 1\nType: associated_with", "to": "Hadza", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rob Wolf", "title": "Rob Wolf \u2192 Cowspiracy\nWeight: 1\nType: associated_with", "to": "Cowspiracy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stan Hazen", "title": "Stan Hazen \u2192 Hadza\nWeight: 1\nType: associated_with", "to": "Hadza", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Susie Cameron", "title": "Susie Cameron \u2192 Adventist\nWeight: 1\nType: associated_with", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Susie Cameron", "title": "Susie Cameron \u2192 Loma Linda University\nWeight: 1\nType: associated_with", "to": "Loma Linda University", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Travis Barker", "title": "Travis Barker \u2192 Crossroads\nWeight: 1\nType: associated_with", "to": "Crossroads", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Walter Willett", "title": "Walter Willett \u2192 Denmark\nWeight: 1\nType: associated_with", "to": "Denmark", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Walter Willett", "title": "Walter Willett \u2192 Norway\nWeight: 1\nType: associated_with", "to": "Norway", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Walter Willett", "title": "Walter Willett \u2192 Scandinavia\nWeight: 1\nType: associated_with", "to": "Scandinavia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Walter Willett", "title": "Walter Willett \u2192 Sweden\nWeight: 1\nType: associated_with", "to": "Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Zach Bitter", "title": "Zach Bitter \u2192 Appalachian Trail\nWeight: 1\nType: associated_with", "to": "Appalachian Trail", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Adventist", "title": "Adventist \u2192 Loma Linda University\nWeight: 5\nType: movement\nTravelers: Ellen White, James, James Cameron, Lena Cooper, Susie Cameron", "to": "Loma Linda University", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Adventist", "title": "Adventist \u2192 Denmark\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Denmark", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Beijing Olympics", "title": "Beijing Olympics \u2192 Philadelphia\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Canada", "title": "Canada \u2192 Italy\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Denmark", "title": "Denmark \u2192 Norway\nWeight: 2\nType: movement\nTravelers: Jamie, Walter Willett", "to": "Norway", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Italy", "title": "Italy \u2192 Robot Netherlands\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Robot Netherlands", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "La Gravette", "title": "La Gravette \u2192 Mediterranean\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Mediterranean", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Norway", "title": "Norway \u2192 Scandinavia\nWeight: 2\nType: movement\nTravelers: Jamie, Walter Willett", "to": "Scandinavia", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Philadelphia", "title": "Philadelphia \u2192 La Gravette\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "La Gravette", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Robot Netherlands", "title": "Robot Netherlands \u2192 Sweden\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Sweden", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Scandinavia", "title": "Scandinavia \u2192 Sweden\nWeight: 2\nType: movement\nTravelers: Jamie, Walter Willett", "to": "Sweden", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Sweden", "title": "Sweden \u2192 Canada\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Sweden", "title": "Sweden \u2192 Hadza\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Hadza", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Adventist\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Adventist", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Kresser Debunks", "title": "Chris Kresser Debunks \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Beijing Olympics\nWeight: 1\nType: associated_with", "to": "Beijing Olympics", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 La Gravette\nWeight: 1\nType: associated_with", "to": "La Gravette", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Mediterranean\nWeight: 1\nType: associated_with", "to": "Mediterranean", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

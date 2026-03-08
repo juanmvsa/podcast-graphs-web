@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">125 Giorgio a Tsoukalos Eddie Bravo</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">The Joe Rogan Experience</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">88</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">42</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">168</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Abu Zir", "label": "Abu Zir", "shape": "dot", "size": 19, "title": "Abu Zir\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Al-Makritzi", "label": "Al-Makritzi", "shape": "dot", "size": 19, "title": "Al-Makritzi\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Albert Einstein", "label": "Albert Einstein", "shape": "dot", "size": 15, "title": "Albert Einstein\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Jones", "label": "Alex Jones", "shape": "dot", "size": 21, "title": "Alex Jones\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Aslan", "label": "Aslan", "shape": "dot", "size": 15, "title": "Aslan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Aubrey De Grey", "label": "Aubrey De Grey", "shape": "dot", "size": 21, "title": "Aubrey De Grey\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "B. Mahabharata", "label": "B. Mahabharata", "shape": "dot", "size": 15, "title": "B. Mahabharata\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Baalbek", "label": "Baalbek", "shape": "dot", "size": 15, "title": "Baalbek\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bakhtun", "label": "Bakhtun", "shape": "dot", "size": 15, "title": "Bakhtun\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian", "label": "Brian", "shape": "dot", "size": 19, "title": "Brian\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Buddha", "label": "Buddha", "shape": "dot", "size": 15, "title": "Buddha\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carl Sagan", "label": "Carl Sagan", "shape": "dot", "size": 15, "title": "Carl Sagan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Childress", "label": "Childress", "shape": "dot", "size": 19, "title": "Childress\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Christopher Dunn", "label": "Christopher Dunn", "shape": "dot", "size": 19, "title": "Christopher Dunn\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Compton", "label": "Compton", "shape": "dot", "size": 17, "title": "Compton\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Coppins", "label": "Coppins", "shape": "dot", "size": 19, "title": "Coppins\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dan Niserino", "label": "Dan Niserino", "shape": "dot", "size": 17, "title": "Dan Niserino\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Daniel Pinchback", "label": "Daniel Pinchback", "shape": "dot", "size": 15, "title": "Daniel Pinchback\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Chappelle", "label": "Dave Chappelle", "shape": "dot", "size": 15, "title": "Dave Chappelle\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Icke", "label": "David Icke", "shape": "dot", "size": 19, "title": "David Icke\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dogon", "label": "Dogon", "shape": "dot", "size": 19, "title": "Dogon\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Duncan Trussell", "label": "Duncan Trussell", "shape": "dot", "size": 19, "title": "Duncan Trussell\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eddie Bravo", "label": "Eddie Bravo", "shape": "dot", "size": 31, "title": "Eddie Bravo\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Edgar Cayce", "label": "Edgar Cayce", "shape": "dot", "size": 15, "title": "Edgar Cayce\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eisenhower", "label": "Eisenhower", "shape": "dot", "size": 19, "title": "Eisenhower\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Fondanek", "label": "Eric Fondanek", "shape": "dot", "size": 19, "title": "Eric Fondanek\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Van Daniken", "label": "Eric Van Daniken", "shape": "dot", "size": 17, "title": "Eric Van Daniken\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Von Danik", "label": "Eric Von Danik", "shape": "dot", "size": 17, "title": "Eric Von Danik\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Von Daniken", "label": "Eric Von Daniken", "shape": "dot", "size": 19, "title": "Eric Von Daniken\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Von D\u00e4niken", "label": "Eric Von D\u00e4niken", "shape": "dot", "size": 17, "title": "Eric Von D\u00e4niken\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ezekiel", "label": "Ezekiel", "shape": "dot", "size": 15, "title": "Ezekiel\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Flinders Petrie", "label": "Flinders Petrie", "shape": "dot", "size": 19, "title": "Flinders Petrie\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Francisco Pizarro", "label": "Francisco Pizarro", "shape": "dot", "size": 15, "title": "Francisco Pizarro\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Frank Drake", "label": "Frank Drake", "shape": "dot", "size": 15, "title": "Frank Drake\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George Sassoon", "label": "George Sassoon", "shape": "dot", "size": 15, "title": "George Sassoon\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gilgamesh", "label": "Gilgamesh", "shape": "dot", "size": 17, "title": "Gilgamesh\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Giorgio", "label": "Giorgio", "shape": "dot", "size": 25, "title": "Giorgio\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gobekli Tepe", "label": "Gobekli Tepe", "shape": "dot", "size": 15, "title": "Gobekli Tepe\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Golden Age", "label": "Golden Age", "shape": "dot", "size": 21, "title": "Golden Age\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Graham Hancock", "label": "Graham Hancock", "shape": "dot", "size": 25, "title": "Graham Hancock\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Heliopolis", "label": "Heliopolis", "shape": "dot", "size": 15, "title": "Heliopolis\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hercules", "label": "Hercules", "shape": "dot", "size": 15, "title": "Hercules\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hitler", "label": "Hitler", "shape": "dot", "size": 21, "title": "Hitler\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "House Quetzalcoatl", "label": "House Quetzalcoatl", "shape": "dot", "size": 19, "title": "House Quetzalcoatl\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Indiana Jones", "label": "Indiana Jones", "shape": "dot", "size": 15, "title": "Indiana Jones\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jay Moore", "label": "Jay Moore", "shape": "dot", "size": 19, "title": "Jay Moore\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jean Chiron", "label": "Jean Chiron", "shape": "dot", "size": 15, "title": "Jean Chiron\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus", "label": "Jesus", "shape": "dot", "size": 15, "title": "Jesus\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Diaz", "label": "Joe Diaz", "shape": "dot", "size": 19, "title": "Joe Diaz\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joey Diaz", "label": "Joey Diaz", "shape": "dot", "size": 19, "title": "Joey Diaz\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Anthony West", "label": "John Anthony West", "shape": "dot", "size": 23, "title": "John Anthony West\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Lear", "label": "John Lear", "shape": "dot", "size": 15, "title": "John Lear\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kardashev", "label": "Kardashev", "shape": "dot", "size": 15, "title": "Kardashev\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kennedy", "label": "Kennedy", "shape": "dot", "size": 15, "title": "Kennedy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lear Jets", "label": "Lear Jets", "shape": "dot", "size": 15, "title": "Lear Jets\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lucifer Kabbalah", "label": "Lucifer Kabbalah", "shape": "dot", "size": 15, "title": "Lucifer Kabbalah\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Martel Cognac", "label": "Martel Cognac", "shape": "dot", "size": 19, "title": "Martel Cognac\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Jordan", "label": "Michael Jordan", "shape": "dot", "size": 15, "title": "Michael Jordan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michelle Bachmans", "label": "Michelle Bachmans", "shape": "dot", "size": 21, "title": "Michelle Bachmans\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mitchell Hedges", "label": "Mitchell Hedges", "shape": "dot", "size": 19, "title": "Mitchell Hedges\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nasca", "label": "Nasca", "shape": "dot", "size": 15, "title": "Nasca\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nibiru Jiu-Jitsu", "label": "Nibiru Jiu-Jitsu", "shape": "dot", "size": 19, "title": "Nibiru Jiu-Jitsu\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pierre Florence", "label": "Pierre Florence", "shape": "dot", "size": 15, "title": "Pierre Florence\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Puma Punku", "label": "Puma Punku", "shape": "dot", "size": 33, "title": "Puma Punku\nType: PERSON\nConnections: 9"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ray Kurzweil", "label": "Ray Kurzweil", "shape": "dot", "size": 15, "title": "Ray Kurzweil\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robert Boval", "label": "Robert Boval", "shape": "dot", "size": 15, "title": "Robert Boval\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robert Lazar", "label": "Robert Lazar", "shape": "dot", "size": 15, "title": "Robert Lazar\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robert Shock", "label": "Robert Shock", "shape": "dot", "size": 19, "title": "Robert Shock\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rodney Dale", "label": "Rodney Dale", "shape": "dot", "size": 15, "title": "Rodney Dale\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rogan", "label": "Rogan", "shape": "dot", "size": 19, "title": "Rogan\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roger Hopkins", "label": "Roger Hopkins", "shape": "dot", "size": 19, "title": "Roger Hopkins\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ron Jeremy", "label": "Ron Jeremy", "shape": "dot", "size": 15, "title": "Ron Jeremy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rupert Sheldrake", "label": "Rupert Sheldrake", "shape": "dot", "size": 15, "title": "Rupert Sheldrake\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sitchin", "label": "Sitchin", "shape": "dot", "size": 15, "title": "Sitchin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Solomon", "label": "Solomon", "shape": "dot", "size": 15, "title": "Solomon\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Starchild", "label": "Starchild", "shape": "dot", "size": 15, "title": "Starchild\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tom Segura", "label": "Tom Segura", "shape": "dot", "size": 23, "title": "Tom Segura\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tsoukalos", "label": "Tsoukalos", "shape": "dot", "size": 23, "title": "Tsoukalos\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Von Daniken", "label": "Von Daniken", "shape": "dot", "size": 17, "title": "Von Daniken\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "White Man King", "label": "White Man King", "shape": "dot", "size": 19, "title": "White Man King\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wright-Patterson Air Force Base", "label": "Wright-Patterson Air Force Base", "shape": "dot", "size": 15, "title": "Wright-Patterson Air Force Base\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zachariah Sitchin", "label": "Zachariah Sitchin", "shape": "dot", "size": 15, "title": "Zachariah Sitchin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zacharias Hitchin", "label": "Zacharias Hitchin", "shape": "dot", "size": 15, "title": "Zacharias Hitchin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zechariah Sitchin", "label": "Zechariah Sitchin", "shape": "dot", "size": 15, "title": "Zechariah Sitchin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zohar", "label": "Zohar", "shape": "dot", "size": 15, "title": "Zohar\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Abydos", "label": "Abydos", "shape": "dot", "size": 27, "title": "Abydos\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Aksum", "label": "Aksum", "shape": "dot", "size": 21, "title": "Aksum\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "American West", "label": "American West", "shape": "dot", "size": 27, "title": "American West\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Bay Area", "label": "Bay Area", "shape": "dot", "size": 23, "title": "Bay Area\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Belize", "label": "Belize", "shape": "dot", "size": 23, "title": "Belize\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Central And South America", "label": "Central And South America", "shape": "dot", "size": 21, "title": "Central And South America\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Colombia", "label": "Colombia", "shape": "dot", "size": 19, "title": "Colombia\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Cusco", "label": "Cusco", "shape": "dot", "size": 21, "title": "Cusco\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Easter Island", "label": "Easter Island", "shape": "dot", "size": 27, "title": "Easter Island\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "El Paso", "label": "El Paso", "shape": "dot", "size": 31, "title": "El Paso\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ethiopia", "label": "Ethiopia", "shape": "dot", "size": 25, "title": "Ethiopia\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Giza Plateau", "label": "Giza Plateau", "shape": "dot", "size": 27, "title": "Giza Plateau\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Goldilocks Zone", "label": "Goldilocks Zone", "shape": "dot", "size": 23, "title": "Goldilocks Zone\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Great Pyramid", "label": "Great Pyramid", "shape": "dot", "size": 29, "title": "Great Pyramid\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Greece", "label": "Greece", "shape": "dot", "size": 23, "title": "Greece\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Lake Titicaca", "label": "Lake Titicaca", "shape": "dot", "size": 27, "title": "Lake Titicaca\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Las Vegas", "label": "Las Vegas", "shape": "dot", "size": 43, "title": "Las Vegas\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Lebanon", "label": "Lebanon", "shape": "dot", "size": 19, "title": "Lebanon\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Machu Picchu", "label": "Machu Picchu", "shape": "dot", "size": 43, "title": "Machu Picchu\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Malta", "label": "Malta", "shape": "dot", "size": 21, "title": "Malta\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mediterranean", "label": "Mediterranean", "shape": "dot", "size": 21, "title": "Mediterranean\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Milwaukee County Stadium", "label": "Milwaukee County Stadium", "shape": "dot", "size": 35, "title": "Milwaukee County Stadium\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New Delhi", "label": "New Delhi", "shape": "dot", "size": 17, "title": "New Delhi\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Newgrange", "label": "Newgrange", "shape": "dot", "size": 21, "title": "Newgrange\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Nile Valley", "label": "Nile Valley", "shape": "dot", "size": 21, "title": "Nile Valley\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North Pole", "label": "North Pole", "shape": "dot", "size": 21, "title": "North Pole\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Old West", "label": "Old West", "shape": "dot", "size": 27, "title": "Old West\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ollantaytambo", "label": "Ollantaytambo", "shape": "dot", "size": 21, "title": "Ollantaytambo\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pabst Theater", "label": "Pabst Theater", "shape": "dot", "size": 33, "title": "Pabst Theater\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pittsburgh", "label": "Pittsburgh", "shape": "dot", "size": 27, "title": "Pittsburgh\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pumapuku", "label": "Pumapuku", "shape": "dot", "size": 19, "title": "Pumapuku\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pumapunku", "label": "Pumapunku", "shape": "dot", "size": 27, "title": "Pumapunku\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Russia", "label": "Russia", "shape": "dot", "size": 21, "title": "Russia\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Samaria", "label": "Samaria", "shape": "dot", "size": 25, "title": "Samaria\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sicily Channel", "label": "Sicily Channel", "shape": "dot", "size": 21, "title": "Sicily Channel\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "South America", "label": "South America", "shape": "dot", "size": 23, "title": "South America\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "South Pole", "label": "South Pole", "shape": "dot", "size": 19, "title": "South Pole\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sphinx", "label": "Sphinx", "shape": "dot", "size": 33, "title": "Sphinx\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Switzerland", "label": "Switzerland", "shape": "dot", "size": 19, "title": "Switzerland\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "T-S-O-U-K-A-L-O-S. Nice", "label": "T-S-O-U-K-A-L-O-S. Nice", "shape": "dot", "size": 27, "title": "T-S-O-U-K-A-L-O-S. Nice\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Tionaku", "label": "Tionaku", "shape": "dot", "size": 29, "title": "Tionaku\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Vietnam", "label": "Vietnam", "shape": "dot", "size": 29, "title": "Vietnam\nType: PLACE\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tsoukalos Eddie Bravo", "label": "Tsoukalos Eddie Bravo", "shape": "dot", "size": 23, "title": "Tsoukalos Eddie Bravo\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 33, "title": "Joe Rogan\nType: PERSON\nConnections: 9"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_01", "label": "Speaker_01", "shape": "dot", "size": 17, "title": "Speaker_01\nType: PERSON\nConnections: 1"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Abu Zir", "title": "Abu Zir \u2192 Abydos\nWeight: 1\nType: associated_with", "to": "Abydos", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Abu Zir", "title": "Abu Zir \u2192 Tionaku\nWeight: 1\nType: associated_with", "to": "Tionaku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al-Makritzi", "title": "Al-Makritzi \u2192 Great Pyramid\nWeight: 1\nType: associated_with", "to": "Great Pyramid", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al-Makritzi", "title": "Al-Makritzi \u2192 Sphinx\nWeight: 1\nType: associated_with", "to": "Sphinx", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Jones", "title": "Alex Jones \u2192 Las Vegas\nWeight: 2\nType: associated_with", "to": "Las Vegas", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Jones", "title": "Alex Jones \u2192 Vietnam\nWeight: 1\nType: associated_with", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Jones", "title": "Alex Jones \u2192 Goldilocks Zone\nWeight: 1\nType: associated_with", "to": "Goldilocks Zone", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Aubrey De Grey", "title": "Aubrey De Grey \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Aubrey De Grey", "title": "Aubrey De Grey \u2192 Samaria\nWeight: 1\nType: associated_with", "to": "Samaria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Aubrey De Grey", "title": "Aubrey De Grey \u2192 Sphinx\nWeight: 1\nType: associated_with", "to": "Sphinx", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian", "title": "Brian \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian", "title": "Brian \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Childress", "title": "Childress \u2192 American West\nWeight: 1\nType: associated_with", "to": "American West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Childress", "title": "Childress \u2192 Old West\nWeight: 1\nType: associated_with", "to": "Old West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Christopher Dunn", "title": "Christopher Dunn \u2192 Abydos\nWeight: 1\nType: associated_with", "to": "Abydos", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Christopher Dunn", "title": "Christopher Dunn \u2192 Tionaku\nWeight: 1\nType: associated_with", "to": "Tionaku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Compton", "title": "Compton \u2192 Belize\nWeight: 1\nType: associated_with", "to": "Belize", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Coppins", "title": "Coppins \u2192 American West\nWeight: 1\nType: associated_with", "to": "American West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Coppins", "title": "Coppins \u2192 Old West\nWeight: 1\nType: associated_with", "to": "Old West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dan Niserino", "title": "Dan Niserino \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Icke", "title": "David Icke \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Icke", "title": "David Icke \u2192 Vietnam\nWeight: 1\nType: associated_with", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dogon", "title": "Dogon \u2192 Colombia\nWeight: 1\nType: associated_with", "to": "Colombia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dogon", "title": "Dogon \u2192 South America\nWeight: 1\nType: associated_with", "to": "South America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Duncan Trussell", "title": "Duncan Trussell \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Duncan Trussell", "title": "Duncan Trussell \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Lebanon\nWeight: 1\nType: associated_with", "to": "Lebanon", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Giza Plateau\nWeight: 1\nType: associated_with", "to": "Giza Plateau", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Great Pyramid\nWeight: 1\nType: associated_with", "to": "Great Pyramid", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 El Paso\nWeight: 1\nType: associated_with", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Pittsburgh\nWeight: 1\nType: associated_with", "to": "Pittsburgh", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 T-S-O-U-K-A-L-O-S. Nice\nWeight: 1\nType: associated_with", "to": "T-S-O-U-K-A-L-O-S. Nice", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eddie Bravo", "title": "Eddie Bravo \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eisenhower", "title": "Eisenhower \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eisenhower", "title": "Eisenhower \u2192 Vietnam\nWeight: 1\nType: associated_with", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Fondanek", "title": "Eric Fondanek \u2192 American West\nWeight: 1\nType: associated_with", "to": "American West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Fondanek", "title": "Eric Fondanek \u2192 Old West\nWeight: 1\nType: associated_with", "to": "Old West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Van Daniken", "title": "Eric Van Daniken \u2192 Switzerland\nWeight: 1\nType: associated_with", "to": "Switzerland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Von Danik", "title": "Eric Von Danik \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Von Daniken", "title": "Eric Von Daniken \u2192 Goldilocks Zone\nWeight: 1\nType: associated_with", "to": "Goldilocks Zone", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Von Daniken", "title": "Eric Von Daniken \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eric Von D\u00e4niken", "title": "Eric Von D\u00e4niken \u2192 Switzerland\nWeight: 1\nType: associated_with", "to": "Switzerland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Flinders Petrie", "title": "Flinders Petrie \u2192 Abydos\nWeight: 1\nType: associated_with", "to": "Abydos", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Flinders Petrie", "title": "Flinders Petrie \u2192 Tionaku\nWeight: 1\nType: associated_with", "to": "Tionaku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gilgamesh", "title": "Gilgamesh \u2192 Belize\nWeight: 1\nType: associated_with", "to": "Belize", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Giorgio", "title": "Giorgio \u2192 Las Vegas\nWeight: 2\nType: associated_with", "to": "Las Vegas", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Giorgio", "title": "Giorgio \u2192 Vietnam\nWeight: 1\nType: associated_with", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Giorgio", "title": "Giorgio \u2192 El Paso\nWeight: 1\nType: associated_with", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Giorgio", "title": "Giorgio \u2192 Pittsburgh\nWeight: 1\nType: associated_with", "to": "Pittsburgh", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Giorgio", "title": "Giorgio \u2192 T-S-O-U-K-A-L-O-S. Nice\nWeight: 1\nType: associated_with", "to": "T-S-O-U-K-A-L-O-S. Nice", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Golden Age", "title": "Golden Age \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Golden Age", "title": "Golden Age \u2192 Samaria\nWeight: 1\nType: associated_with", "to": "Samaria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Golden Age", "title": "Golden Age \u2192 Sphinx\nWeight: 1\nType: associated_with", "to": "Sphinx", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Graham Hancock", "title": "Graham Hancock \u2192 Aksum\nWeight: 1\nType: associated_with", "to": "Aksum", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Graham Hancock", "title": "Graham Hancock \u2192 Ethiopia\nWeight: 1\nType: associated_with", "to": "Ethiopia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Graham Hancock", "title": "Graham Hancock \u2192 Lake Titicaca\nWeight: 1\nType: associated_with", "to": "Lake Titicaca", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Graham Hancock", "title": "Graham Hancock \u2192 Machu Picchu\nWeight: 1\nType: associated_with", "to": "Machu Picchu", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Graham Hancock", "title": "Graham Hancock \u2192 Pumapunku\nWeight: 1\nType: associated_with", "to": "Pumapunku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hitler", "title": "Hitler \u2192 Greece\nWeight: 1\nType: associated_with", "to": "Greece", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hitler", "title": "Hitler \u2192 North Pole\nWeight: 1\nType: associated_with", "to": "North Pole", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hitler", "title": "Hitler \u2192 South Pole\nWeight: 1\nType: associated_with", "to": "South Pole", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "House Quetzalcoatl", "title": "House Quetzalcoatl \u2192 Giza Plateau\nWeight: 1\nType: associated_with", "to": "Giza Plateau", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "House Quetzalcoatl", "title": "House Quetzalcoatl \u2192 Great Pyramid\nWeight: 1\nType: associated_with", "to": "Great Pyramid", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jay Moore", "title": "Jay Moore \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jay Moore", "title": "Jay Moore \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Diaz", "title": "Joe Diaz \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Diaz", "title": "Joe Diaz \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joey Diaz", "title": "Joey Diaz \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joey Diaz", "title": "Joey Diaz \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Anthony West", "title": "John Anthony West \u2192 Nile Valley\nWeight: 1\nType: associated_with", "to": "Nile Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Anthony West", "title": "John Anthony West \u2192 Sphinx\nWeight: 2\nType: associated_with", "to": "Sphinx", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "John Anthony West", "title": "John Anthony West \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Anthony West", "title": "John Anthony West \u2192 Samaria\nWeight: 1\nType: associated_with", "to": "Samaria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martel Cognac", "title": "Martel Cognac \u2192 American West\nWeight: 1\nType: associated_with", "to": "American West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martel Cognac", "title": "Martel Cognac \u2192 Old West\nWeight: 1\nType: associated_with", "to": "Old West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michelle Bachmans", "title": "Michelle Bachmans \u2192 El Paso\nWeight: 1\nType: associated_with", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michelle Bachmans", "title": "Michelle Bachmans \u2192 Pittsburgh\nWeight: 1\nType: associated_with", "to": "Pittsburgh", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michelle Bachmans", "title": "Michelle Bachmans \u2192 T-S-O-U-K-A-L-O-S. Nice\nWeight: 1\nType: associated_with", "to": "T-S-O-U-K-A-L-O-S. Nice", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mitchell Hedges", "title": "Mitchell Hedges \u2192 Belize\nWeight: 1\nType: associated_with", "to": "Belize", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mitchell Hedges", "title": "Mitchell Hedges \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nibiru Jiu-Jitsu", "title": "Nibiru Jiu-Jitsu \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nibiru Jiu-Jitsu", "title": "Nibiru Jiu-Jitsu \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Abydos\nWeight: 1\nType: associated_with", "to": "Abydos", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Tionaku\nWeight: 1\nType: associated_with", "to": "Tionaku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Cusco\nWeight: 1\nType: associated_with", "to": "Cusco", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Machu Picchu\nWeight: 2\nType: associated_with", "to": "Machu Picchu", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Newgrange\nWeight: 1\nType: associated_with", "to": "Newgrange", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Lake Titicaca\nWeight: 1\nType: associated_with", "to": "Lake Titicaca", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Pumapunku\nWeight: 1\nType: associated_with", "to": "Pumapunku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Giza Plateau\nWeight: 1\nType: associated_with", "to": "Giza Plateau", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Puma Punku", "title": "Puma Punku \u2192 Great Pyramid\nWeight: 1\nType: associated_with", "to": "Great Pyramid", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Robert Shock", "title": "Robert Shock \u2192 Nile Valley\nWeight: 1\nType: associated_with", "to": "Nile Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Robert Shock", "title": "Robert Shock \u2192 Sphinx\nWeight: 1\nType: associated_with", "to": "Sphinx", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rogan", "title": "Rogan \u2192 Milwaukee County Stadium\nWeight: 1\nType: associated_with", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Rogan", "title": "Rogan \u2192 Pabst Theater\nWeight: 1\nType: associated_with", "to": "Pabst Theater", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Roger Hopkins", "title": "Roger Hopkins \u2192 Abydos\nWeight: 1\nType: associated_with", "to": "Abydos", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Roger Hopkins", "title": "Roger Hopkins \u2192 Tionaku\nWeight: 1\nType: associated_with", "to": "Tionaku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tom Segura", "title": "Tom Segura \u2192 Lake Titicaca\nWeight: 1\nType: associated_with", "to": "Lake Titicaca", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tom Segura", "title": "Tom Segura \u2192 Machu Picchu\nWeight: 2\nType: associated_with", "to": "Machu Picchu", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Tom Segura", "title": "Tom Segura \u2192 Pumapunku\nWeight: 1\nType: associated_with", "to": "Pumapunku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tom Segura", "title": "Tom Segura \u2192 Easter Island\nWeight: 1\nType: associated_with", "to": "Easter Island", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos", "title": "Tsoukalos \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos", "title": "Tsoukalos \u2192 El Paso\nWeight: 1\nType: associated_with", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos", "title": "Tsoukalos \u2192 Pittsburgh\nWeight: 1\nType: associated_with", "to": "Pittsburgh", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos", "title": "Tsoukalos \u2192 T-S-O-U-K-A-L-O-S. Nice\nWeight: 1\nType: associated_with", "to": "T-S-O-U-K-A-L-O-S. Nice", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Von Daniken", "title": "Von Daniken \u2192 New Delhi\nWeight: 1\nType: associated_with", "to": "New Delhi", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "White Man King", "title": "White Man King \u2192 American West\nWeight: 1\nType: associated_with", "to": "American West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "White Man King", "title": "White Man King \u2192 Old West\nWeight: 1\nType: associated_with", "to": "Old West", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Abydos", "title": "Abydos \u2192 Tionaku\nWeight: 5\nType: movement\nTravelers: Abu Zir, Christopher Dunn, Flinders Petrie, Puma Punku, Roger Hopkins", "to": "Tionaku", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Aksum", "title": "Aksum \u2192 Ethiopia\nWeight: 2\nType: movement\nTravelers: Joe Rogan, Graham Hancock", "to": "Ethiopia", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "American West", "title": "American West \u2192 Old West\nWeight: 5\nType: movement\nTravelers: Childress, Coppins, Eric Fondanek, Martel Cognac, White Man King", "to": "Old West", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Belize", "title": "Belize \u2192 Bay Area\nWeight: 1\nType: movement\nTravelers: Mitchell Hedges", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Central And South America", "title": "Central And South America \u2192 Machu Picchu\nWeight: 1\nType: movement\nTravelers: Tsoukalos Eddie Bravo", "to": "Machu Picchu", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Colombia", "title": "Colombia \u2192 South America\nWeight: 1\nType: movement\nTravelers: Dogon", "to": "South America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Cusco", "title": "Cusco \u2192 Machu Picchu\nWeight: 1\nType: movement\nTravelers: Puma Punku", "to": "Machu Picchu", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Easter Island", "title": "Easter Island \u2192 Machu Picchu\nWeight: 1\nType: movement\nTravelers: Tom Segura", "to": "Machu Picchu", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Easter Island", "title": "Easter Island \u2192 Pumapuku\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Pumapuku", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "El Paso", "title": "El Paso \u2192 Pittsburgh\nWeight: 4\nType: movement\nTravelers: Eddie Bravo, Giorgio, Michelle Bachmans, Tsoukalos", "to": "Pittsburgh", "value": 4}, {"arrows": "to", "color": "#AB47BC", "from": "Ethiopia", "title": "Ethiopia \u2192 Malta\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Malta", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Ethiopia", "title": "Ethiopia \u2192 Lake Titicaca\nWeight: 1\nType: movement\nTravelers: Graham Hancock", "to": "Lake Titicaca", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Giza Plateau", "title": "Giza Plateau \u2192 Great Pyramid\nWeight: 3\nType: movement\nTravelers: Eddie Bravo, House Quetzalcoatl, Puma Punku", "to": "Great Pyramid", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Goldilocks Zone", "title": "Goldilocks Zone \u2192 Las Vegas\nWeight: 2\nType: movement\nTravelers: Alex Jones, Eric Von Daniken", "to": "Las Vegas", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Great Pyramid", "title": "Great Pyramid \u2192 Sphinx\nWeight: 1\nType: movement\nTravelers: Al-Makritzi", "to": "Sphinx", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Great Pyramid", "title": "Great Pyramid \u2192 El Paso\nWeight: 1\nType: movement\nTravelers: Eddie Bravo", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Greece", "title": "Greece \u2192 North Pole\nWeight: 1\nType: movement\nTravelers: Hitler", "to": "North Pole", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Lake Titicaca", "title": "Lake Titicaca \u2192 Machu Picchu\nWeight: 3\nType: movement\nTravelers: Graham Hancock, Puma Punku, Tom Segura", "to": "Machu Picchu", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 Vietnam\nWeight: 4\nType: movement\nTravelers: Alex Jones, David Icke, Eisenhower, Giorgio", "to": "Vietnam", "value": 4}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 Samaria\nWeight: 3\nType: movement\nTravelers: Aubrey De Grey, Golden Age, John Anthony West", "to": "Samaria", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 El Paso\nWeight: 1\nType: movement\nTravelers: Tsoukalos", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Lebanon", "title": "Lebanon \u2192 Giza Plateau\nWeight: 1\nType: movement\nTravelers: Eddie Bravo", "to": "Giza Plateau", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Machu Picchu", "title": "Machu Picchu \u2192 Newgrange\nWeight: 1\nType: movement\nTravelers: Puma Punku", "to": "Newgrange", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Machu Picchu", "title": "Machu Picchu \u2192 Pumapunku\nWeight: 3\nType: movement\nTravelers: Graham Hancock, Puma Punku, Tom Segura", "to": "Pumapunku", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Machu Picchu", "title": "Machu Picchu \u2192 Central And South America\nWeight: 1\nType: movement\nTravelers: Tsoukalos Eddie Bravo", "to": "Central And South America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Machu Picchu", "title": "Machu Picchu \u2192 Greece\nWeight: 1\nType: movement\nTravelers: Tsoukalos Eddie Bravo", "to": "Greece", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Malta", "title": "Malta \u2192 Mediterranean\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Mediterranean", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Mediterranean", "title": "Mediterranean \u2192 Sicily Channel\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Sicily Channel", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Milwaukee County Stadium", "title": "Milwaukee County Stadium \u2192 Pabst Theater\nWeight: 8\nType: movement\nTravelers: Brian, Duncan Trussell, Eddie Bravo, Jay Moore, Joe Diaz, Joey Diaz, Nibiru Jiu-Jitsu, Rogan", "to": "Pabst Theater", "value": 8}, {"arrows": "to", "color": "#AB47BC", "from": "Newgrange", "title": "Newgrange \u2192 Lake Titicaca\nWeight: 1\nType: movement\nTravelers: Puma Punku", "to": "Lake Titicaca", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Nile Valley", "title": "Nile Valley \u2192 Sphinx\nWeight: 2\nType: movement\nTravelers: John Anthony West, Robert Shock", "to": "Sphinx", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "North Pole", "title": "North Pole \u2192 South Pole\nWeight: 1\nType: movement\nTravelers: Hitler", "to": "South Pole", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Ollantaytambo", "title": "Ollantaytambo \u2192 Russia\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Pittsburgh", "title": "Pittsburgh \u2192 T-S-O-U-K-A-L-O-S. Nice\nWeight: 4\nType: movement\nTravelers: Eddie Bravo, Giorgio, Michelle Bachmans, Tsoukalos", "to": "T-S-O-U-K-A-L-O-S. Nice", "value": 4}, {"arrows": "to", "color": "#AB47BC", "from": "Pumapunku", "title": "Pumapunku \u2192 Giza Plateau\nWeight: 1\nType: movement\nTravelers: Puma Punku", "to": "Giza Plateau", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Pumapunku", "title": "Pumapunku \u2192 Easter Island\nWeight: 1\nType: movement\nTravelers: Tom Segura", "to": "Easter Island", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Russia", "title": "Russia \u2192 Easter Island\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Easter Island", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Samaria", "title": "Samaria \u2192 Sphinx\nWeight: 3\nType: movement\nTravelers: Aubrey De Grey, Golden Age, John Anthony West", "to": "Sphinx", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Sicily Channel", "title": "Sicily Channel \u2192 Ollantaytambo\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Ollantaytambo", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "South America", "title": "South America \u2192 Machu Picchu\nWeight: 1\nType: movement\nTravelers: Tsoukalos Eddie Bravo", "to": "Machu Picchu", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Sphinx", "title": "Sphinx \u2192 Las Vegas\nWeight: 1\nType: movement\nTravelers: John Anthony West", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "T-S-O-U-K-A-L-O-S. Nice", "title": "T-S-O-U-K-A-L-O-S. Nice \u2192 Milwaukee County Stadium\nWeight: 1\nType: movement\nTravelers: Eddie Bravo", "to": "Milwaukee County Stadium", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Tionaku", "title": "Tionaku \u2192 Cusco\nWeight: 1\nType: movement\nTravelers: Puma Punku", "to": "Cusco", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Vietnam", "title": "Vietnam \u2192 Goldilocks Zone\nWeight: 1\nType: movement\nTravelers: Alex Jones", "to": "Goldilocks Zone", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Vietnam", "title": "Vietnam \u2192 El Paso\nWeight: 1\nType: movement\nTravelers: Giorgio", "to": "El Paso", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos Eddie Bravo", "title": "Tsoukalos Eddie Bravo \u2192 South America\nWeight: 1\nType: associated_with", "to": "South America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos Eddie Bravo", "title": "Tsoukalos Eddie Bravo \u2192 Machu Picchu\nWeight: 2\nType: associated_with", "to": "Machu Picchu", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos Eddie Bravo", "title": "Tsoukalos Eddie Bravo \u2192 Central And South America\nWeight: 1\nType: associated_with", "to": "Central And South America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tsoukalos Eddie Bravo", "title": "Tsoukalos Eddie Bravo \u2192 Greece\nWeight: 1\nType: associated_with", "to": "Greece", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Aksum\nWeight: 1\nType: associated_with", "to": "Aksum", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Ethiopia\nWeight: 1\nType: associated_with", "to": "Ethiopia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Malta\nWeight: 1\nType: associated_with", "to": "Malta", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Mediterranean\nWeight: 1\nType: associated_with", "to": "Mediterranean", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Sicily Channel\nWeight: 1\nType: associated_with", "to": "Sicily Channel", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Ollantaytambo\nWeight: 1\nType: associated_with", "to": "Ollantaytambo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Easter Island\nWeight: 1\nType: associated_with", "to": "Easter Island", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Pumapuku\nWeight: 1\nType: associated_with", "to": "Pumapuku", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_01", "title": "Speaker_01 \u2192 Machu Picchu\nWeight: 1\nType: associated_with", "to": "Machu Picchu", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

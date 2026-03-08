@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">Episode 2156 How Inflation Is Tied with the Climate Mandates the Biden Administration Installed a Dictator in Haiti and Crushed Their Chance at Democracy Mike Lindell Sues the Fbi</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">Bannon S War Room</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">72</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">31</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">207</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Abbott", "label": "Abbott", "shape": "dot", "size": 15, "title": "Abbott\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alan Dershowitz", "label": "Alan Dershowitz", "shape": "dot", "size": 17, "title": "Alan Dershowitz\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andrew Parker", "label": "Andrew Parker", "shape": "dot", "size": 17, "title": "Andrew Parker\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ariel Henry", "label": "Ariel Henry", "shape": "dot", "size": 19, "title": "Ariel Henry\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Auden Cabello", "label": "Auden Cabello", "shape": "dot", "size": 15, "title": "Auden Cabello\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bannon", "label": "Bannon", "shape": "dot", "size": 17, "title": "Bannon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Barack Obama", "label": "Barack Obama", "shape": "dot", "size": 15, "title": "Barack Obama\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ben Berkman", "label": "Ben Berkman", "shape": "dot", "size": 25, "title": "Ben Berkman\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ben Berquam", "label": "Ben Berquam", "shape": "dot", "size": 23, "title": "Ben Berquam\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bernie", "label": "Bernie", "shape": "dot", "size": 25, "title": "Bernie\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Blake Masters", "label": "Blake Masters", "shape": "dot", "size": 15, "title": "Blake Masters\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Boris Underscore Epstein", "label": "Boris Underscore Epstein", "shape": "dot", "size": 31, "title": "Boris Underscore Epstein\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cameron Denver", "label": "Cameron Denver", "shape": "dot", "size": 15, "title": "Cameron Denver\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Ray", "label": "Chris Ray", "shape": "dot", "size": 21, "title": "Chris Ray\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chuck Grassley", "label": "Chuck Grassley", "shape": "dot", "size": 15, "title": "Chuck Grassley\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chuck Schumer", "label": "Chuck Schumer", "shape": "dot", "size": 15, "title": "Chuck Schumer\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cortez", "label": "Cortez", "shape": "dot", "size": 23, "title": "Cortez\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Daniel Foote", "label": "Daniel Foote", "shape": "dot", "size": 17, "title": "Daniel Foote\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Brad", "label": "Dave Brad", "shape": "dot", "size": 23, "title": "Dave Brad\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Brat", "label": "Dave Brat", "shape": "dot", "size": 27, "title": "Dave Brat\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Brett", "label": "Dave Brett", "shape": "dot", "size": 21, "title": "Dave Brett\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Walsh", "label": "Dave Walsh", "shape": "dot", "size": 31, "title": "Dave Walsh\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Desantis", "label": "Desantis", "shape": "dot", "size": 27, "title": "Desantis\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Don Bolduc", "label": "Don Bolduc", "shape": "dot", "size": 15, "title": "Don Bolduc\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Trump", "label": "Donald Trump", "shape": "dot", "size": 17, "title": "Donald Trump\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Doug Mastroianni", "label": "Doug Mastroianni", "shape": "dot", "size": 25, "title": "Doug Mastroianni\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eichmann", "label": "Eichmann", "shape": "dot", "size": 17, "title": "Eichmann\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Frank Gaffney", "label": "Frank Gaffney", "shape": "dot", "size": 19, "title": "Frank Gaffney\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Frank Speech", "label": "Frank Speech", "shape": "dot", "size": 17, "title": "Frank Speech\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Greta Thunberg", "label": "Greta Thunberg", "shape": "dot", "size": 19, "title": "Greta Thunberg\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "J.D. Vance", "label": "J.D. Vance", "shape": "dot", "size": 15, "title": "J.D. Vance\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Janet Yellen", "label": "Janet Yellen", "shape": "dot", "size": 17, "title": "Janet Yellen\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Allen", "label": "Joe Allen", "shape": "dot", "size": 29, "title": "Joe Allen\nType: PERSON\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Biden", "label": "Joe Biden", "shape": "dot", "size": 39, "title": "Joe Biden\nType: PERSON\nConnections: 12"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Biden Unleashed", "label": "Joe Biden Unleashed", "shape": "dot", "size": 15, "title": "Joe Biden Unleashed\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Kent", "label": "Joe Kent", "shape": "dot", "size": 15, "title": "Joe Kent\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Federman", "label": "John Federman", "shape": "dot", "size": 25, "title": "John Federman\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ken Burns", "label": "Ken Burns", "shape": "dot", "size": 25, "title": "Ken Burns\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kurt Olson", "label": "Kurt Olson", "shape": "dot", "size": 17, "title": "Kurt Olson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leavitt", "label": "Leavitt", "shape": "dot", "size": 15, "title": "Leavitt\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Martha", "label": "Martha", "shape": "dot", "size": 15, "title": "Martha\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Merrick Garland", "label": "Merrick Garland", "shape": "dot", "size": 15, "title": "Merrick Garland\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael", "label": "Michael", "shape": "dot", "size": 17, "title": "Michael\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mike Davis", "label": "Mike Davis", "shape": "dot", "size": 19, "title": "Mike Davis\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mike Lee", "label": "Mike Lee", "shape": "dot", "size": 15, "title": "Mike Lee\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mike Lindell", "label": "Mike Lindell", "shape": "dot", "size": 15, "title": "Mike Lindell\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "My Gitter", "label": "My Gitter", "shape": "dot", "size": 15, "title": "My Gitter\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nancy Pelosi", "label": "Nancy Pelosi", "shape": "dot", "size": 15, "title": "Nancy Pelosi\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Oscar Ramirez", "label": "Oscar Ramirez", "shape": "dot", "size": 27, "title": "Oscar Ramirez\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter Navarro", "label": "Peter Navarro", "shape": "dot", "size": 21, "title": "Peter Navarro\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Putin", "label": "Putin", "shape": "dot", "size": 15, "title": "Putin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Renee Wegrison", "label": "Renee Wegrison", "shape": "dot", "size": 15, "title": "Renee Wegrison\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Russ Vogt", "label": "Russ Vogt", "shape": "dot", "size": 19, "title": "Russ Vogt\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sharona Bishop", "label": "Sharona Bishop", "shape": "dot", "size": 19, "title": "Sharona Bishop\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Slash Bannon", "label": "Slash Bannon", "shape": "dot", "size": 23, "title": "Slash Bannon\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stephen K. Bannon", "label": "Stephen K. Bannon", "shape": "dot", "size": 23, "title": "Stephen K. Bannon\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve", "label": "Steve", "shape": "dot", "size": 15, "title": "Steve\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Taylor", "label": "Taylor", "shape": "dot", "size": 15, "title": "Taylor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Terry Lake", "label": "Terry Lake", "shape": "dot", "size": 15, "title": "Terry Lake\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Todd Bensman", "label": "Todd Bensman", "shape": "dot", "size": 25, "title": "Todd Bensman\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Todd Benson", "label": "Todd Benson", "shape": "dot", "size": 27, "title": "Todd Benson\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Todd Benzman", "label": "Todd Benzman", "shape": "dot", "size": 31, "title": "Todd Benzman\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tom Barrasso", "label": "Tom Barrasso", "shape": "dot", "size": 15, "title": "Tom Barrasso\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tony Fauci", "label": "Tony Fauci", "shape": "dot", "size": 15, "title": "Tony Fauci\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tucker", "label": "Tucker", "shape": "dot", "size": 25, "title": "Tucker\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Warroomhealth", "label": "Warroomhealth", "shape": "dot", "size": 15, "title": "Warroomhealth\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Australia", "label": "Australia", "shape": "dot", "size": 19, "title": "Australia\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Cambodia", "label": "Cambodia", "shape": "dot", "size": 21, "title": "Cambodia\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Canada", "label": "Canada", "shape": "dot", "size": 21, "title": "Canada\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Central America", "label": "Central America", "shape": "dot", "size": 23, "title": "Central America\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Central Asia", "label": "Central Asia", "shape": "dot", "size": 41, "title": "Central Asia\nType: PLACE\nConnections: 13"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ciudad Acuna", "label": "Ciudad Acuna", "shape": "dot", "size": 17, "title": "Ciudad Acuna\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Colorado", "label": "Colorado", "shape": "dot", "size": 19, "title": "Colorado\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Del Rio", "label": "Del Rio", "shape": "dot", "size": 47, "title": "Del Rio\nType: PLACE\nConnections: 16"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Del Rio Bridge", "label": "Del Rio Bridge", "shape": "dot", "size": 23, "title": "Del Rio Bridge\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "England Singapore", "label": "England Singapore", "shape": "dot", "size": 21, "title": "England Singapore\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Haiti", "label": "Haiti", "shape": "dot", "size": 60, "title": "Haiti\nType: PLACE\nConnections: 36"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Japan", "label": "Japan", "shape": "dot", "size": 21, "title": "Japan\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mankato", "label": "Mankato", "shape": "dot", "size": 19, "title": "Mankato\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Martha\u0027S Vineyard", "label": "Martha\u0027S Vineyard", "shape": "dot", "size": 53, "title": "Martha\u0027S Vineyard\nType: PLACE\nConnections: 19"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Metro Denver", "label": "Metro Denver", "shape": "dot", "size": 37, "title": "Metro Denver\nType: PLACE\nConnections: 11"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Minnesota", "label": "Minnesota", "shape": "dot", "size": 21, "title": "Minnesota\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Naval Observatory", "label": "Naval Observatory", "shape": "dot", "size": 39, "title": "Naval Observatory\nType: PLACE\nConnections: 12"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Naval Reserve", "label": "Naval Reserve", "shape": "dot", "size": 27, "title": "Naval Reserve\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Nuremberg Valley", "label": "Nuremberg Valley", "shape": "dot", "size": 17, "title": "Nuremberg Valley\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Oval Office", "label": "Oval Office", "shape": "dot", "size": 39, "title": "Oval Office\nType: PLACE\nConnections: 12"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pakistan", "label": "Pakistan", "shape": "dot", "size": 25, "title": "Pakistan\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pfizer Argentina", "label": "Pfizer Argentina", "shape": "dot", "size": 31, "title": "Pfizer Argentina\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Phoenix", "label": "Phoenix", "shape": "dot", "size": 33, "title": "Phoenix\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Public Sq", "label": "Public Sq", "shape": "dot", "size": 17, "title": "Public Sq\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Rio Grande", "label": "Rio Grande", "shape": "dot", "size": 23, "title": "Rio Grande\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Scandinavia Sweden", "label": "Scandinavia Sweden", "shape": "dot", "size": 35, "title": "Scandinavia Sweden\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "South Korea", "label": "South Korea", "shape": "dot", "size": 17, "title": "South Korea\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Turkey Hill", "label": "Turkey Hill", "shape": "dot", "size": 25, "title": "Turkey Hill\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 60, "title": "United States\nType: PLACE\nConnections: 32"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States Or", "label": "United States Or", "shape": "dot", "size": 47, "title": "United States Or\nType: PLACE\nConnections: 16"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Vietnam", "label": "Vietnam", "shape": "dot", "size": 19, "title": "Vietnam\nType: PLACE\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_08", "label": "Speaker_08", "shape": "dot", "size": 17, "title": "Speaker_08\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_06", "label": "Speaker_06", "shape": "dot", "size": 27, "title": "Speaker_06\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Bannon", "label": "Steve Bannon", "shape": "dot", "size": 17, "title": "Steve Bannon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_02", "label": "Speaker_02", "shape": "dot", "size": 17, "title": "Speaker_02\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Climate Mandates", "label": "Climate Mandates", "shape": "dot", "size": 19, "title": "Climate Mandates\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Biden Administration Installed", "label": "Biden Administration Installed", "shape": "dot", "size": 17, "title": "Biden Administration Installed\nType: PERSON\nConnections: 1"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Alan Dershowitz", "title": "Alan Dershowitz \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrew Parker", "title": "Andrew Parker \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ariel Henry", "title": "Ariel Henry \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ariel Henry", "title": "Ariel Henry \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bannon", "title": "Bannon \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berkman", "title": "Ben Berkman \u2192 Central America\nWeight: 1\nType: associated_with", "to": "Central America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berkman", "title": "Ben Berkman \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berkman", "title": "Ben Berkman \u2192 Del Rio Bridge\nWeight: 1\nType: associated_with", "to": "Del Rio Bridge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berkman", "title": "Ben Berkman \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berkman", "title": "Ben Berkman \u2192 Rio Grande\nWeight: 1\nType: associated_with", "to": "Rio Grande", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berquam", "title": "Ben Berquam \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berquam", "title": "Ben Berquam \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berquam", "title": "Ben Berquam \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ben Berquam", "title": "Ben Berquam \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bernie", "title": "Bernie \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bernie", "title": "Bernie \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bernie", "title": "Bernie \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bernie", "title": "Bernie \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bernie", "title": "Bernie \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Pakistan\nWeight: 1\nType: associated_with", "to": "Pakistan", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Turkey Hill\nWeight: 1\nType: associated_with", "to": "Turkey Hill", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Boris Underscore Epstein", "title": "Boris Underscore Epstein \u2192 Phoenix\nWeight: 1\nType: associated_with", "to": "Phoenix", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Ray", "title": "Chris Ray \u2192 Mankato\nWeight: 1\nType: associated_with", "to": "Mankato", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Ray", "title": "Chris Ray \u2192 Minnesota\nWeight: 1\nType: associated_with", "to": "Minnesota", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Ray", "title": "Chris Ray \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cortez", "title": "Cortez \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cortez", "title": "Cortez \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cortez", "title": "Cortez \u2192 Pfizer Argentina\nWeight: 1\nType: associated_with", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cortez", "title": "Cortez \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Daniel Foote", "title": "Daniel Foote \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brad", "title": "Dave Brad \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brad", "title": "Dave Brad \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brad", "title": "Dave Brad \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brad", "title": "Dave Brad \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 United States\nWeight: 2\nType: associated_with", "to": "United States", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brat", "title": "Dave Brat \u2192 Pfizer Argentina\nWeight: 1\nType: associated_with", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brett", "title": "Dave Brett \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brett", "title": "Dave Brett \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Brett", "title": "Dave Brett \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Haiti\nWeight: 2\nType: associated_with", "to": "Haiti", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Phoenix\nWeight: 1\nType: associated_with", "to": "Phoenix", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Walsh", "title": "Dave Walsh \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 Martha\u0027S Vineyard\nWeight: 2\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 Naval Reserve\nWeight: 1\nType: associated_with", "to": "Naval Reserve", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Donald Trump", "title": "Donald Trump \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doug Mastroianni", "title": "Doug Mastroianni \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doug Mastroianni", "title": "Doug Mastroianni \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doug Mastroianni", "title": "Doug Mastroianni \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doug Mastroianni", "title": "Doug Mastroianni \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doug Mastroianni", "title": "Doug Mastroianni \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eichmann", "title": "Eichmann \u2192 Nuremberg Valley\nWeight: 1\nType: associated_with", "to": "Nuremberg Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Frank Gaffney", "title": "Frank Gaffney \u2192 Pakistan\nWeight: 1\nType: associated_with", "to": "Pakistan", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Frank Gaffney", "title": "Frank Gaffney \u2192 Turkey Hill\nWeight: 1\nType: associated_with", "to": "Turkey Hill", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Frank Speech", "title": "Frank Speech \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Greta Thunberg", "title": "Greta Thunberg \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Greta Thunberg", "title": "Greta Thunberg \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Janet Yellen", "title": "Janet Yellen \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Phoenix\nWeight: 1\nType: associated_with", "to": "Phoenix", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Pfizer Argentina\nWeight: 1\nType: associated_with", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Allen", "title": "Joe Allen \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Pakistan\nWeight: 1\nType: associated_with", "to": "Pakistan", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Turkey Hill\nWeight: 1\nType: associated_with", "to": "Turkey Hill", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Phoenix\nWeight: 1\nType: associated_with", "to": "Phoenix", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Del Rio\nWeight: 3\nType: associated_with", "to": "Del Rio", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Haiti\nWeight: 4\nType: associated_with", "to": "Haiti", "value": 4}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Central America\nWeight: 1\nType: associated_with", "to": "Central America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Del Rio Bridge\nWeight: 1\nType: associated_with", "to": "Del Rio Bridge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Rio Grande\nWeight: 1\nType: associated_with", "to": "Rio Grande", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Naval Reserve\nWeight: 1\nType: associated_with", "to": "Naval Reserve", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Federman", "title": "John Federman \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Federman", "title": "John Federman \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Federman", "title": "John Federman \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Federman", "title": "John Federman \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Federman", "title": "John Federman \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ken Burns", "title": "Ken Burns \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ken Burns", "title": "Ken Burns \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ken Burns", "title": "Ken Burns \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ken Burns", "title": "Ken Burns \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ken Burns", "title": "Ken Burns \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kurt Olson", "title": "Kurt Olson \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael", "title": "Michael \u2192 Public Sq\nWeight: 1\nType: associated_with", "to": "Public Sq", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mike Davis", "title": "Mike Davis \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mike Davis", "title": "Mike Davis \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Oscar Ramirez", "title": "Oscar Ramirez \u2192 Naval Reserve\nWeight: 1\nType: associated_with", "to": "Naval Reserve", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Peter Navarro", "title": "Peter Navarro \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Peter Navarro", "title": "Peter Navarro \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Peter Navarro", "title": "Peter Navarro \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Russ Vogt", "title": "Russ Vogt \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Russ Vogt", "title": "Russ Vogt \u2192 Scandinavia Sweden\nWeight: 1\nType: associated_with", "to": "Scandinavia Sweden", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sharona Bishop", "title": "Sharona Bishop \u2192 Colorado\nWeight: 1\nType: associated_with", "to": "Colorado", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sharona Bishop", "title": "Sharona Bishop \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Bannon", "title": "Slash Bannon \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Bannon", "title": "Slash Bannon \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Bannon", "title": "Slash Bannon \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Bannon", "title": "Slash Bannon \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen K. Bannon", "title": "Stephen K. Bannon \u2192 Haiti\nWeight: 2\nType: associated_with", "to": "Haiti", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen K. Bannon", "title": "Stephen K. Bannon \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen K. Bannon", "title": "Stephen K. Bannon \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen K. Bannon", "title": "Stephen K. Bannon \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Bensman", "title": "Todd Bensman \u2192 Haiti\nWeight: 2\nType: associated_with", "to": "Haiti", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Bensman", "title": "Todd Bensman \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Bensman", "title": "Todd Bensman \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Bensman", "title": "Todd Bensman \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Bensman", "title": "Todd Bensman \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benson", "title": "Todd Benson \u2192 Naval Reserve\nWeight: 1\nType: associated_with", "to": "Naval Reserve", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Pfizer Argentina\nWeight: 1\nType: associated_with", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Central Asia\nWeight: 1\nType: associated_with", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Del Rio\nWeight: 1\nType: associated_with", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Oval Office\nWeight: 1\nType: associated_with", "to": "Oval Office", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Todd Benzman", "title": "Todd Benzman \u2192 Naval Reserve\nWeight: 1\nType: associated_with", "to": "Naval Reserve", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tucker", "title": "Tucker \u2192 Haiti\nWeight: 1\nType: associated_with", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tucker", "title": "Tucker \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: associated_with", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tucker", "title": "Tucker \u2192 Naval Observatory\nWeight: 1\nType: associated_with", "to": "Naval Observatory", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tucker", "title": "Tucker \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tucker", "title": "Tucker \u2192 United States Or\nWeight: 1\nType: associated_with", "to": "United States Or", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Australia", "title": "Australia \u2192 Cambodia\nWeight: 1\nType: movement\nTravelers: Speaker_06", "to": "Cambodia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Cambodia", "title": "Cambodia \u2192 Canada\nWeight: 1\nType: movement\nTravelers: Speaker_06", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Canada", "title": "Canada \u2192 England Singapore\nWeight: 1\nType: movement\nTravelers: Speaker_06", "to": "England Singapore", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Central America", "title": "Central America \u2192 Del Rio\nWeight: 2\nType: movement\nTravelers: Ben Berkman, Joe Biden", "to": "Del Rio", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Central Asia", "title": "Central Asia \u2192 Del Rio\nWeight: 9\nType: movement\nTravelers: Ben Berquam, Dave Brad, Joe Allen, Joe Biden, Oscar Ramirez, Slash Bannon, Stephen K. Bannon, Todd Benson, Todd Benzman", "to": "Del Rio", "value": 9}, {"arrows": "to", "color": "#AB47BC", "from": "Colorado", "title": "Colorado \u2192 United States\nWeight: 1\nType: movement\nTravelers: Sharona Bishop", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Del Rio", "title": "Del Rio \u2192 Haiti\nWeight: 11\nType: movement\nTravelers: Ben Berquam, Dave Brad, Joe Allen, Joe Biden, Oscar Ramirez, Slash Bannon, Stephen K. Bannon, Todd Benson, Todd Benzman, Ariel Henry", "to": "Haiti", "value": 11}, {"arrows": "to", "color": "#AB47BC", "from": "Del Rio", "title": "Del Rio \u2192 Del Rio Bridge\nWeight: 2\nType: movement\nTravelers: Ben Berkman, Joe Biden", "to": "Del Rio Bridge", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Del Rio Bridge", "title": "Del Rio Bridge \u2192 Haiti\nWeight: 2\nType: movement\nTravelers: Ben Berkman, Joe Biden", "to": "Haiti", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "England Singapore", "title": "England Singapore \u2192 Japan\nWeight: 1\nType: movement\nTravelers: Speaker_06", "to": "Japan", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Martha\u0027S Vineyard\nWeight: 11\nType: movement\nTravelers: Bernie, Boris Underscore Epstein, Dave Brat, Dave Walsh, Desantis, Doug Mastroianni, John Federman, Ken Burns, Todd Bensman, Tucker, Joe Biden", "to": "Martha\u0027S Vineyard", "value": 11}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Metro Denver\nWeight: 2\nType: movement\nTravelers: Dave Brett, Dave Walsh", "to": "Metro Denver", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Oval Office\nWeight: 9\nType: movement\nTravelers: Ben Berquam, Dave Brad, Joe Allen, Joe Biden, Oscar Ramirez, Slash Bannon, Stephen K. Bannon, Todd Benson, Todd Benzman", "to": "Oval Office", "value": 9}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Central Asia\nWeight: 1\nType: movement\nTravelers: Stephen K. Bannon", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Rio Grande\nWeight: 2\nType: movement\nTravelers: Ben Berkman, Joe Biden", "to": "Rio Grande", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Haiti", "title": "Haiti \u2192 Central America\nWeight: 1\nType: movement\nTravelers: Joe Biden", "to": "Central America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Japan", "title": "Japan \u2192 Vietnam\nWeight: 1\nType: movement\nTravelers: Speaker_06", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Mankato", "title": "Mankato \u2192 Minnesota\nWeight: 1\nType: movement\nTravelers: Chris Ray", "to": "Minnesota", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Martha\u0027S Vineyard", "title": "Martha\u0027S Vineyard \u2192 Naval Observatory\nWeight: 10\nType: movement\nTravelers: Bernie, Boris Underscore Epstein, Dave Brat, Dave Walsh, Desantis, Doug Mastroianni, John Federman, Ken Burns, Todd Bensman, Tucker", "to": "Naval Observatory", "value": 10}, {"arrows": "to", "color": "#AB47BC", "from": "Martha\u0027S Vineyard", "title": "Martha\u0027S Vineyard \u2192 Naval Reserve\nWeight: 5\nType: movement\nTravelers: Desantis, Joe Biden, Oscar Ramirez, Todd Benson, Todd Benzman", "to": "Naval Reserve", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Metro Denver", "title": "Metro Denver \u2192 Scandinavia Sweden\nWeight: 7\nType: movement\nTravelers: Cortez, Dave Brett, Dave Walsh, Greta Thunberg, Mike Davis, Peter Navarro, Russ Vogt", "to": "Scandinavia Sweden", "value": 7}, {"arrows": "to", "color": "#AB47BC", "from": "Metro Denver", "title": "Metro Denver \u2192 United States\nWeight: 1\nType: movement\nTravelers: Climate Mandates", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Minnesota", "title": "Minnesota \u2192 United States\nWeight: 1\nType: movement\nTravelers: Chris Ray", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Naval Observatory", "title": "Naval Observatory \u2192 United States\nWeight: 10\nType: movement\nTravelers: Bernie, Boris Underscore Epstein, Dave Brat, Dave Walsh, Desantis, Doug Mastroianni, John Federman, Ken Burns, Todd Bensman, Tucker", "to": "United States", "value": 10}, {"arrows": "to", "color": "#AB47BC", "from": "Oval Office", "title": "Oval Office \u2192 Del Rio\nWeight: 1\nType: movement\nTravelers: Joe Biden", "to": "Del Rio", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Oval Office", "title": "Oval Office \u2192 Martha\u0027S Vineyard\nWeight: 3\nType: movement\nTravelers: Oscar Ramirez, Todd Benson, Todd Benzman", "to": "Martha\u0027S Vineyard", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Pakistan", "title": "Pakistan \u2192 Turkey Hill\nWeight: 3\nType: movement\nTravelers: Boris Underscore Epstein, Frank Gaffney, Joe Biden", "to": "Turkey Hill", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Pfizer Argentina", "title": "Pfizer Argentina \u2192 United States\nWeight: 4\nType: movement\nTravelers: Cortez, Dave Brat, Joe Allen, Todd Benzman", "to": "United States", "value": 4}, {"arrows": "to", "color": "#AB47BC", "from": "Phoenix", "title": "Phoenix \u2192 Haiti\nWeight: 1\nType: movement\nTravelers: Dave Walsh", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Phoenix", "title": "Phoenix \u2192 Pfizer Argentina\nWeight: 1\nType: movement\nTravelers: Joe Allen", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Phoenix", "title": "Phoenix \u2192 Central Asia\nWeight: 1\nType: movement\nTravelers: Joe Biden", "to": "Central Asia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Rio Grande", "title": "Rio Grande \u2192 Haiti\nWeight: 1\nType: movement\nTravelers: Joe Biden", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Scandinavia Sweden", "title": "Scandinavia Sweden \u2192 Pfizer Argentina\nWeight: 1\nType: movement\nTravelers: Cortez", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Scandinavia Sweden", "title": "Scandinavia Sweden \u2192 United States\nWeight: 1\nType: movement\nTravelers: Peter Navarro", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Turkey Hill", "title": "Turkey Hill \u2192 Phoenix\nWeight: 2\nType: movement\nTravelers: Boris Underscore Epstein, Joe Biden", "to": "Phoenix", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 United States Or\nWeight: 10\nType: movement\nTravelers: Bernie, Boris Underscore Epstein, Dave Brat, Dave Walsh, Desantis, Doug Mastroianni, John Federman, Ken Burns, Todd Bensman, Tucker", "to": "United States Or", "value": 10}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Central Asia\nWeight: 2\nType: movement\nTravelers: Joe Allen, Todd Benzman", "to": "Central Asia", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "United States Or", "title": "United States Or \u2192 Pakistan\nWeight: 1\nType: movement\nTravelers: Boris Underscore Epstein", "to": "Pakistan", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States Or", "title": "United States Or \u2192 Phoenix\nWeight: 1\nType: movement\nTravelers: Dave Walsh", "to": "Phoenix", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States Or", "title": "United States Or \u2192 Haiti\nWeight: 1\nType: movement\nTravelers: Todd Bensman", "to": "Haiti", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States Or", "title": "United States Or \u2192 Pfizer Argentina\nWeight: 1\nType: movement\nTravelers: Dave Brat", "to": "Pfizer Argentina", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States Or", "title": "United States Or \u2192 Martha\u0027S Vineyard\nWeight: 1\nType: movement\nTravelers: Desantis", "to": "Martha\u0027S Vineyard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_08", "title": "Speaker_08 \u2192 South Korea\nWeight: 1\nType: associated_with", "to": "South Korea", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 Australia\nWeight: 1\nType: associated_with", "to": "Australia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 Cambodia\nWeight: 1\nType: associated_with", "to": "Cambodia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 England Singapore\nWeight: 1\nType: associated_with", "to": "England Singapore", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 Japan\nWeight: 1\nType: associated_with", "to": "Japan", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_06", "title": "Speaker_06 \u2192 Vietnam\nWeight: 1\nType: associated_with", "to": "Vietnam", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Bannon", "title": "Steve Bannon \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_02", "title": "Speaker_02 \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Climate Mandates", "title": "Climate Mandates \u2192 Metro Denver\nWeight: 1\nType: associated_with", "to": "Metro Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Climate Mandates", "title": "Climate Mandates \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Biden Administration Installed", "title": "Biden Administration Installed \u2192 Ciudad Acuna\nWeight: 1\nType: associated_with", "to": "Ciudad Acuna", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">137 Alex Filippenko Supernovae Dark Energy Aliens the Expanding Universe</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">Lex Fridman Podcast</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">87</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">21</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">104</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Adam Rees", "label": "Adam Rees", "shape": "dot", "size": 15, "title": "Adam Rees\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Adam Ries", "label": "Adam Ries", "shape": "dot", "size": 17, "title": "Adam Ries\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alan Guth", "label": "Alan Guth", "shape": "dot", "size": 17, "title": "Alan Guth\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Filipenko", "label": "Alex Filipenko", "shape": "dot", "size": 17, "title": "Alex Filipenko\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Filippenko", "label": "Alex Filippenko", "shape": "dot", "size": 17, "title": "Alex Filippenko\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Wolshon", "label": "Alex Wolshon", "shape": "dot", "size": 17, "title": "Alex Wolshon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alexei Starobinsky", "label": "Alexei Starobinsky", "shape": "dot", "size": 17, "title": "Alexei Starobinsky\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alfred Nobel", "label": "Alfred Nobel", "shape": "dot", "size": 17, "title": "Alfred Nobel\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andre Linde", "label": "Andre Linde", "shape": "dot", "size": 17, "title": "Andre Linde\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andrea Ghez", "label": "Andrea Ghez", "shape": "dot", "size": 19, "title": "Andrea Ghez\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andromeda Galaxy", "label": "Andromeda Galaxy", "shape": "dot", "size": 15, "title": "Andromeda Galaxy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anthony", "label": "Anthony", "shape": "dot", "size": 17, "title": "Anthony\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Arthur Eddington", "label": "Arthur Eddington", "shape": "dot", "size": 19, "title": "Arthur Eddington\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Barry Barish", "label": "Barry Barish", "shape": "dot", "size": 19, "title": "Barry Barish\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Beatles", "label": "Beatles", "shape": "dot", "size": 15, "title": "Beatles\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bernie Taupin", "label": "Bernie Taupin", "shape": "dot", "size": 15, "title": "Bernie Taupin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bigfoot", "label": "Bigfoot", "shape": "dot", "size": 15, "title": "Bigfoot\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bill Gates", "label": "Bill Gates", "shape": "dot", "size": 15, "title": "Bill Gates\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian Greene", "label": "Brian Greene", "shape": "dot", "size": 17, "title": "Brian Greene\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian Schmidt", "label": "Brian Schmidt", "shape": "dot", "size": 21, "title": "Brian Schmidt\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carl Sagan", "label": "Carl Sagan", "shape": "dot", "size": 23, "title": "Carl Sagan\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carlos Santana", "label": "Carlos Santana", "shape": "dot", "size": 17, "title": "Carlos Santana\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cash App", "label": "Cash App", "shape": "dot", "size": 17, "title": "Cash App\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chandra", "label": "Chandra", "shape": "dot", "size": 19, "title": "Chandra\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Charlie Brown", "label": "Charlie Brown", "shape": "dot", "size": 17, "title": "Charlie Brown\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Hadfield", "label": "Chris Hadfield", "shape": "dot", "size": 17, "title": "Chris Hadfield\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Da Vinci", "label": "Da Vinci", "shape": "dot", "size": 17, "title": "Da Vinci\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Daniel Negrano", "label": "Daniel Negrano", "shape": "dot", "size": 17, "title": "Daniel Negrano\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Fravor", "label": "David Fravor", "shape": "dot", "size": 15, "title": "David Fravor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Goggins", "label": "David Goggins", "shape": "dot", "size": 17, "title": "David Goggins\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dennis Overby", "label": "Dennis Overby", "shape": "dot", "size": 17, "title": "Dennis Overby\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Drake", "label": "Drake", "shape": "dot", "size": 15, "title": "Drake\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Einstein", "label": "Einstein", "shape": "dot", "size": 15, "title": "Einstein\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elon Musk", "label": "Elon Musk", "shape": "dot", "size": 15, "title": "Elon Musk\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elton John", "label": "Elton John", "shape": "dot", "size": 15, "title": "Elton John\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elvis Presley", "label": "Elvis Presley", "shape": "dot", "size": 15, "title": "Elvis Presley\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Freeman Dyson", "label": "Freeman Dyson", "shape": "dot", "size": 15, "title": "Freeman Dyson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gary Kasparov", "label": "Gary Kasparov", "shape": "dot", "size": 17, "title": "Gary Kasparov\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Isaac Newton", "label": "Isaac Newton", "shape": "dot", "size": 19, "title": "Isaac Newton\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jan Oort", "label": "Jan Oort", "shape": "dot", "size": 17, "title": "Jan Oort\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jane Goodall", "label": "Jane Goodall", "shape": "dot", "size": 17, "title": "Jane Goodall\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jeff Richman", "label": "Jeff Richman", "shape": "dot", "size": 17, "title": "Jeff Richman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jim Peebles", "label": "Jim Peebles", "shape": "dot", "size": 17, "title": "Jim Peebles\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jocelyn Bell", "label": "Jocelyn Bell", "shape": "dot", "size": 17, "title": "Jocelyn Bell\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Johannes Kepler", "label": "Johannes Kepler", "shape": "dot", "size": 19, "title": "Johannes Kepler\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Julian Schwinger", "label": "Julian Schwinger", "shape": "dot", "size": 15, "title": "Julian Schwinger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "K. Lowes", "label": "K. Lowes", "shape": "dot", "size": 17, "title": "K. Lowes\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kelvin", "label": "Kelvin", "shape": "dot", "size": 15, "title": "Kelvin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kip Thorne", "label": "Kip Thorne", "shape": "dot", "size": 19, "title": "Kip Thorne\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lex Friedman", "label": "Lex Friedman", "shape": "dot", "size": 17, "title": "Lex Friedman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Phillips", "label": "Mark Phillips", "shape": "dot", "size": 19, "title": "Mark Phillips\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Zuckerberg", "label": "Mark Zuckerberg", "shape": "dot", "size": 15, "title": "Mark Zuckerberg\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Martin Scorsese", "label": "Martin Scorsese", "shape": "dot", "size": 17, "title": "Martin Scorsese\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michelangelo", "label": "Michelangelo", "shape": "dot", "size": 17, "title": "Michelangelo\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Miguel Alcubierre", "label": "Miguel Alcubierre", "shape": "dot", "size": 15, "title": "Miguel Alcubierre\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Neil Degrasse", "label": "Neil Degrasse", "shape": "dot", "size": 17, "title": "Neil Degrasse\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Neil Gaiman", "label": "Neil Gaiman", "shape": "dot", "size": 17, "title": "Neil Gaiman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Oscar", "label": "Oscar", "shape": "dot", "size": 15, "title": "Oscar\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Oscars", "label": "Oscars", "shape": "dot", "size": 15, "title": "Oscars\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pauli", "label": "Pauli", "shape": "dot", "size": 19, "title": "Pauli\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Penzias", "label": "Penzias", "shape": "dot", "size": 17, "title": "Penzias\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter", "label": "Peter", "shape": "dot", "size": 15, "title": "Peter\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter Higgs", "label": "Peter Higgs", "shape": "dot", "size": 15, "title": "Peter Higgs\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ptolemaic", "label": "Ptolemaic", "shape": "dot", "size": 17, "title": "Ptolemaic\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ralph Alpher", "label": "Ralph Alpher", "shape": "dot", "size": 17, "title": "Ralph Alpher\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ray Weiss", "label": "Ray Weiss", "shape": "dot", "size": 19, "title": "Ray Weiss\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Reese", "label": "Reese", "shape": "dot", "size": 15, "title": "Reese\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Richard Feynman", "label": "Richard Feynman", "shape": "dot", "size": 21, "title": "Richard Feynman\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roger Penrose", "label": "Roger Penrose", "shape": "dot", "size": 15, "title": "Roger Penrose\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ron Drever", "label": "Ron Drever", "shape": "dot", "size": 17, "title": "Ron Drever\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Saul Perlmutter", "label": "Saul Perlmutter", "shape": "dot", "size": 15, "title": "Saul Perlmutter\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Scorsese Masterclass", "label": "Scorsese Masterclass", "shape": "dot", "size": 17, "title": "Scorsese Masterclass\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sigmund Freud", "label": "Sigmund Freud", "shape": "dot", "size": 17, "title": "Sigmund Freud\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Slash Lex", "label": "Slash Lex", "shape": "dot", "size": 17, "title": "Slash Lex\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stephen Hawking", "label": "Stephen Hawking", "shape": "dot", "size": 15, "title": "Stephen Hawking\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Subramanian Chandrasekhar", "label": "Subramanian Chandrasekhar", "shape": "dot", "size": 19, "title": "Subramanian Chandrasekhar\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tony Hawk", "label": "Tony Hawk", "shape": "dot", "size": 17, "title": "Tony Hawk\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tuco Brahe", "label": "Tuco Brahe", "shape": "dot", "size": 19, "title": "Tuco Brahe\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tyson", "label": "Tyson", "shape": "dot", "size": 17, "title": "Tyson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Venus", "label": "Venus", "shape": "dot", "size": 19, "title": "Venus\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vera Rubin", "label": "Vera Rubin", "shape": "dot", "size": 17, "title": "Vera Rubin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wallace Sargent", "label": "Wallace Sargent", "shape": "dot", "size": 19, "title": "Wallace Sargent\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Will Wright", "label": "Will Wright", "shape": "dot", "size": 17, "title": "Will Wright\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wilson", "label": "Wilson", "shape": "dot", "size": 17, "title": "Wilson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Yuri Milner", "label": "Yuri Milner", "shape": "dot", "size": 17, "title": "Yuri Milner\nType: PERSON\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Bay Area", "label": "Bay Area", "shape": "dot", "size": 23, "title": "Bay Area\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Berkeley Heights", "label": "Berkeley Heights", "shape": "dot", "size": 60, "title": "Berkeley Heights\nType: PLACE\nConnections: 35"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Chile", "label": "Chile", "shape": "dot", "size": 37, "title": "Chile\nType: PLACE\nConnections: 11"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Europa", "label": "Europa", "shape": "dot", "size": 17, "title": "Europa\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Jupiter", "label": "Jupiter", "shape": "dot", "size": 23, "title": "Jupiter\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Kuiper Belt", "label": "Kuiper Belt", "shape": "dot", "size": 19, "title": "Kuiper Belt\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Large Hadron Collider", "label": "Large Hadron Collider", "shape": "dot", "size": 17, "title": "Large Hadron Collider\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Leaning Tower", "label": "Leaning Tower", "shape": "dot", "size": 17, "title": "Leaning Tower\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Los Angeles", "label": "Los Angeles", "shape": "dot", "size": 23, "title": "Los Angeles\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York City", "label": "New York City", "shape": "dot", "size": 21, "title": "New York City\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North America", "label": "North America", "shape": "dot", "size": 25, "title": "North America\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North And South India", "label": "North And South India", "shape": "dot", "size": 35, "title": "North And South India\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Olympic Village", "label": "Olympic Village", "shape": "dot", "size": 19, "title": "Olympic Village\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Roswell", "label": "Roswell", "shape": "dot", "size": 21, "title": "Roswell\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sahara Desert", "label": "Sahara Desert", "shape": "dot", "size": 19, "title": "Sahara Desert\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "San Francisco", "label": "San Francisco", "shape": "dot", "size": 21, "title": "San Francisco\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Santa Barbara", "label": "Santa Barbara", "shape": "dot", "size": 29, "title": "Santa Barbara\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Stockholm", "label": "Stockholm", "shape": "dot", "size": 33, "title": "Stockholm\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Tambora", "label": "Tambora", "shape": "dot", "size": 21, "title": "Tambora\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Venus De Milo", "label": "Venus De Milo", "shape": "dot", "size": 29, "title": "Venus De Milo\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Yellowstone Park", "label": "Yellowstone Park", "shape": "dot", "size": 21, "title": "Yellowstone Park\nType: PLACE\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Filippenko Supernovae Dark Energy Aliens", "label": "Alex Filippenko Supernovae Dark Energy Aliens", "shape": "dot", "size": 27, "title": "Alex Filippenko Supernovae Dark Energy Aliens\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lex Fridman", "label": "Lex Fridman", "shape": "dot", "size": 17, "title": "Lex Fridman\nType: PERSON\nConnections: 1"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Adam Ries", "title": "Adam Ries \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alan Guth", "title": "Alan Guth \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filipenko", "title": "Alex Filipenko \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko", "title": "Alex Filippenko \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Wolshon", "title": "Alex Wolshon \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alexei Starobinsky", "title": "Alexei Starobinsky \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alfred Nobel", "title": "Alfred Nobel \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andre Linde", "title": "Andre Linde \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrea Ghez", "title": "Andrea Ghez \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrea Ghez", "title": "Andrea Ghez \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anthony", "title": "Anthony \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Arthur Eddington", "title": "Arthur Eddington \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Arthur Eddington", "title": "Arthur Eddington \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Barry Barish", "title": "Barry Barish \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Barry Barish", "title": "Barry Barish \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian Greene", "title": "Brian Greene \u2192 Bay Area\nWeight: 1\nType: associated_with", "to": "Bay Area", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian Schmidt", "title": "Brian Schmidt \u2192 Berkeley Heights\nWeight: 2\nType: associated_with", "to": "Berkeley Heights", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Brian Schmidt", "title": "Brian Schmidt \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian Schmidt", "title": "Brian Schmidt \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carl Sagan", "title": "Carl Sagan \u2192 North America\nWeight: 1\nType: associated_with", "to": "North America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carl Sagan", "title": "Carl Sagan \u2192 Tambora\nWeight: 1\nType: associated_with", "to": "Tambora", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carl Sagan", "title": "Carl Sagan \u2192 Yellowstone Park\nWeight: 1\nType: associated_with", "to": "Yellowstone Park", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carl Sagan", "title": "Carl Sagan \u2192 Sahara Desert\nWeight: 1\nType: associated_with", "to": "Sahara Desert", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos Santana", "title": "Carlos Santana \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cash App", "title": "Cash App \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chandra", "title": "Chandra \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chandra", "title": "Chandra \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Charlie Brown", "title": "Charlie Brown \u2192 Kuiper Belt\nWeight: 1\nType: associated_with", "to": "Kuiper Belt", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Hadfield", "title": "Chris Hadfield \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Da Vinci", "title": "Da Vinci \u2192 Santa Barbara\nWeight: 1\nType: associated_with", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Daniel Negrano", "title": "Daniel Negrano \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Goggins", "title": "David Goggins \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dennis Overby", "title": "Dennis Overby \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gary Kasparov", "title": "Gary Kasparov \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Isaac Newton", "title": "Isaac Newton \u2192 Olympic Village\nWeight: 1\nType: associated_with", "to": "Olympic Village", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Isaac Newton", "title": "Isaac Newton \u2192 Santa Barbara\nWeight: 1\nType: associated_with", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jan Oort", "title": "Jan Oort \u2192 Kuiper Belt\nWeight: 1\nType: associated_with", "to": "Kuiper Belt", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jane Goodall", "title": "Jane Goodall \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jeff Richman", "title": "Jeff Richman \u2192 Santa Barbara\nWeight: 1\nType: associated_with", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jim Peebles", "title": "Jim Peebles \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jocelyn Bell", "title": "Jocelyn Bell \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Johannes Kepler", "title": "Johannes Kepler \u2192 Jupiter\nWeight: 1\nType: associated_with", "to": "Jupiter", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Johannes Kepler", "title": "Johannes Kepler \u2192 Venus De Milo\nWeight: 1\nType: associated_with", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "K. Lowes", "title": "K. Lowes \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kip Thorne", "title": "Kip Thorne \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kip Thorne", "title": "Kip Thorne \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Friedman", "title": "Lex Friedman \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Phillips", "title": "Mark Phillips \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Phillips", "title": "Mark Phillips \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martin Scorsese", "title": "Martin Scorsese \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michelangelo", "title": "Michelangelo \u2192 Santa Barbara\nWeight: 1\nType: associated_with", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Neil Degrasse", "title": "Neil Degrasse \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Neil Gaiman", "title": "Neil Gaiman \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Pauli", "title": "Pauli \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Pauli", "title": "Pauli \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Penzias", "title": "Penzias \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ptolemaic", "title": "Ptolemaic \u2192 Venus De Milo\nWeight: 1\nType: associated_with", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ralph Alpher", "title": "Ralph Alpher \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ray Weiss", "title": "Ray Weiss \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ray Weiss", "title": "Ray Weiss \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Richard Feynman", "title": "Richard Feynman \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Richard Feynman", "title": "Richard Feynman \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Richard Feynman", "title": "Richard Feynman \u2192 Santa Barbara\nWeight: 1\nType: associated_with", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ron Drever", "title": "Ron Drever \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Scorsese Masterclass", "title": "Scorsese Masterclass \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sigmund Freud", "title": "Sigmund Freud \u2192 Leaning Tower\nWeight: 1\nType: associated_with", "to": "Leaning Tower", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Lex", "title": "Slash Lex \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Subramanian Chandrasekhar", "title": "Subramanian Chandrasekhar \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Subramanian Chandrasekhar", "title": "Subramanian Chandrasekhar \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tony Hawk", "title": "Tony Hawk \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tuco Brahe", "title": "Tuco Brahe \u2192 Jupiter\nWeight: 1\nType: associated_with", "to": "Jupiter", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tuco Brahe", "title": "Tuco Brahe \u2192 Venus De Milo\nWeight: 1\nType: associated_with", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tyson", "title": "Tyson \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Venus", "title": "Venus \u2192 Jupiter\nWeight: 1\nType: associated_with", "to": "Jupiter", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Venus", "title": "Venus \u2192 Venus De Milo\nWeight: 1\nType: associated_with", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vera Rubin", "title": "Vera Rubin \u2192 Chile\nWeight: 1\nType: associated_with", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wallace Sargent", "title": "Wallace Sargent \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wallace Sargent", "title": "Wallace Sargent \u2192 North And South India\nWeight: 1\nType: associated_with", "to": "North And South India", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Will Wright", "title": "Will Wright \u2192 Berkeley Heights\nWeight: 1\nType: associated_with", "to": "Berkeley Heights", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wilson", "title": "Wilson \u2192 Stockholm\nWeight: 1\nType: associated_with", "to": "Stockholm", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Yuri Milner", "title": "Yuri Milner \u2192 Large Hadron Collider\nWeight: 1\nType: associated_with", "to": "Large Hadron Collider", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Berkeley Heights", "title": "Berkeley Heights \u2192 Chile\nWeight: 1\nType: movement\nTravelers: Brian Schmidt", "to": "Chile", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Berkeley Heights", "title": "Berkeley Heights \u2192 North And South India\nWeight: 8\nType: movement\nTravelers: Arthur Eddington, Brian Schmidt, Chandra, Mark Phillips, Pauli, Richard Feynman, Subramanian Chandrasekhar, Wallace Sargent", "to": "North And South India", "value": 8}, {"arrows": "to", "color": "#AB47BC", "from": "Chile", "title": "Chile \u2192 Berkeley Heights\nWeight: 2\nType: movement\nTravelers: Andrea Ghez, Brian Schmidt", "to": "Berkeley Heights", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Jupiter", "title": "Jupiter \u2192 Venus De Milo\nWeight: 3\nType: movement\nTravelers: Johannes Kepler, Tuco Brahe, Venus", "to": "Venus De Milo", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 New York City\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 San Francisco\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "San Francisco", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 North America\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "North America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North America", "title": "North America \u2192 Tambora\nWeight: 1\nType: movement\nTravelers: Carl Sagan", "to": "Tambora", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North America", "title": "North America \u2192 Los Angeles\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North And South India", "title": "North And South India \u2192 Santa Barbara\nWeight: 1\nType: movement\nTravelers: Richard Feynman", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Olympic Village", "title": "Olympic Village \u2192 Santa Barbara\nWeight: 1\nType: movement\nTravelers: Isaac Newton", "to": "Santa Barbara", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Roswell", "title": "Roswell \u2192 Venus De Milo\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "San Francisco", "title": "San Francisco \u2192 Roswell\nWeight: 1\nType: movement\nTravelers: Alex Filippenko Supernovae Dark Energy Aliens", "to": "Roswell", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Stockholm", "title": "Stockholm \u2192 Berkeley Heights\nWeight: 3\nType: movement\nTravelers: Barry Barish, Kip Thorne, Ray Weiss", "to": "Berkeley Heights", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Tambora", "title": "Tambora \u2192 Yellowstone Park\nWeight: 1\nType: movement\nTravelers: Carl Sagan", "to": "Yellowstone Park", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Yellowstone Park", "title": "Yellowstone Park \u2192 Sahara Desert\nWeight: 1\nType: movement\nTravelers: Carl Sagan", "to": "Sahara Desert", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 Los Angeles\nWeight: 2\nType: associated_with", "to": "Los Angeles", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 North America\nWeight: 1\nType: associated_with", "to": "North America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 San Francisco\nWeight: 1\nType: associated_with", "to": "San Francisco", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 Roswell\nWeight: 1\nType: associated_with", "to": "Roswell", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Alex Filippenko Supernovae Dark Energy Aliens", "title": "Alex Filippenko Supernovae Dark Energy Aliens \u2192 Venus De Milo\nWeight: 1\nType: associated_with", "to": "Venus De Milo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Europa\nWeight: 1\nType: associated_with", "to": "Europa", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

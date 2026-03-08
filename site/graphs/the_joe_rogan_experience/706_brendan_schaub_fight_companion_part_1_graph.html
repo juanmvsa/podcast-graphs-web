@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">706 Brendan Schaub Fight Companion Part 1</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">The Joe Rogan Experience</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">144</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">17</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">131</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "A. Yeah", "label": "A. Yeah", "shape": "dot", "size": 17, "title": "A. Yeah\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alex Pereira", "label": "Alex Pereira", "shape": "dot", "size": 15, "title": "Alex Pereira\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alexander", "label": "Alexander", "shape": "dot", "size": 15, "title": "Alexander\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anthony Hopkins", "label": "Anthony Hopkins", "shape": "dot", "size": 15, "title": "Anthony Hopkins\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anthony Johnson", "label": "Anthony Johnson", "shape": "dot", "size": 15, "title": "Anthony Johnson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ari Shafir", "label": "Ari Shafir", "shape": "dot", "size": 15, "title": "Ari Shafir\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ariel Helani", "label": "Ariel Helani", "shape": "dot", "size": 15, "title": "Ariel Helani\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ariel Pereira", "label": "Ariel Pereira", "shape": "dot", "size": 15, "title": "Ariel Pereira\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Arsenio Hall", "label": "Arsenio Hall", "shape": "dot", "size": 15, "title": "Arsenio Hall\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Artem Levin", "label": "Artem Levin", "shape": "dot", "size": 17, "title": "Artem Levin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "B.J. Penn", "label": "B.J. Penn", "shape": "dot", "size": 15, "title": "B.J. Penn\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bader Beat Rashad", "label": "Bader Beat Rashad", "shape": "dot", "size": 15, "title": "Bader Beat Rashad\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bill Cosby", "label": "Bill Cosby", "shape": "dot", "size": 23, "title": "Bill Cosby\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Billy Joel", "label": "Billy Joel", "shape": "dot", "size": 15, "title": "Billy Joel\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bob Seger", "label": "Bob Seger", "shape": "dot", "size": 15, "title": "Bob Seger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brendan", "label": "Brendan", "shape": "dot", "size": 17, "title": "Brendan\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brendan Schaub", "label": "Brendan Schaub", "shape": "dot", "size": 21, "title": "Brendan Schaub\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brendan Shaw", "label": "Brendan Shaw", "shape": "dot", "size": 15, "title": "Brendan Shaw\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian", "label": "Brian", "shape": "dot", "size": 15, "title": "Brian\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian Meadows", "label": "Brian Meadows", "shape": "dot", "size": 17, "title": "Brian Meadows\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brian Stan", "label": "Brian Stan", "shape": "dot", "size": 15, "title": "Brian Stan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bro-Sif", "label": "Bro-Sif", "shape": "dot", "size": 17, "title": "Bro-Sif\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brown", "label": "Brown", "shape": "dot", "size": 15, "title": "Brown\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cain Velasquez Verdum", "label": "Cain Velasquez Verdum", "shape": "dot", "size": 19, "title": "Cain Velasquez Verdum\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Caitlin Beck", "label": "Caitlin Beck", "shape": "dot", "size": 15, "title": "Caitlin Beck\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Callan", "label": "Callan", "shape": "dot", "size": 19, "title": "Callan\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carlos", "label": "Carlos", "shape": "dot", "size": 21, "title": "Carlos\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carlos Mancina", "label": "Carlos Mancina", "shape": "dot", "size": 15, "title": "Carlos Mancina\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carlos Menzelia", "label": "Carlos Menzelia", "shape": "dot", "size": 21, "title": "Carlos Menzelia\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carmon", "label": "Carmon", "shape": "dot", "size": 17, "title": "Carmon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Casey Green", "label": "Casey Green", "shape": "dot", "size": 15, "title": "Casey Green\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chad Mendes", "label": "Chad Mendes", "shape": "dot", "size": 15, "title": "Chad Mendes\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Charles", "label": "Charles", "shape": "dot", "size": 15, "title": "Charles\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chick-Fil-A", "label": "Chick-Fil-A", "shape": "dot", "size": 15, "title": "Chick-Fil-A\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chuck", "label": "Chuck", "shape": "dot", "size": 15, "title": "Chuck\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Conan", "label": "Conan", "shape": "dot", "size": 21, "title": "Conan\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Conan O\u0027Brien", "label": "Conan O\u0027Brien", "shape": "dot", "size": 21, "title": "Conan O\u0027Brien\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Conan Silveira", "label": "Conan Silveira", "shape": "dot", "size": 15, "title": "Conan Silveira\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cormier", "label": "Cormier", "shape": "dot", "size": 15, "title": "Cormier\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dana White", "label": "Dana White", "shape": "dot", "size": 15, "title": "Dana White\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dave Letterman", "label": "Dave Letterman", "shape": "dot", "size": 21, "title": "Dave Letterman\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Beckham", "label": "David Beckham", "shape": "dot", "size": 17, "title": "David Beckham\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Letterman", "label": "David Letterman", "shape": "dot", "size": 21, "title": "David Letterman\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Debbie", "label": "Debbie", "shape": "dot", "size": 15, "title": "Debbie\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Cerrone", "label": "Donald Cerrone", "shape": "dot", "size": 15, "title": "Donald Cerrone\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dustin Jacoby", "label": "Dustin Jacoby", "shape": "dot", "size": 17, "title": "Dustin Jacoby\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Williams", "label": "Eric Williams", "shape": "dot", "size": 15, "title": "Eric Williams\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Evan Tanner", "label": "Evan Tanner", "shape": "dot", "size": 15, "title": "Evan Tanner\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fabio Maldonado", "label": "Fabio Maldonado", "shape": "dot", "size": 17, "title": "Fabio Maldonado\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Floyd Mayweather", "label": "Floyd Mayweather", "shape": "dot", "size": 19, "title": "Floyd Mayweather\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Francis Carmont", "label": "Francis Carmont", "shape": "dot", "size": 17, "title": "Francis Carmont\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gabriel Gonzaga", "label": "Gabriel Gonzaga", "shape": "dot", "size": 15, "title": "Gabriel Gonzaga\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George", "label": "George", "shape": "dot", "size": 15, "title": "George\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gloria", "label": "Gloria", "shape": "dot", "size": 15, "title": "Gloria\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Glory Kickboxing", "label": "Glory Kickboxing", "shape": "dot", "size": 17, "title": "Glory Kickboxing\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Glover", "label": "Glover", "shape": "dot", "size": 17, "title": "Glover\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gustafson", "label": "Gustafson", "shape": "dot", "size": 15, "title": "Gustafson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Homeboy", "label": "Homeboy", "shape": "dot", "size": 15, "title": "Homeboy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Howard Stern", "label": "Howard Stern", "shape": "dot", "size": 21, "title": "Howard Stern\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jacoby", "label": "Jacoby", "shape": "dot", "size": 15, "title": "Jacoby\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jamie", "label": "Jamie", "shape": "dot", "size": 21, "title": "Jamie\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jane Leno", "label": "Jane Leno", "shape": "dot", "size": 21, "title": "Jane Leno\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jason Willness", "label": "Jason Willness", "shape": "dot", "size": 17, "title": "Jason Willness\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Javier Melendez", "label": "Javier Melendez", "shape": "dot", "size": 19, "title": "Javier Melendez\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jay Leno", "label": "Jay Leno", "shape": "dot", "size": 21, "title": "Jay Leno\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus Christ", "label": "Jesus Christ", "shape": "dot", "size": 21, "title": "Jesus Christ\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jimmy Manoa", "label": "Jimmy Manoa", "shape": "dot", "size": 19, "title": "Jimmy Manoa\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jiu-Jitsu Injury", "label": "Jiu-Jitsu Injury", "shape": "dot", "size": 19, "title": "Jiu-Jitsu Injury\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 19, "title": "Joe Rogan\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Schill", "label": "Joe Schill", "shape": "dot", "size": 15, "title": "Joe Schill\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Schilling", "label": "Joe Schilling", "shape": "dot", "size": 19, "title": "Joe Schilling\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joey Diaz", "label": "Joey Diaz", "shape": "dot", "size": 15, "title": "Joey Diaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John American", "label": "John American", "shape": "dot", "size": 19, "title": "John American\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Fights Rumble", "label": "John Fights Rumble", "shape": "dot", "size": 15, "title": "John Fights Rumble\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Jones", "label": "John Jones", "shape": "dot", "size": 15, "title": "John Jones\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Wayne Parr", "label": "John Wayne Parr", "shape": "dot", "size": 17, "title": "John Wayne Parr\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jon Jones", "label": "Jon Jones", "shape": "dot", "size": 15, "title": "Jon Jones\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jordan", "label": "Jordan", "shape": "dot", "size": 15, "title": "Jordan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Justin Jacoby", "label": "Justin Jacoby", "shape": "dot", "size": 17, "title": "Justin Jacoby\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ken Shamrock", "label": "Ken Shamrock", "shape": "dot", "size": 15, "title": "Ken Shamrock\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kevin Hart", "label": "Kevin Hart", "shape": "dot", "size": 17, "title": "Kevin Hart\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kevin James", "label": "Kevin James", "shape": "dot", "size": 21, "title": "Kevin James\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kevin Von Nostrand", "label": "Kevin Von Nostrand", "shape": "dot", "size": 19, "title": "Kevin Von Nostrand\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kimbo", "label": "Kimbo", "shape": "dot", "size": 15, "title": "Kimbo\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kobayashi", "label": "Kobayashi", "shape": "dot", "size": 15, "title": "Kobayashi\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kristen Beck", "label": "Kristen Beck", "shape": "dot", "size": 15, "title": "Kristen Beck\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kurt Cobain", "label": "Kurt Cobain", "shape": "dot", "size": 17, "title": "Kurt Cobain\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kurt Fox", "label": "Kurt Fox", "shape": "dot", "size": 21, "title": "Kurt Fox\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lance Armstrong", "label": "Lance Armstrong", "shape": "dot", "size": 15, "title": "Lance Armstrong\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Led Zeppelin", "label": "Led Zeppelin", "shape": "dot", "size": 15, "title": "Led Zeppelin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Letterman", "label": "Letterman", "shape": "dot", "size": 21, "title": "Letterman\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Machida", "label": "Machida", "shape": "dot", "size": 15, "title": "Machida\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magnus", "label": "Magnus", "shape": "dot", "size": 15, "title": "Magnus\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Magomedov", "label": "Magomedov", "shape": "dot", "size": 17, "title": "Magomedov\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Coleman", "label": "Mark Coleman", "shape": "dot", "size": 15, "title": "Mark Coleman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Hunt", "label": "Mark Hunt", "shape": "dot", "size": 15, "title": "Mark Hunt\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Maron", "label": "Mark Maron", "shape": "dot", "size": 15, "title": "Mark Maron\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mauro Ranallo", "label": "Mauro Ranallo", "shape": "dot", "size": 19, "title": "Mauro Ranallo\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mcduck", "label": "Mcduck", "shape": "dot", "size": 17, "title": "Mcduck\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Meat Eater", "label": "Meat Eater", "shape": "dot", "size": 15, "title": "Meat Eater\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Melvin Manhoef", "label": "Melvin Manhoef", "shape": "dot", "size": 15, "title": "Melvin Manhoef\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mencia", "label": "Mencia", "shape": "dot", "size": 21, "title": "Mencia\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael", "label": "Michael", "shape": "dot", "size": 15, "title": "Michael\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Jordan", "label": "Michael Jordan", "shape": "dot", "size": 15, "title": "Michael Jordan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Page", "label": "Michael Page", "shape": "dot", "size": 15, "title": "Michael Page\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mickey Mouse", "label": "Mickey Mouse", "shape": "dot", "size": 15, "title": "Mickey Mouse\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mighty Mouse", "label": "Mighty Mouse", "shape": "dot", "size": 15, "title": "Mighty Mouse\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Milo Yiannopoulos", "label": "Milo Yiannopoulos", "shape": "dot", "size": 15, "title": "Milo Yiannopoulos\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mo Smith", "label": "Mo Smith", "shape": "dot", "size": 15, "title": "Mo Smith\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nathan", "label": "Nathan", "shape": "dot", "size": 15, "title": "Nathan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nick Diaz", "label": "Nick Diaz", "shape": "dot", "size": 15, "title": "Nick Diaz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pereira", "label": "Pereira", "shape": "dot", "size": 15, "title": "Pereira\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Phil Davis", "label": "Phil Davis", "shape": "dot", "size": 17, "title": "Phil Davis\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Phil Mickelson", "label": "Phil Mickelson", "shape": "dot", "size": 15, "title": "Phil Mickelson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ping Pong", "label": "Ping Pong", "shape": "dot", "size": 21, "title": "Ping Pong\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rhonda", "label": "Rhonda", "shape": "dot", "size": 15, "title": "Rhonda\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Richard Branson", "label": "Richard Branson", "shape": "dot", "size": 17, "title": "Richard Branson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robbie Lawler", "label": "Robbie Lawler", "shape": "dot", "size": 15, "title": "Robbie Lawler\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ronda Rousey", "label": "Ronda Rousey", "shape": "dot", "size": 17, "title": "Ronda Rousey\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ryan Callahan", "label": "Ryan Callahan", "shape": "dot", "size": 17, "title": "Ryan Callahan\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Schlomenko", "label": "Schlomenko", "shape": "dot", "size": 15, "title": "Schlomenko\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sean Jordan", "label": "Sean Jordan", "shape": "dot", "size": 17, "title": "Sean Jordan\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Shane Carlin", "label": "Shane Carlin", "shape": "dot", "size": 17, "title": "Shane Carlin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Shobbs", "label": "Shobbs", "shape": "dot", "size": 21, "title": "Shobbs\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Simon Marcus", "label": "Simon Marcus", "shape": "dot", "size": 17, "title": "Simon Marcus\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Skeletor", "label": "Skeletor", "shape": "dot", "size": 15, "title": "Skeletor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Slicky", "label": "Slicky", "shape": "dot", "size": 15, "title": "Slicky\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "St. Pierre", "label": "St. Pierre", "shape": "dot", "size": 15, "title": "St. Pierre\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Rinella", "label": "Steve Rinella", "shape": "dot", "size": 17, "title": "Steve Rinella\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Superman", "label": "Superman", "shape": "dot", "size": 15, "title": "Superman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "T.J. Dillashaw", "label": "T.J. Dillashaw", "shape": "dot", "size": 15, "title": "T.J. Dillashaw\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tiger Woods", "label": "Tiger Woods", "shape": "dot", "size": 15, "title": "Tiger Woods\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Kennedy", "label": "Tim Kennedy", "shape": "dot", "size": 15, "title": "Tim Kennedy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tito Ortiz", "label": "Tito Ortiz", "shape": "dot", "size": 15, "title": "Tito Ortiz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tobey Maguire", "label": "Tobey Maguire", "shape": "dot", "size": 15, "title": "Tobey Maguire\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tom Cruise", "label": "Tom Cruise", "shape": "dot", "size": 15, "title": "Tom Cruise\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Uriah Tj", "label": "Uriah Tj", "shape": "dot", "size": 15, "title": "Uriah Tj\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wayne Barrett", "label": "Wayne Barrett", "shape": "dot", "size": 17, "title": "Wayne Barrett\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wilson", "label": "Wilson", "shape": "dot", "size": 17, "title": "Wilson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wilsons", "label": "Wilsons", "shape": "dot", "size": 17, "title": "Wilsons\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Yair Rodriguez", "label": "Yair Rodriguez", "shape": "dot", "size": 19, "title": "Yair Rodriguez\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Young", "label": "Young", "shape": "dot", "size": 15, "title": "Young\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Yuki Kondo", "label": "Yuki Kondo", "shape": "dot", "size": 15, "title": "Yuki Kondo\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Alberta", "label": "Alberta", "shape": "dot", "size": 19, "title": "Alberta\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Amber Denver", "label": "Amber Denver", "shape": "dot", "size": 60, "title": "Amber Denver\nType: PLACE\nConnections: 37"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Canada", "label": "Canada", "shape": "dot", "size": 25, "title": "Canada\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Malibu", "label": "Malibu", "shape": "dot", "size": 23, "title": "Malibu\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Marina Taekwondo", "label": "Marina Taekwondo", "shape": "dot", "size": 29, "title": "Marina Taekwondo\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mexico City", "label": "Mexico City", "shape": "dot", "size": 29, "title": "Mexico City\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Middle America", "label": "Middle America", "shape": "dot", "size": 51, "title": "Middle America\nType: PLACE\nConnections: 18"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Montreal", "label": "Montreal", "shape": "dot", "size": 25, "title": "Montreal\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 51, "title": "New York\nType: PLACE\nConnections: 18"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North Cut", "label": "North Cut", "shape": "dot", "size": 27, "title": "North Cut\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pacific Palace", "label": "Pacific Palace", "shape": "dot", "size": 19, "title": "Pacific Palace\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "San Diego", "label": "San Diego", "shape": "dot", "size": 33, "title": "San Diego\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Santa Monica Boulevard", "label": "Santa Monica Boulevard", "shape": "dot", "size": 19, "title": "Santa Monica Boulevard\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sevia", "label": "Sevia", "shape": "dot", "size": 21, "title": "Sevia\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ufc Expo", "label": "Ufc Expo", "shape": "dot", "size": 19, "title": "Ufc Expo\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 43, "title": "United States\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "West Coast", "label": "West Coast", "shape": "dot", "size": 27, "title": "West Coast\nType: PLACE\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_02", "label": "Speaker_02", "shape": "dot", "size": 21, "title": "Speaker_02\nType: PERSON\nConnections: 3"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "A. Yeah", "title": "A. Yeah \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Artem Levin", "title": "Artem Levin \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bill Cosby", "title": "Bill Cosby \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bill Cosby", "title": "Bill Cosby \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bill Cosby", "title": "Bill Cosby \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bill Cosby", "title": "Bill Cosby \u2192 West Coast\nWeight: 1\nType: associated_with", "to": "West Coast", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brendan", "title": "Brendan \u2192 Ufc Expo\nWeight: 1\nType: associated_with", "to": "Ufc Expo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brendan Schaub", "title": "Brendan Schaub \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brendan Schaub", "title": "Brendan Schaub \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brendan Schaub", "title": "Brendan Schaub \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brian Meadows", "title": "Brian Meadows \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bro-Sif", "title": "Bro-Sif \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cain Velasquez Verdum", "title": "Cain Velasquez Verdum \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Cain Velasquez Verdum", "title": "Cain Velasquez Verdum \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Callan", "title": "Callan \u2192 Santa Monica Boulevard\nWeight: 1\nType: associated_with", "to": "Santa Monica Boulevard", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Callan", "title": "Callan \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos", "title": "Carlos \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos", "title": "Carlos \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos", "title": "Carlos \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos Menzelia", "title": "Carlos Menzelia \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos Menzelia", "title": "Carlos Menzelia \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carlos Menzelia", "title": "Carlos Menzelia \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Carmon", "title": "Carmon \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan", "title": "Conan \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan", "title": "Conan \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan", "title": "Conan \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan O\u0027Brien", "title": "Conan O\u0027Brien \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan O\u0027Brien", "title": "Conan O\u0027Brien \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Conan O\u0027Brien", "title": "Conan O\u0027Brien \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Letterman", "title": "Dave Letterman \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Letterman", "title": "Dave Letterman \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dave Letterman", "title": "Dave Letterman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Beckham", "title": "David Beckham \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Letterman", "title": "David Letterman \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Letterman", "title": "David Letterman \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David Letterman", "title": "David Letterman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dustin Jacoby", "title": "Dustin Jacoby \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fabio Maldonado", "title": "Fabio Maldonado \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Floyd Mayweather", "title": "Floyd Mayweather \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Floyd Mayweather", "title": "Floyd Mayweather \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Francis Carmont", "title": "Francis Carmont \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Glory Kickboxing", "title": "Glory Kickboxing \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Glover", "title": "Glover \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Howard Stern", "title": "Howard Stern \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Howard Stern", "title": "Howard Stern \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Howard Stern", "title": "Howard Stern \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Amber Denver\nWeight: 2\nType: associated_with", "to": "Amber Denver", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jane Leno", "title": "Jane Leno \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jane Leno", "title": "Jane Leno \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jane Leno", "title": "Jane Leno \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jason Willness", "title": "Jason Willness \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Javier Melendez", "title": "Javier Melendez \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Javier Melendez", "title": "Javier Melendez \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jay Leno", "title": "Jay Leno \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jay Leno", "title": "Jay Leno \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jay Leno", "title": "Jay Leno \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jesus Christ", "title": "Jesus Christ \u2192 Amber Denver\nWeight: 2\nType: associated_with", "to": "Amber Denver", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Jesus Christ", "title": "Jesus Christ \u2192 Malibu\nWeight: 1\nType: associated_with", "to": "Malibu", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jesus Christ", "title": "Jesus Christ \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jimmy Manoa", "title": "Jimmy Manoa \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jimmy Manoa", "title": "Jimmy Manoa \u2192 West Coast\nWeight: 1\nType: associated_with", "to": "West Coast", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jiu-Jitsu Injury", "title": "Jiu-Jitsu Injury \u2192 Marina Taekwondo\nWeight: 1\nType: associated_with", "to": "Marina Taekwondo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jiu-Jitsu Injury", "title": "Jiu-Jitsu Injury \u2192 North Cut\nWeight: 1\nType: associated_with", "to": "North Cut", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Malibu\nWeight: 1\nType: associated_with", "to": "Malibu", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Schilling", "title": "Joe Schilling \u2192 West Coast\nWeight: 1\nType: associated_with", "to": "West Coast", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Schilling", "title": "Joe Schilling \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John American", "title": "John American \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John American", "title": "John American \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Wayne Parr", "title": "John Wayne Parr \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Justin Jacoby", "title": "Justin Jacoby \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin Hart", "title": "Kevin Hart \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin James", "title": "Kevin James \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin James", "title": "Kevin James \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin James", "title": "Kevin James \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin Von Nostrand", "title": "Kevin Von Nostrand \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kevin Von Nostrand", "title": "Kevin Von Nostrand \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kurt Cobain", "title": "Kurt Cobain \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kurt Fox", "title": "Kurt Fox \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kurt Fox", "title": "Kurt Fox \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kurt Fox", "title": "Kurt Fox \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Letterman", "title": "Letterman \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Letterman", "title": "Letterman \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Letterman", "title": "Letterman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Magomedov", "title": "Magomedov \u2192 Marina Taekwondo\nWeight: 1\nType: associated_with", "to": "Marina Taekwondo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mauro Ranallo", "title": "Mauro Ranallo \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mauro Ranallo", "title": "Mauro Ranallo \u2192 Mexico City\nWeight: 1\nType: associated_with", "to": "Mexico City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcduck", "title": "Mcduck \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mencia", "title": "Mencia \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mencia", "title": "Mencia \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mencia", "title": "Mencia \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Phil Davis", "title": "Phil Davis \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ping Pong", "title": "Ping Pong \u2192 Marina Taekwondo\nWeight: 1\nType: associated_with", "to": "Marina Taekwondo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ping Pong", "title": "Ping Pong \u2192 North Cut\nWeight: 1\nType: associated_with", "to": "North Cut", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ping Pong", "title": "Ping Pong \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Richard Branson", "title": "Richard Branson \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ronda Rousey", "title": "Ronda Rousey \u2192 Ufc Expo\nWeight: 1\nType: associated_with", "to": "Ufc Expo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ryan Callahan", "title": "Ryan Callahan \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sean Jordan", "title": "Sean Jordan \u2192 Marina Taekwondo\nWeight: 1\nType: associated_with", "to": "Marina Taekwondo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Shane Carlin", "title": "Shane Carlin \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Shobbs", "title": "Shobbs \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Shobbs", "title": "Shobbs \u2192 Middle America\nWeight: 1\nType: associated_with", "to": "Middle America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Shobbs", "title": "Shobbs \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Simon Marcus", "title": "Simon Marcus \u2192 Amber Denver\nWeight: 1\nType: associated_with", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Rinella", "title": "Steve Rinella \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wayne Barrett", "title": "Wayne Barrett \u2192 San Diego\nWeight: 1\nType: associated_with", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wilson", "title": "Wilson \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wilsons", "title": "Wilsons \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Yair Rodriguez", "title": "Yair Rodriguez \u2192 Marina Taekwondo\nWeight: 2\nType: associated_with", "to": "Marina Taekwondo", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Yair Rodriguez", "title": "Yair Rodriguez \u2192 North Cut\nWeight: 1\nType: associated_with", "to": "North Cut", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Alberta", "title": "Alberta \u2192 Sevia\nWeight: 1\nType: movement\nTravelers: Speaker_02", "to": "Sevia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Amber Denver", "title": "Amber Denver \u2192 Middle America\nWeight: 16\nType: movement\nTravelers: Bill Cosby, Brendan Schaub, Carlos, Carlos Menzelia, Conan, Conan O\u0027Brien, Dave Letterman, David Letterman, Howard Stern, Jane Leno, Jay Leno, Kevin James, Kurt Fox, Letterman, Mencia, Shobbs", "to": "Middle America", "value": 16}, {"arrows": "to", "color": "#AB47BC", "from": "Amber Denver", "title": "Amber Denver \u2192 Mexico City\nWeight: 6\nType: movement\nTravelers: Cain Velasquez Verdum, Floyd Mayweather, Javier Melendez, John American, Kevin Von Nostrand, Mauro Ranallo", "to": "Mexico City", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "Amber Denver", "title": "Amber Denver \u2192 Malibu\nWeight: 2\nType: movement\nTravelers: Jesus Christ, Joe Rogan", "to": "Malibu", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Amber Denver", "title": "Amber Denver \u2192 San Diego\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Malibu", "title": "Malibu \u2192 San Diego\nWeight: 1\nType: movement\nTravelers: Jesus Christ", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Marina Taekwondo", "title": "Marina Taekwondo \u2192 North Cut\nWeight: 3\nType: movement\nTravelers: Jiu-Jitsu Injury, Ping Pong, Yair Rodriguez", "to": "North Cut", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Middle America", "title": "Middle America \u2192 New York\nWeight: 16\nType: movement\nTravelers: Bill Cosby, Brendan Schaub, Carlos, Carlos Menzelia, Conan, Conan O\u0027Brien, Dave Letterman, David Letterman, Howard Stern, Jane Leno, Jay Leno, Kevin James, Kurt Fox, Letterman, Mencia, Shobbs", "to": "New York", "value": 16}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 West Coast\nWeight: 1\nType: movement\nTravelers: Bill Cosby", "to": "West Coast", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North Cut", "title": "North Cut \u2192 Marina Taekwondo\nWeight: 1\nType: movement\nTravelers: Yair Rodriguez", "to": "Marina Taekwondo", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North Cut", "title": "North Cut \u2192 United States\nWeight: 1\nType: movement\nTravelers: Ping Pong", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Santa Monica Boulevard", "title": "Santa Monica Boulevard \u2192 United States\nWeight: 1\nType: movement\nTravelers: Callan", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Sevia", "title": "Sevia \u2192 Pacific Palace\nWeight: 1\nType: movement\nTravelers: Speaker_02", "to": "Pacific Palace", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Amber Denver\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 West Coast\nWeight: 1\nType: movement\nTravelers: Jimmy Manoa", "to": "West Coast", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "West Coast", "title": "West Coast \u2192 Amber Denver\nWeight: 1\nType: movement\nTravelers: Joe Schilling", "to": "Amber Denver", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_02", "title": "Speaker_02 \u2192 Alberta\nWeight: 1\nType: associated_with", "to": "Alberta", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_02", "title": "Speaker_02 \u2192 Sevia\nWeight: 1\nType: associated_with", "to": "Sevia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_02", "title": "Speaker_02 \u2192 Pacific Palace\nWeight: 1\nType: associated_with", "to": "Pacific Palace", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

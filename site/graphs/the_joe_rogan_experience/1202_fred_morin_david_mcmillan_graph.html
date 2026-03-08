@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">1202 Fred Morin David Mcmillan</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">The Joe Rogan Experience</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">81</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">44</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">176</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Adderall", "label": "Adderall", "shape": "dot", "size": 15, "title": "Adderall\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anthony Bourdain", "label": "Anthony Bourdain", "shape": "dot", "size": 19, "title": "Anthony Bourdain\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Becks Comedy Night", "label": "Becks Comedy Night", "shape": "dot", "size": 17, "title": "Becks Comedy Night\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Beheaded", "label": "Beheaded", "shape": "dot", "size": 15, "title": "Beheaded\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bourdain", "label": "Bourdain", "shape": "dot", "size": 15, "title": "Bourdain\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bowery", "label": "Bowery", "shape": "dot", "size": 19, "title": "Bowery\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Boyan Slat", "label": "Boyan Slat", "shape": "dot", "size": 15, "title": "Boyan Slat\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brown", "label": "Brown", "shape": "dot", "size": 17, "title": "Brown\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bruce Lee", "label": "Bruce Lee", "shape": "dot", "size": 15, "title": "Bruce Lee\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David", "label": "David", "shape": "dot", "size": 21, "title": "David\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dick Pranicki", "label": "Dick Pranicki", "shape": "dot", "size": 17, "title": "Dick Pranicki\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eleanor", "label": "Eleanor", "shape": "dot", "size": 15, "title": "Eleanor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elena", "label": "Elena", "shape": "dot", "size": 15, "title": "Elena\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Falling Down", "label": "Falling Down", "shape": "dot", "size": 17, "title": "Falling Down\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fucking", "label": "Fucking", "shape": "dot", "size": 15, "title": "Fucking\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gabrielle Drapeau", "label": "Gabrielle Drapeau", "shape": "dot", "size": 17, "title": "Gabrielle Drapeau\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gene Ackman", "label": "Gene Ackman", "shape": "dot", "size": 17, "title": "Gene Ackman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George", "label": "George", "shape": "dot", "size": 15, "title": "George\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gordon", "label": "Gordon", "shape": "dot", "size": 17, "title": "Gordon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Heinmo", "label": "Heinmo", "shape": "dot", "size": 21, "title": "Heinmo\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hemingway", "label": "Hemingway", "shape": "dot", "size": 17, "title": "Hemingway\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Henry", "label": "Henry", "shape": "dot", "size": 15, "title": "Henry\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hugh Grant", "label": "Hugh Grant", "shape": "dot", "size": 17, "title": "Hugh Grant\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Indiana Jones", "label": "Indiana Jones", "shape": "dot", "size": 15, "title": "Indiana Jones\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jameson", "label": "Jameson", "shape": "dot", "size": 15, "title": "Jameson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jamie", "label": "Jamie", "shape": "dot", "size": 19, "title": "Jamie\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jeff Bridges", "label": "Jeff Bridges", "shape": "dot", "size": 17, "title": "Jeff Bridges\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jefferson", "label": "Jefferson", "shape": "dot", "size": 15, "title": "Jefferson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jerry Lewis", "label": "Jerry Lewis", "shape": "dot", "size": 15, "title": "Jerry Lewis\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus Christ", "label": "Jesus Christ", "shape": "dot", "size": 15, "title": "Jesus Christ\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jimmy Choo", "label": "Jimmy Choo", "shape": "dot", "size": 19, "title": "Jimmy Choo\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Beef", "label": "Joe Beef", "shape": "dot", "size": 15, "title": "Joe Beef\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Lamb", "label": "Joe Lamb", "shape": "dot", "size": 19, "title": "Joe Lamb\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Bill", "label": "John Bill", "shape": "dot", "size": 15, "title": "John Bill\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jordan Peterson", "label": "Jordan Peterson", "shape": "dot", "size": 17, "title": "Jordan Peterson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Juicy", "label": "Juicy", "shape": "dot", "size": 15, "title": "Juicy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Julia Roberts", "label": "Julia Roberts", "shape": "dot", "size": 17, "title": "Julia Roberts\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "La Boutin", "label": "La Boutin", "shape": "dot", "size": 19, "title": "La Boutin\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lenny Leiter", "label": "Lenny Leiter", "shape": "dot", "size": 17, "title": "Lenny Leiter\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lobster Fra Diavolo", "label": "Lobster Fra Diavolo", "shape": "dot", "size": 17, "title": "Lobster Fra Diavolo\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lorenzo Fertitta", "label": "Lorenzo Fertitta", "shape": "dot", "size": 23, "title": "Lorenzo Fertitta\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marco", "label": "Marco", "shape": "dot", "size": 17, "title": "Marco\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Kalansky", "label": "Mark Kalansky", "shape": "dot", "size": 17, "title": "Mark Kalansky\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Kurlansky", "label": "Mark Kurlansky", "shape": "dot", "size": 17, "title": "Mark Kurlansky\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Vetri", "label": "Mark Vetri", "shape": "dot", "size": 23, "title": "Mark Vetri\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Martin Picard", "label": "Martin Picard", "shape": "dot", "size": 21, "title": "Martin Picard\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Meat Eater", "label": "Meat Eater", "shape": "dot", "size": 15, "title": "Meat Eater\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Douglas", "label": "Michael Douglas", "shape": "dot", "size": 17, "title": "Michael Douglas\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Jackson", "label": "Michael Jackson", "shape": "dot", "size": 21, "title": "Michael Jackson\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Moishe", "label": "Moishe", "shape": "dot", "size": 17, "title": "Moishe\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Montcalm", "label": "Montcalm", "shape": "dot", "size": 19, "title": "Montcalm\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Myland", "label": "Myland", "shape": "dot", "size": 19, "title": "Myland\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "North", "label": "North", "shape": "dot", "size": 15, "title": "North\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Notting Hill", "label": "Notting Hill", "shape": "dot", "size": 17, "title": "Notting Hill\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Olivier Aubon-Mercier", "label": "Olivier Aubon-Mercier", "shape": "dot", "size": 17, "title": "Olivier Aubon-Mercier\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Orson Welles", "label": "Orson Welles", "shape": "dot", "size": 17, "title": "Orson Welles\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Otavia", "label": "Otavia", "shape": "dot", "size": 17, "title": "Otavia\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Partridge", "label": "Partridge", "shape": "dot", "size": 15, "title": "Partridge\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Paul Boucouz", "label": "Paul Boucouz", "shape": "dot", "size": 17, "title": "Paul Boucouz\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter Luger", "label": "Peter Luger", "shape": "dot", "size": 17, "title": "Peter Luger\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pierre De Cochon", "label": "Pierre De Cochon", "shape": "dot", "size": 15, "title": "Pierre De Cochon\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Remy Warren", "label": "Remy Warren", "shape": "dot", "size": 15, "title": "Remy Warren\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rene Redzepi", "label": "Rene Redzepi", "shape": "dot", "size": 15, "title": "Rene Redzepi\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roberto Abreu", "label": "Roberto Abreu", "shape": "dot", "size": 17, "title": "Roberto Abreu\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roger", "label": "Roger", "shape": "dot", "size": 15, "title": "Roger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ryan Gray", "label": "Ryan Gray", "shape": "dot", "size": 15, "title": "Ryan Gray\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sebastian Younger", "label": "Sebastian Younger", "shape": "dot", "size": 15, "title": "Sebastian Younger\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Shane Smith", "label": "Shane Smith", "shape": "dot", "size": 15, "title": "Shane Smith\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sherry Wine", "label": "Sherry Wine", "shape": "dot", "size": 15, "title": "Sherry Wine\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Rinella", "label": "Steve Rinella", "shape": "dot", "size": 21, "title": "Steve Rinella\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Teeter Dex", "label": "Teeter Dex", "shape": "dot", "size": 15, "title": "Teeter Dex\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Kennedy", "label": "Tim Kennedy", "shape": "dot", "size": 17, "title": "Tim Kennedy\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tom Segura", "label": "Tom Segura", "shape": "dot", "size": 17, "title": "Tom Segura\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tony Bourdain", "label": "Tony Bourdain", "shape": "dot", "size": 15, "title": "Tony Bourdain\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tony\u0027S Memorial", "label": "Tony\u0027S Memorial", "shape": "dot", "size": 15, "title": "Tony\u0027S Memorial\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trent", "label": "Trent", "shape": "dot", "size": 17, "title": "Trent\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vinny", "label": "Vinny", "shape": "dot", "size": 21, "title": "Vinny\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wonton", "label": "Wonton", "shape": "dot", "size": 15, "title": "Wonton\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Amaroscada", "label": "Amaroscada", "shape": "dot", "size": 21, "title": "Amaroscada\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Arctic", "label": "Arctic", "shape": "dot", "size": 21, "title": "Arctic\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Arctic Adventure", "label": "Arctic Adventure", "shape": "dot", "size": 23, "title": "Arctic Adventure\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Arctic National Refuge", "label": "Arctic National Refuge", "shape": "dot", "size": 21, "title": "Arctic National Refuge\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Atlantic East Coast", "label": "Atlantic East Coast", "shape": "dot", "size": 21, "title": "Atlantic East Coast\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Atlantic Northeast", "label": "Atlantic Northeast", "shape": "dot", "size": 21, "title": "Atlantic Northeast\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Bordeaux International Airport", "label": "Bordeaux International Airport", "shape": "dot", "size": 21, "title": "Bordeaux International Airport\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Brooklyn Bridge", "label": "Brooklyn Bridge", "shape": "dot", "size": 23, "title": "Brooklyn Bridge\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Calcutta Zoo", "label": "Calcutta Zoo", "shape": "dot", "size": 21, "title": "Calcutta Zoo\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Canada", "label": "Canada", "shape": "dot", "size": 35, "title": "Canada\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Chatsworth", "label": "Chatsworth", "shape": "dot", "size": 21, "title": "Chatsworth\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Gulf Of St. Lawrence", "label": "Gulf Of St. Lawrence", "shape": "dot", "size": 25, "title": "Gulf Of St. Lawrence\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Harlem River", "label": "Harlem River", "shape": "dot", "size": 21, "title": "Harlem River\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Hotel Pierre", "label": "Hotel Pierre", "shape": "dot", "size": 19, "title": "Hotel Pierre\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Iceland", "label": "Iceland", "shape": "dot", "size": 19, "title": "Iceland\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Italy", "label": "Italy", "shape": "dot", "size": 23, "title": "Italy\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "L.A. Joe", "label": "L.A. Joe", "shape": "dot", "size": 21, "title": "L.A. Joe\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Las Vegas", "label": "Las Vegas", "shape": "dot", "size": 39, "title": "Las Vegas\nType: PLACE\nConnections: 12"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Los Angeles", "label": "Los Angeles", "shape": "dot", "size": 35, "title": "Los Angeles\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Madison Square Gardens", "label": "Madison Square Gardens", "shape": "dot", "size": 23, "title": "Madison Square Gardens\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Maine", "label": "Maine", "shape": "dot", "size": 33, "title": "Maine\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Melville Newfoundland", "label": "Melville Newfoundland", "shape": "dot", "size": 27, "title": "Melville Newfoundland\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Middle Atlantic", "label": "Middle Atlantic", "shape": "dot", "size": 21, "title": "Middle Atlantic\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Montreal", "label": "Montreal", "shape": "dot", "size": 60, "title": "Montreal\nType: PLACE\nConnections: 29"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New Brunswick", "label": "New Brunswick", "shape": "dot", "size": 21, "title": "New Brunswick\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 43, "title": "New York\nType: PLACE\nConnections: 14"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York City", "label": "New York City", "shape": "dot", "size": 31, "title": "New York City\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New Zealand", "label": "New Zealand", "shape": "dot", "size": 21, "title": "New Zealand\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North America", "label": "North America", "shape": "dot", "size": 25, "title": "North America\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Northern Usa", "label": "Northern Usa", "shape": "dot", "size": 21, "title": "Northern Usa\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Oregon", "label": "Oregon", "shape": "dot", "size": 21, "title": "Oregon\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pacific", "label": "Pacific", "shape": "dot", "size": 21, "title": "Pacific\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Philadelphia", "label": "Philadelphia", "shape": "dot", "size": 25, "title": "Philadelphia\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Quebec City", "label": "Quebec City", "shape": "dot", "size": 51, "title": "Quebec City\nType: PLACE\nConnections: 18"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Radisson Hotel", "label": "Radisson Hotel", "shape": "dot", "size": 17, "title": "Radisson Hotel\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Raleigh Hotel", "label": "Raleigh Hotel", "shape": "dot", "size": 21, "title": "Raleigh Hotel\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sargasso Sea", "label": "Sargasso Sea", "shape": "dot", "size": 21, "title": "Sargasso Sea\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "St. Armand", "label": "St. Armand", "shape": "dot", "size": 21, "title": "St. Armand\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 35, "title": "United States\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Vermont Pbs", "label": "Vermont Pbs", "shape": "dot", "size": 25, "title": "Vermont Pbs\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "West Roxbury", "label": "West Roxbury", "shape": "dot", "size": 35, "title": "West Roxbury\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "West Virginia", "label": "West Virginia", "shape": "dot", "size": 17, "title": "West Virginia\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Western Australia", "label": "Western Australia", "shape": "dot", "size": 21, "title": "Western Australia\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "White House", "label": "White House", "shape": "dot", "size": 21, "title": "White House\nType: PLACE\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 60, "title": "Joe Rogan\nType: PERSON\nConnections: 27"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fred Morin David Mcmillan", "label": "Fred Morin David Mcmillan", "shape": "dot", "size": 31, "title": "Fred Morin David Mcmillan\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_00", "label": "Speaker_00", "shape": "dot", "size": 25, "title": "Speaker_00\nType: PERSON\nConnections: 5"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Anthony Bourdain", "title": "Anthony Bourdain \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anthony Bourdain", "title": "Anthony Bourdain \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Becks Comedy Night", "title": "Becks Comedy Night \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bowery", "title": "Bowery \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Bowery", "title": "Bowery \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Brown", "title": "Brown \u2192 Madison Square Gardens\nWeight: 1\nType: associated_with", "to": "Madison Square Gardens", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David", "title": "David \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "David", "title": "David \u2192 New York\nWeight: 2\nType: associated_with", "to": "New York", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "David", "title": "David \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dick Pranicki", "title": "Dick Pranicki \u2192 Vermont Pbs\nWeight: 1\nType: associated_with", "to": "Vermont Pbs", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Falling Down", "title": "Falling Down \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gabrielle Drapeau", "title": "Gabrielle Drapeau \u2192 Madison Square Gardens\nWeight: 1\nType: associated_with", "to": "Madison Square Gardens", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gene Ackman", "title": "Gene Ackman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gordon", "title": "Gordon \u2192 Radisson Hotel\nWeight: 1\nType: associated_with", "to": "Radisson Hotel", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Heinmo", "title": "Heinmo \u2192 Arctic\nWeight: 1\nType: associated_with", "to": "Arctic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Heinmo", "title": "Heinmo \u2192 Arctic Adventure\nWeight: 1\nType: associated_with", "to": "Arctic Adventure", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Heinmo", "title": "Heinmo \u2192 Arctic National Refuge\nWeight: 1\nType: associated_with", "to": "Arctic National Refuge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hemingway", "title": "Hemingway \u2192 Hotel Pierre\nWeight: 1\nType: associated_with", "to": "Hotel Pierre", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Hugh Grant", "title": "Hugh Grant \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jamie", "title": "Jamie \u2192 Vermont Pbs\nWeight: 1\nType: associated_with", "to": "Vermont Pbs", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jeff Bridges", "title": "Jeff Bridges \u2192 Quebec City\nWeight: 1\nType: associated_with", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jimmy Choo", "title": "Jimmy Choo \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jimmy Choo", "title": "Jimmy Choo \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Lamb", "title": "Joe Lamb \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Lamb", "title": "Joe Lamb \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jordan Peterson", "title": "Jordan Peterson \u2192 Raleigh Hotel\nWeight: 1\nType: associated_with", "to": "Raleigh Hotel", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Julia Roberts", "title": "Julia Roberts \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "La Boutin", "title": "La Boutin \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "La Boutin", "title": "La Boutin \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lenny Leiter", "title": "Lenny Leiter \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lobster Fra Diavolo", "title": "Lobster Fra Diavolo \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lorenzo Fertitta", "title": "Lorenzo Fertitta \u2192 Montreal\nWeight: 2\nType: associated_with", "to": "Montreal", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Lorenzo Fertitta", "title": "Lorenzo Fertitta \u2192 Las Vegas\nWeight: 2\nType: associated_with", "to": "Las Vegas", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Lorenzo Fertitta", "title": "Lorenzo Fertitta \u2192 Philadelphia\nWeight: 1\nType: associated_with", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lorenzo Fertitta", "title": "Lorenzo Fertitta \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marco", "title": "Marco \u2192 Madison Square Gardens\nWeight: 1\nType: associated_with", "to": "Madison Square Gardens", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Kalansky", "title": "Mark Kalansky \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Kurlansky", "title": "Mark Kurlansky \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Vetri", "title": "Mark Vetri \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Vetri", "title": "Mark Vetri \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Vetri", "title": "Mark Vetri \u2192 Philadelphia\nWeight: 2\nType: associated_with", "to": "Philadelphia", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Vetri", "title": "Mark Vetri \u2192 Italy\nWeight: 1\nType: associated_with", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martin Picard", "title": "Martin Picard \u2192 Amaroscada\nWeight: 1\nType: associated_with", "to": "Amaroscada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martin Picard", "title": "Martin Picard \u2192 Maine\nWeight: 1\nType: associated_with", "to": "Maine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Martin Picard", "title": "Martin Picard \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Douglas", "title": "Michael Douglas \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Jackson", "title": "Michael Jackson \u2192 Arctic\nWeight: 1\nType: associated_with", "to": "Arctic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Jackson", "title": "Michael Jackson \u2192 Arctic Adventure\nWeight: 1\nType: associated_with", "to": "Arctic Adventure", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Jackson", "title": "Michael Jackson \u2192 Arctic National Refuge\nWeight: 1\nType: associated_with", "to": "Arctic National Refuge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Moishe", "title": "Moishe \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Montcalm", "title": "Montcalm \u2192 North America\nWeight: 1\nType: associated_with", "to": "North America", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Montcalm", "title": "Montcalm \u2192 Quebec City\nWeight: 1\nType: associated_with", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Myland", "title": "Myland \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Myland", "title": "Myland \u2192 Quebec City\nWeight: 1\nType: associated_with", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Notting Hill", "title": "Notting Hill \u2192 West Roxbury\nWeight: 1\nType: associated_with", "to": "West Roxbury", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Olivier Aubon-Mercier", "title": "Olivier Aubon-Mercier \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Orson Welles", "title": "Orson Welles \u2192 Hotel Pierre\nWeight: 1\nType: associated_with", "to": "Hotel Pierre", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Otavia", "title": "Otavia \u2192 Raleigh Hotel\nWeight: 1\nType: associated_with", "to": "Raleigh Hotel", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Paul Boucouz", "title": "Paul Boucouz \u2192 Quebec City\nWeight: 1\nType: associated_with", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Peter Luger", "title": "Peter Luger \u2192 Brooklyn Bridge\nWeight: 1\nType: associated_with", "to": "Brooklyn Bridge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Roberto Abreu", "title": "Roberto Abreu \u2192 Raleigh Hotel\nWeight: 1\nType: associated_with", "to": "Raleigh Hotel", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Rinella", "title": "Steve Rinella \u2192 Amaroscada\nWeight: 1\nType: associated_with", "to": "Amaroscada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Rinella", "title": "Steve Rinella \u2192 Maine\nWeight: 1\nType: associated_with", "to": "Maine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Rinella", "title": "Steve Rinella \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Kennedy", "title": "Tim Kennedy \u2192 Madison Square Gardens\nWeight: 1\nType: associated_with", "to": "Madison Square Gardens", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tom Segura", "title": "Tom Segura \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Trent", "title": "Trent \u2192 West Virginia\nWeight: 1\nType: associated_with", "to": "West Virginia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vinny", "title": "Vinny \u2192 Italy\nWeight: 1\nType: associated_with", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vinny", "title": "Vinny \u2192 Montreal\nWeight: 2\nType: associated_with", "to": "Montreal", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Vinny", "title": "Vinny \u2192 L.A. Joe\nWeight: 1\nType: associated_with", "to": "L.A. Joe", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Amaroscada", "title": "Amaroscada \u2192 Maine\nWeight: 2\nType: movement\nTravelers: Martin Picard, Steve Rinella", "to": "Maine", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Arctic", "title": "Arctic \u2192 Arctic Adventure\nWeight: 2\nType: movement\nTravelers: Heinmo, Michael Jackson", "to": "Arctic Adventure", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Arctic Adventure", "title": "Arctic Adventure \u2192 Arctic National Refuge\nWeight: 2\nType: movement\nTravelers: Heinmo, Michael Jackson", "to": "Arctic National Refuge", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Atlantic East Coast", "title": "Atlantic East Coast \u2192 Harlem River\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Harlem River", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Atlantic Northeast", "title": "Atlantic Northeast \u2192 Maine\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Maine", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Bordeaux International Airport", "title": "Bordeaux International Airport \u2192 United States\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Brooklyn Bridge", "title": "Brooklyn Bridge \u2192 Las Vegas\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Calcutta Zoo", "title": "Calcutta Zoo \u2192 Chatsworth\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Chatsworth", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Canada", "title": "Canada \u2192 Northern Usa\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Northern Usa", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Canada", "title": "Canada \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Speaker_00", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Canada", "title": "Canada \u2192 New York\nWeight: 1\nType: movement\nTravelers: David", "to": "New York", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Chatsworth", "title": "Chatsworth \u2192 Los Angeles\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Gulf Of St. Lawrence", "title": "Gulf Of St. Lawrence \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Gulf Of St. Lawrence", "title": "Gulf Of St. Lawrence \u2192 Bordeaux International Airport\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Bordeaux International Airport", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Harlem River", "title": "Harlem River \u2192 New York City\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Italy", "title": "Italy \u2192 Montreal\nWeight: 1\nType: movement\nTravelers: Vinny", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "L.A. Joe", "title": "L.A. Joe \u2192 Montreal\nWeight: 1\nType: movement\nTravelers: Vinny", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 St. Armand\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "St. Armand", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 Montreal\nWeight: 2\nType: movement\nTravelers: Lorenzo Fertitta, Mark Vetri", "to": "Montreal", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Las Vegas", "title": "Las Vegas \u2192 West Roxbury\nWeight: 4\nType: movement\nTravelers: Jimmy Choo, Joe Lamb, La Boutin, Lorenzo Fertitta", "to": "West Roxbury", "value": 4}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 Melville Newfoundland\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "Melville Newfoundland", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 New York\nWeight: 3\nType: movement\nTravelers: Anthony Bourdain, Bowery, David", "to": "New York", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Los Angeles", "title": "Los Angeles \u2192 Canada\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Maine", "title": "Maine \u2192 Melville Newfoundland\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Melville Newfoundland", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Maine", "title": "Maine \u2192 Middle Atlantic\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Middle Atlantic", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Maine", "title": "Maine \u2192 Montreal\nWeight: 2\nType: movement\nTravelers: Martin Picard, Steve Rinella", "to": "Montreal", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Melville Newfoundland", "title": "Melville Newfoundland \u2192 New Zealand\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "New Zealand", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Melville Newfoundland", "title": "Melville Newfoundland \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Middle Atlantic", "title": "Middle Atlantic \u2192 Pacific\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Pacific", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Myland", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 New York\nWeight: 2\nType: movement\nTravelers: Joe Rogan, Fred Morin David Mcmillan", "to": "New York", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 New York City\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Los Angeles\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Canada\nWeight: 1\nType: movement\nTravelers: Speaker_00", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Brooklyn Bridge\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Brooklyn Bridge", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Las Vegas\nWeight: 1\nType: movement\nTravelers: Lorenzo Fertitta", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 Philadelphia\nWeight: 2\nType: movement\nTravelers: Lorenzo Fertitta, Mark Vetri", "to": "Philadelphia", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Montreal", "title": "Montreal \u2192 L.A. Joe\nWeight: 1\nType: movement\nTravelers: Vinny", "to": "L.A. Joe", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New Brunswick", "title": "New Brunswick \u2192 Iceland\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "Iceland", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 North America\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "North America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 New Brunswick\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "New Brunswick", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 Canada\nWeight: 1\nType: movement\nTravelers: David", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 North America\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "North America", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 White House\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "White House", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 Vermont Pbs\nWeight: 1\nType: movement\nTravelers: Jamie", "to": "Vermont Pbs", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New Zealand", "title": "New Zealand \u2192 United States\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "North America", "title": "North America \u2192 Quebec City\nWeight: 3\nType: movement\nTravelers: Joe Rogan, Montcalm", "to": "Quebec City", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Northern Usa", "title": "Northern Usa \u2192 Western Australia\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Western Australia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Oregon", "title": "Oregon \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Speaker_00", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Pacific", "title": "Pacific \u2192 Sargasso Sea\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Sargasso Sea", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Philadelphia", "title": "Philadelphia \u2192 Las Vegas\nWeight: 1\nType: movement\nTravelers: Lorenzo Fertitta", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Philadelphia", "title": "Philadelphia \u2192 Italy\nWeight: 1\nType: movement\nTravelers: Mark Vetri", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Quebec City", "title": "Quebec City \u2192 Montreal\nWeight: 3\nType: movement\nTravelers: Joe Rogan, Speaker_00", "to": "Montreal", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Quebec City", "title": "Quebec City \u2192 United States\nWeight: 2\nType: movement\nTravelers: Joe Rogan, Speaker_00", "to": "United States", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Quebec City", "title": "Quebec City \u2192 Oregon\nWeight: 1\nType: movement\nTravelers: Speaker_00", "to": "Oregon", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Quebec City", "title": "Quebec City \u2192 Atlantic East Coast\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Atlantic East Coast", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Quebec City", "title": "Quebec City \u2192 Gulf Of St. Lawrence\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Gulf Of St. Lawrence", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Sargasso Sea", "title": "Sargasso Sea \u2192 Calcutta Zoo\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Calcutta Zoo", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "St. Armand", "title": "St. Armand \u2192 Vermont Pbs\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Vermont Pbs", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Maine\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Maine", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Montreal\nWeight: 1\nType: movement\nTravelers: Fred Morin David Mcmillan", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Atlantic Northeast\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Atlantic Northeast", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Quebec City\nWeight: 1\nType: movement\nTravelers: Speaker_00", "to": "Quebec City", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Western Australia", "title": "Western Australia \u2192 Montreal\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "White House", "title": "White House \u2192 Gulf Of St. Lawrence\nWeight: 1\nType: movement\nTravelers: Joe Rogan", "to": "Gulf Of St. Lawrence", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Quebec City\nWeight: 5\nType: associated_with", "to": "Quebec City", "value": 5}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Montreal\nWeight: 4\nType: associated_with", "to": "Montreal", "value": 4}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 North America\nWeight: 2\nType: associated_with", "to": "North America", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 New York City\nWeight: 2\nType: associated_with", "to": "New York City", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 United States\nWeight: 2\nType: associated_with", "to": "United States", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Maine\nWeight: 2\nType: associated_with", "to": "Maine", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Melville Newfoundland\nWeight: 1\nType: associated_with", "to": "Melville Newfoundland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Atlantic East Coast\nWeight: 1\nType: associated_with", "to": "Atlantic East Coast", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Harlem River\nWeight: 1\nType: associated_with", "to": "Harlem River", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 White House\nWeight: 1\nType: associated_with", "to": "White House", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Gulf Of St. Lawrence\nWeight: 2\nType: associated_with", "to": "Gulf Of St. Lawrence", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Bordeaux International Airport\nWeight: 1\nType: associated_with", "to": "Bordeaux International Airport", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Atlantic Northeast\nWeight: 1\nType: associated_with", "to": "Atlantic Northeast", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Middle Atlantic\nWeight: 1\nType: associated_with", "to": "Middle Atlantic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Pacific\nWeight: 1\nType: associated_with", "to": "Pacific", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Sargasso Sea\nWeight: 1\nType: associated_with", "to": "Sargasso Sea", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Calcutta Zoo\nWeight: 1\nType: associated_with", "to": "Calcutta Zoo", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Chatsworth\nWeight: 1\nType: associated_with", "to": "Chatsworth", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Northern Usa\nWeight: 1\nType: associated_with", "to": "Northern Usa", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Western Australia\nWeight: 1\nType: associated_with", "to": "Western Australia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Brooklyn Bridge\nWeight: 1\nType: associated_with", "to": "Brooklyn Bridge", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Las Vegas\nWeight: 1\nType: associated_with", "to": "Las Vegas", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 St. Armand\nWeight: 1\nType: associated_with", "to": "St. Armand", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Rogan", "title": "Joe Rogan \u2192 Vermont Pbs\nWeight: 1\nType: associated_with", "to": "Vermont Pbs", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 Montreal\nWeight: 3\nType: associated_with", "to": "Montreal", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 Los Angeles\nWeight: 1\nType: associated_with", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 Melville Newfoundland\nWeight: 1\nType: associated_with", "to": "Melville Newfoundland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 New Zealand\nWeight: 1\nType: associated_with", "to": "New Zealand", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 New Brunswick\nWeight: 1\nType: associated_with", "to": "New Brunswick", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fred Morin David Mcmillan", "title": "Fred Morin David Mcmillan \u2192 Iceland\nWeight: 1\nType: associated_with", "to": "Iceland", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_00", "title": "Speaker_00 \u2192 Quebec City\nWeight: 4\nType: associated_with", "to": "Quebec City", "value": 4}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_00", "title": "Speaker_00 \u2192 Oregon\nWeight: 1\nType: associated_with", "to": "Oregon", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_00", "title": "Speaker_00 \u2192 Montreal\nWeight: 1\nType: associated_with", "to": "Montreal", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_00", "title": "Speaker_00 \u2192 Canada\nWeight: 1\nType: associated_with", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Speaker_00", "title": "Speaker_00 \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">386 Marc Andreessen Future of the Internet Technology and Ai</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">Lex Fridman Podcast</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">79</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">27</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">139</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "A. Jeff Bezos", "label": "A. Jeff Bezos", "shape": "dot", "size": 15, "title": "A. Jeff Bezos\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Adolf Hitler", "label": "Adolf Hitler", "shape": "dot", "size": 23, "title": "Adolf Hitler\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Al Gore", "label": "Al Gore", "shape": "dot", "size": 23, "title": "Al Gore\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andreessen Horowitz", "label": "Andreessen Horowitz", "shape": "dot", "size": 17, "title": "Andreessen Horowitz\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andrew Carnegie", "label": "Andrew Carnegie", "shape": "dot", "size": 17, "title": "Andrew Carnegie\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Athletic Greens", "label": "Athletic Greens", "shape": "dot", "size": 17, "title": "Athletic Greens\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Austin", "label": "Austin", "shape": "dot", "size": 15, "title": "Austin\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Balaji Srinivasan", "label": "Balaji Srinivasan", "shape": "dot", "size": 15, "title": "Balaji Srinivasan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Balji", "label": "Balji", "shape": "dot", "size": 15, "title": "Balji\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Biography", "label": "Biography", "shape": "dot", "size": 19, "title": "Biography\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brendan Eich", "label": "Brendan Eich", "shape": "dot", "size": 15, "title": "Brendan Eich\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "C.S. Lewis", "label": "C.S. Lewis", "shape": "dot", "size": 15, "title": "C.S. Lewis\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carl Sagan", "label": "Carl Sagan", "shape": "dot", "size": 15, "title": "Carl Sagan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carrie Nation", "label": "Carrie Nation", "shape": "dot", "size": 15, "title": "Carrie Nation\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Charles Manson", "label": "Charles Manson", "shape": "dot", "size": 15, "title": "Charles Manson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Friedman", "label": "David Friedman", "shape": "dot", "size": 15, "title": "David Friedman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Koresh", "label": "David Koresh", "shape": "dot", "size": 15, "title": "David Koresh\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dean Acheson", "label": "Dean Acheson", "shape": "dot", "size": 17, "title": "Dean Acheson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dick Engelbart", "label": "Dick Engelbart", "shape": "dot", "size": 15, "title": "Dick Engelbart\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Doomer", "label": "Doomer", "shape": "dot", "size": 21, "title": "Doomer\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Doug Engelbart", "label": "Doug Engelbart", "shape": "dot", "size": 15, "title": "Doug Engelbart\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Einstein", "label": "Einstein", "shape": "dot", "size": 15, "title": "Einstein\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George Haas", "label": "George Haas", "shape": "dot", "size": 15, "title": "George Haas\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George Patton", "label": "George Patton", "shape": "dot", "size": 21, "title": "George Patton\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Googles", "label": "Googles", "shape": "dot", "size": 15, "title": "Googles\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gopher", "label": "Gopher", "shape": "dot", "size": 21, "title": "Gopher\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Henry Ford", "label": "Henry Ford", "shape": "dot", "size": 17, "title": "Henry Ford\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Howard Hughes", "label": "Howard Hughes", "shape": "dot", "size": 17, "title": "Howard Hughes\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jan Lecun", "label": "Jan Lecun", "shape": "dot", "size": 15, "title": "Jan Lecun\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesus", "label": "Jesus", "shape": "dot", "size": 15, "title": "Jesus\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John D. Rockefeller", "label": "John D. Rockefeller", "shape": "dot", "size": 17, "title": "John D. Rockefeller\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Gianandrea", "label": "John Gianandrea", "shape": "dot", "size": 15, "title": "John Gianandrea\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Von Neumann", "label": "John Von Neumann", "shape": "dot", "size": 17, "title": "John Von Neumann\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Karl Marx", "label": "Karl Marx", "shape": "dot", "size": 17, "title": "Karl Marx\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kennedy", "label": "Kennedy", "shape": "dot", "size": 19, "title": "Kennedy\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kip Hickman", "label": "Kip Hickman", "shape": "dot", "size": 15, "title": "Kip Hickman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry", "label": "Larry", "shape": "dot", "size": 17, "title": "Larry\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry Ellison", "label": "Larry Ellison", "shape": "dot", "size": 15, "title": "Larry Ellison\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry Page", "label": "Larry Page", "shape": "dot", "size": 17, "title": "Larry Page\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leland Stanford", "label": "Leland Stanford", "shape": "dot", "size": 17, "title": "Leland Stanford\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Macintoshes", "label": "Macintoshes", "shape": "dot", "size": 23, "title": "Macintoshes\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mao Zedong", "label": "Mao Zedong", "shape": "dot", "size": 27, "title": "Mao Zedong\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marc Andreessen", "label": "Marc Andreessen", "shape": "dot", "size": 15, "title": "Marc Andreessen\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Andreessen", "label": "Mark Andreessen", "shape": "dot", "size": 17, "title": "Mark Andreessen\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mark Zuckerberg", "label": "Mark Zuckerberg", "shape": "dot", "size": 15, "title": "Mark Zuckerberg\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marshall Mcluhan", "label": "Marshall Mcluhan", "shape": "dot", "size": 15, "title": "Marshall Mcluhan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mathematica", "label": "Mathematica", "shape": "dot", "size": 15, "title": "Mathematica\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matthew Mcconaughey", "label": "Matthew Mcconaughey", "shape": "dot", "size": 17, "title": "Matthew Mcconaughey\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Mcnamara", "label": "Mcnamara", "shape": "dot", "size": 19, "title": "Mcnamara\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nevin Shepard", "label": "Nevin Shepard", "shape": "dot", "size": 15, "title": "Nevin Shepard\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nextcube", "label": "Nextcube", "shape": "dot", "size": 21, "title": "Nextcube\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Paul Gottfried", "label": "Paul Gottfried", "shape": "dot", "size": 19, "title": "Paul Gottfried\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pierre Omidyar", "label": "Pierre Omidyar", "shape": "dot", "size": 15, "title": "Pierre Omidyar\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pliny The Elder", "label": "Pliny The Elder", "shape": "dot", "size": 15, "title": "Pliny The Elder\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Posner", "label": "Posner", "shape": "dot", "size": 15, "title": "Posner\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Raspberry Pis", "label": "Raspberry Pis", "shape": "dot", "size": 15, "title": "Raspberry Pis\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Robert Oppenheimer", "label": "Robert Oppenheimer", "shape": "dot", "size": 15, "title": "Robert Oppenheimer\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sam Altman", "label": "Sam Altman", "shape": "dot", "size": 19, "title": "Sam Altman\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Slash Lex", "label": "Slash Lex", "shape": "dot", "size": 17, "title": "Slash Lex\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stalin", "label": "Stalin", "shape": "dot", "size": 23, "title": "Stalin\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve", "label": "Steve", "shape": "dot", "size": 27, "title": "Steve\nType: PERSON\nConnections: 6"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Jobs", "label": "Steve Jobs", "shape": "dot", "size": 25, "title": "Steve Jobs\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve Jobs\u0027", "label": "Steve Jobs\u0027", "shape": "dot", "size": 15, "title": "Steve Jobs\u0027\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sundar Pichai", "label": "Sundar Pichai", "shape": "dot", "size": 17, "title": "Sundar Pichai\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Thomas Watson", "label": "Thomas Watson", "shape": "dot", "size": 17, "title": "Thomas Watson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Berners-Lee", "label": "Tim Berners-Lee", "shape": "dot", "size": 23, "title": "Tim Berners-Lee\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Berners-Lee Well", "label": "Tim Berners-Lee Well", "shape": "dot", "size": 21, "title": "Tim Berners-Lee Well\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Ferriss", "label": "Tim Ferriss", "shape": "dot", "size": 15, "title": "Tim Ferriss\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Truman", "label": "Truman", "shape": "dot", "size": 15, "title": "Truman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vanderbilt", "label": "Vanderbilt", "shape": "dot", "size": 17, "title": "Vanderbilt\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vesuvius", "label": "Vesuvius", "shape": "dot", "size": 15, "title": "Vesuvius\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Victor Sebastian", "label": "Victor Sebastian", "shape": "dot", "size": 19, "title": "Victor Sebastian\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Vladimir Lenin", "label": "Vladimir Lenin", "shape": "dot", "size": 19, "title": "Vladimir Lenin\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Von Neumann", "label": "Von Neumann", "shape": "dot", "size": 19, "title": "Von Neumann\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Winston Churchill", "label": "Winston Churchill", "shape": "dot", "size": 21, "title": "Winston Churchill\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wizard Of Oz", "label": "Wizard Of Oz", "shape": "dot", "size": 23, "title": "Wizard Of Oz\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Woodrow Wilson", "label": "Woodrow Wilson", "shape": "dot", "size": 19, "title": "Woodrow Wilson\nType: PERSON\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ancient City", "label": "Ancient City", "shape": "dot", "size": 31, "title": "Ancient City\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Argentina", "label": "Argentina", "shape": "dot", "size": 19, "title": "Argentina\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Bristol", "label": "Bristol", "shape": "dot", "size": 31, "title": "Bristol\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "California", "label": "California", "shape": "dot", "size": 29, "title": "California\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "China", "label": "China", "shape": "dot", "size": 27, "title": "China\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Cupertino", "label": "Cupertino", "shape": "dot", "size": 31, "title": "Cupertino\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Europe", "label": "Europe", "shape": "dot", "size": 21, "title": "Europe\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Germany", "label": "Germany", "shape": "dot", "size": 25, "title": "Germany\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Indonesia", "label": "Indonesia", "shape": "dot", "size": 31, "title": "Indonesia\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Japan", "label": "Japan", "shape": "dot", "size": 19, "title": "Japan\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "London", "label": "London", "shape": "dot", "size": 21, "title": "London\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Manhattan Beach", "label": "Manhattan Beach", "shape": "dot", "size": 21, "title": "Manhattan Beach\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mosaic", "label": "Mosaic", "shape": "dot", "size": 31, "title": "Mosaic\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pearl Harbor", "label": "Pearl Harbor", "shape": "dot", "size": 29, "title": "Pearl Harbor\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Russia", "label": "Russia", "shape": "dot", "size": 27, "title": "Russia\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Silicon Valley", "label": "Silicon Valley", "shape": "dot", "size": 60, "title": "Silicon Valley\nType: PLACE\nConnections: 24"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Silk Road", "label": "Silk Road", "shape": "dot", "size": 21, "title": "Silk Road\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sorbonne", "label": "Sorbonne", "shape": "dot", "size": 19, "title": "Sorbonne\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Soviet Union", "label": "Soviet Union", "shape": "dot", "size": 29, "title": "Soviet Union\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sydney", "label": "Sydney", "shape": "dot", "size": 19, "title": "Sydney\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Transputes", "label": "Transputes", "shape": "dot", "size": 17, "title": "Transputes\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 60, "title": "United States\nType: PLACE\nConnections: 26"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Waukegan Illinois", "label": "Waukegan Illinois", "shape": "dot", "size": 33, "title": "Waukegan Illinois\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Western Marxism", "label": "Western Marxism", "shape": "dot", "size": 21, "title": "Western Marxism\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "White House", "label": "White House", "shape": "dot", "size": 21, "title": "White House\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Wild West", "label": "Wild West", "shape": "dot", "size": 17, "title": "Wild West\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Yellowstone Park", "label": "Yellowstone Park", "shape": "dot", "size": 23, "title": "Yellowstone Park\nType: PLACE\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marc Andreessen Future Of", "label": "Marc Andreessen Future Of", "shape": "dot", "size": 37, "title": "Marc Andreessen Future Of\nType: PERSON\nConnections: 11"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lex Fridman", "label": "Lex Fridman", "shape": "dot", "size": 21, "title": "Lex Fridman\nType: PERSON\nConnections: 3"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Adolf Hitler", "title": "Adolf Hitler \u2192 Pearl Harbor\nWeight: 1\nType: associated_with", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Adolf Hitler", "title": "Adolf Hitler \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Adolf Hitler", "title": "Adolf Hitler \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Adolf Hitler", "title": "Adolf Hitler \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al Gore", "title": "Al Gore \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al Gore", "title": "Al Gore \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al Gore", "title": "Al Gore \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al Gore", "title": "Al Gore \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andreessen Horowitz", "title": "Andreessen Horowitz \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Andrew Carnegie", "title": "Andrew Carnegie \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Athletic Greens", "title": "Athletic Greens \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Biography", "title": "Biography \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Biography", "title": "Biography \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Dean Acheson", "title": "Dean Acheson \u2192 White House\nWeight: 1\nType: associated_with", "to": "White House", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doomer", "title": "Doomer \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doomer", "title": "Doomer \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Doomer", "title": "Doomer \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "George Patton", "title": "George Patton \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "George Patton", "title": "George Patton \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "George Patton", "title": "George Patton \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gopher", "title": "Gopher \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gopher", "title": "Gopher \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gopher", "title": "Gopher \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Henry Ford", "title": "Henry Ford \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Howard Hughes", "title": "Howard Hughes \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John D. Rockefeller", "title": "John D. Rockefeller \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Von Neumann", "title": "John Von Neumann \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Karl Marx", "title": "Karl Marx \u2192 Transputes\nWeight: 1\nType: associated_with", "to": "Transputes", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kennedy", "title": "Kennedy \u2192 Pearl Harbor\nWeight: 1\nType: associated_with", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Kennedy", "title": "Kennedy \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Larry", "title": "Larry \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Larry Page", "title": "Larry Page \u2192 Wild West\nWeight: 1\nType: associated_with", "to": "Wild West", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Leland Stanford", "title": "Leland Stanford \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Macintoshes", "title": "Macintoshes \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Macintoshes", "title": "Macintoshes \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Macintoshes", "title": "Macintoshes \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Macintoshes", "title": "Macintoshes \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 Argentina\nWeight: 1\nType: associated_with", "to": "Argentina", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 China\nWeight: 1\nType: associated_with", "to": "China", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 Germany\nWeight: 1\nType: associated_with", "to": "Germany", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 Silk Road\nWeight: 1\nType: associated_with", "to": "Silk Road", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mao Zedong", "title": "Mao Zedong \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mark Andreessen", "title": "Mark Andreessen \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Matthew Mcconaughey", "title": "Matthew Mcconaughey \u2192 Yellowstone Park\nWeight: 1\nType: associated_with", "to": "Yellowstone Park", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcnamara", "title": "Mcnamara \u2192 Germany\nWeight: 1\nType: associated_with", "to": "Germany", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Mcnamara", "title": "Mcnamara \u2192 Japan\nWeight: 1\nType: associated_with", "to": "Japan", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nextcube", "title": "Nextcube \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nextcube", "title": "Nextcube \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nextcube", "title": "Nextcube \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Paul Gottfried", "title": "Paul Gottfried \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Paul Gottfried", "title": "Paul Gottfried \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sam Altman", "title": "Sam Altman \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sam Altman", "title": "Sam Altman \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Slash Lex", "title": "Slash Lex \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stalin", "title": "Stalin \u2192 Pearl Harbor\nWeight: 1\nType: associated_with", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stalin", "title": "Stalin \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stalin", "title": "Stalin \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stalin", "title": "Stalin \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 Silicon Valley\nWeight: 2\nType: associated_with", "to": "Silicon Valley", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve", "title": "Steve \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Jobs", "title": "Steve Jobs \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Jobs", "title": "Steve Jobs \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Jobs", "title": "Steve Jobs \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Jobs", "title": "Steve Jobs \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Steve Jobs", "title": "Steve Jobs \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sundar Pichai", "title": "Sundar Pichai \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Thomas Watson", "title": "Thomas Watson \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee", "title": "Tim Berners-Lee \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee", "title": "Tim Berners-Lee \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee", "title": "Tim Berners-Lee \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee", "title": "Tim Berners-Lee \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee Well", "title": "Tim Berners-Lee Well \u2192 Bristol\nWeight: 1\nType: associated_with", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee Well", "title": "Tim Berners-Lee Well \u2192 Mosaic\nWeight: 1\nType: associated_with", "to": "Mosaic", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Berners-Lee Well", "title": "Tim Berners-Lee Well \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vanderbilt", "title": "Vanderbilt \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Victor Sebastian", "title": "Victor Sebastian \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Victor Sebastian", "title": "Victor Sebastian \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vladimir Lenin", "title": "Vladimir Lenin \u2192 Ancient City\nWeight: 1\nType: associated_with", "to": "Ancient City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Vladimir Lenin", "title": "Vladimir Lenin \u2192 Soviet Union\nWeight: 1\nType: associated_with", "to": "Soviet Union", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Von Neumann", "title": "Von Neumann \u2192 White House\nWeight: 1\nType: associated_with", "to": "White House", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Von Neumann", "title": "Von Neumann \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Winston Churchill", "title": "Winston Churchill \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Winston Churchill", "title": "Winston Churchill \u2192 Pearl Harbor\nWeight: 1\nType: associated_with", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Winston Churchill", "title": "Winston Churchill \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wizard Of Oz", "title": "Wizard Of Oz \u2192 California\nWeight: 1\nType: associated_with", "to": "California", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wizard Of Oz", "title": "Wizard Of Oz \u2192 Cupertino\nWeight: 1\nType: associated_with", "to": "Cupertino", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wizard Of Oz", "title": "Wizard Of Oz \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Wizard Of Oz", "title": "Wizard Of Oz \u2192 Waukegan Illinois\nWeight: 1\nType: associated_with", "to": "Waukegan Illinois", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Woodrow Wilson", "title": "Woodrow Wilson \u2192 Pearl Harbor\nWeight: 1\nType: associated_with", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Woodrow Wilson", "title": "Woodrow Wilson \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Ancient City", "title": "Ancient City \u2192 Soviet Union\nWeight: 6\nType: movement\nTravelers: Adolf Hitler, Biography, Paul Gottfried, Stalin, Victor Sebastian, Vladimir Lenin", "to": "Soviet Union", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "Argentina", "title": "Argentina \u2192 China\nWeight: 1\nType: movement\nTravelers: Mao Zedong", "to": "China", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Bristol", "title": "Bristol \u2192 Mosaic\nWeight: 6\nType: movement\nTravelers: Doomer, George Patton, Gopher, Nextcube, Steve, Tim Berners-Lee Well", "to": "Mosaic", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "California", "title": "California \u2192 Cupertino\nWeight: 6\nType: movement\nTravelers: Al Gore, Macintoshes, Steve, Steve Jobs, Tim Berners-Lee, Wizard Of Oz", "to": "Cupertino", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "China", "title": "China \u2192 Indonesia\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "China", "title": "China \u2192 Germany\nWeight: 1\nType: movement\nTravelers: Mao Zedong", "to": "Germany", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Cupertino", "title": "Cupertino \u2192 Silicon Valley\nWeight: 6\nType: movement\nTravelers: Al Gore, Macintoshes, Steve, Steve Jobs, Tim Berners-Lee, Wizard Of Oz", "to": "Silicon Valley", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "Europe", "title": "Europe \u2192 United States\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Germany", "title": "Germany \u2192 Japan\nWeight: 1\nType: movement\nTravelers: Mcnamara", "to": "Japan", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Germany", "title": "Germany \u2192 Indonesia\nWeight: 1\nType: movement\nTravelers: Mao Zedong", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Indonesia", "title": "Indonesia \u2192 Manhattan Beach\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Manhattan Beach", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Indonesia", "title": "Indonesia \u2192 Silk Road\nWeight: 1\nType: movement\nTravelers: Mao Zedong", "to": "Silk Road", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "London", "title": "London \u2192 Europe\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Manhattan Beach", "title": "Manhattan Beach \u2192 Western Marxism\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Western Marxism", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Mosaic", "title": "Mosaic \u2192 Silicon Valley\nWeight: 6\nType: movement\nTravelers: Doomer, George Patton, Gopher, Nextcube, Steve, Tim Berners-Lee Well", "to": "Silicon Valley", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "Pearl Harbor", "title": "Pearl Harbor \u2192 United States\nWeight: 5\nType: movement\nTravelers: Adolf Hitler, Kennedy, Stalin, Winston Churchill, Woodrow Wilson", "to": "United States", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Russia", "title": "Russia \u2192 United States\nWeight: 2\nType: movement\nTravelers: Sam Altman, Lex Fridman", "to": "United States", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Silicon Valley", "title": "Silicon Valley \u2192 Pearl Harbor\nWeight: 1\nType: movement\nTravelers: Winston Churchill", "to": "Pearl Harbor", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Silicon Valley", "title": "Silicon Valley \u2192 Waukegan Illinois\nWeight: 6\nType: movement\nTravelers: Al Gore, Macintoshes, Steve, Steve Jobs, Tim Berners-Lee, Wizard Of Oz", "to": "Waukegan Illinois", "value": 6}, {"arrows": "to", "color": "#AB47BC", "from": "Silicon Valley", "title": "Silicon Valley \u2192 Sorbonne\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Sorbonne", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Silk Road", "title": "Silk Road \u2192 United States\nWeight: 1\nType: movement\nTravelers: Mao Zedong", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Sydney", "title": "Sydney \u2192 Yellowstone Park\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Yellowstone Park", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 China\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "China", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Indonesia\nWeight: 1\nType: movement\nTravelers: Lex Fridman", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Ancient City\nWeight: 2\nType: movement\nTravelers: Adolf Hitler, Stalin", "to": "Ancient City", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Waukegan Illinois", "title": "Waukegan Illinois \u2192 Bristol\nWeight: 1\nType: movement\nTravelers: Steve", "to": "Bristol", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Waukegan Illinois", "title": "Waukegan Illinois \u2192 United States\nWeight: 1\nType: movement\nTravelers: Steve Jobs", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Western Marxism", "title": "Western Marxism \u2192 Silicon Valley\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "White House", "title": "White House \u2192 Russia\nWeight: 1\nType: movement\nTravelers: Von Neumann", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Yellowstone Park", "title": "Yellowstone Park \u2192 London\nWeight: 1\nType: movement\nTravelers: Marc Andreessen Future Of", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Sydney\nWeight: 2\nType: associated_with", "to": "Sydney", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Yellowstone Park\nWeight: 1\nType: associated_with", "to": "Yellowstone Park", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 London\nWeight: 1\nType: associated_with", "to": "London", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Europe\nWeight: 1\nType: associated_with", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 China\nWeight: 1\nType: associated_with", "to": "China", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Manhattan Beach\nWeight: 1\nType: associated_with", "to": "Manhattan Beach", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Western Marxism\nWeight: 1\nType: associated_with", "to": "Western Marxism", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Silicon Valley\nWeight: 1\nType: associated_with", "to": "Silicon Valley", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Marc Andreessen Future Of", "title": "Marc Andreessen Future Of \u2192 Sorbonne\nWeight: 1\nType: associated_with", "to": "Sorbonne", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Russia\nWeight: 1\nType: associated_with", "to": "Russia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lex Fridman", "title": "Lex Fridman \u2192 Indonesia\nWeight: 1\nType: associated_with", "to": "Indonesia", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
