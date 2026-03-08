@@ -37,7 +37,7 @@ usage:
 
     # run with custom input/output directories.
     uv run scripts/generate_entity_graphs.py \\
-        --transcripts-dir outputs/transcripts_with_speaker_labels_postprocessed \\
+        --transcripts-dir path/to/transcripts \\
         --output-dir graphs
 
     # process specific shows only.
@@ -2006,7 +2006,7 @@ def save_adjacency_csv(graph: nx.DiGraph, output_path: Path) -> None:
 @click.option(
     "--transcripts-dir",
     type=click.Path(path_type=Path),
-    default=Path("outputs/transcripts_with_speaker_labels_postprocessed"),
+    default=Path("graphs"),
     help="directory with speaker-labeled transcripts.",
 )
 @click.option(
