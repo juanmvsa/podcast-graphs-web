@@ -9,11 +9,13 @@ from pathlib import Path
 
 # define paths.
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUTS_DIR = PROJECT_ROOT / "outputs" / "graphs"
+GRAPHS_DIR = PROJECT_ROOT / "graphs"  # Changed from outputs/graphs
 LIB_DIR = PROJECT_ROOT / "lib"
 INDEX_HTML = PROJECT_ROOT / "index.html"
 SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
+# For backwards compatibility
+OUTPUTS_DIR = GRAPHS_DIR
 
 def clean_site():
     """remove existing site/graphs and site/lib directories."""

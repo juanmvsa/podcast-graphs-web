@@ -1,0 +1,376 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 850px;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 850px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+
+    <div id="graph-header" style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Helvetica, Arial, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e0e0e0;
+        padding: 24px 32px 20px;
+        border-bottom: 1px solid #333;
+    ">
+        <h1 style="
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        ">Fox News and Cnn S Disastrous Ratings and Citibike Karen Smears with Emily Jashinsky and Eliana Johnson Ep 556</h1>
+        <p style="
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        ">The Megyn Kelly Show</p>
+
+        <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start;">
+            <!-- color legend -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 220px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Legend</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #4FC3F7;
+                        "></span>
+                        <span>Person</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 12px; height: 12px;
+                            border-radius: 50%; background: #FF8A65;
+                        "></span>
+                        <span>Place</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #90A4AE; border-radius: 2px;
+                        "></span>
+                        <span>Person ↔ Place association</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="
+                            display: inline-block; width: 20px; height: 3px;
+                            background: #AB47BC; border-radius: 2px;
+                        "></span>
+                        <span>Place → Place movement</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- graph stats -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 160px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Stats</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8;">
+                    <div><span style="color: #4FC3F7; font-weight: 600;">118</span> people</div>
+                    <div><span style="color: #FF8A65; font-weight: 600;">15</span> places</div>
+                    <div><span style="color: #ccc; font-weight: 600;">95</span> connections</div>
+                </div>
+            </div>
+
+            <!-- interaction hints -->
+            <div style="
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 12px 16px;
+                min-width: 180px;
+            ">
+                <div style="
+                    font-size: 0.75em;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                    color: #9e9e9e;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                ">Controls</div>
+
+                <div style="font-size: 0.85em; line-height: 1.8; color: #bbb;">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Abigail Schreier", "label": "Abigail Schreier", "shape": "dot", "size": 15, "title": "Abigail Schreier\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Al Sharpton", "label": "Al Sharpton", "shape": "dot", "size": 19, "title": "Al Sharpton\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anderson Cooper", "label": "Anderson Cooper", "shape": "dot", "size": 17, "title": "Anderson Cooper\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Another Nick Sandman", "label": "Another Nick Sandman", "shape": "dot", "size": 19, "title": "Another Nick Sandman\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ashley Graham", "label": "Ashley Graham", "shape": "dot", "size": 15, "title": "Ashley Graham\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Benjamin Crump", "label": "Benjamin Crump", "shape": "dot", "size": 19, "title": "Benjamin Crump\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Biden", "label": "Biden", "shape": "dot", "size": 17, "title": "Biden\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Billie Eilish", "label": "Billie Eilish", "shape": "dot", "size": 15, "title": "Billie Eilish\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bradley Cooper", "label": "Bradley Cooper", "shape": "dot", "size": 15, "title": "Bradley Cooper\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Breonna Keillor", "label": "Breonna Keillor", "shape": "dot", "size": 15, "title": "Breonna Keillor\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Caitlin Collins", "label": "Caitlin Collins", "shape": "dot", "size": 15, "title": "Caitlin Collins\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carolins", "label": "Carolins", "shape": "dot", "size": 15, "title": "Carolins\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Carolyn Bryant", "label": "Carolyn Bryant", "shape": "dot", "size": 15, "title": "Carolyn Bryant\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Casey Desantis", "label": "Casey Desantis", "shape": "dot", "size": 17, "title": "Casey Desantis\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chadwick Moore", "label": "Chadwick Moore", "shape": "dot", "size": 15, "title": "Chadwick Moore\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Charles Barkley", "label": "Charles Barkley", "shape": "dot", "size": 15, "title": "Charles Barkley\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Charlie Kirk", "label": "Charlie Kirk", "shape": "dot", "size": 21, "title": "Charlie Kirk\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Licht", "label": "Chris Licht", "shape": "dot", "size": 17, "title": "Chris Licht\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Lick", "label": "Chris Lick", "shape": "dot", "size": 15, "title": "Chris Lick\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chris Wallace", "label": "Chris Wallace", "shape": "dot", "size": 17, "title": "Chris Wallace\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Clarence Thomas", "label": "Clarence Thomas", "shape": "dot", "size": 19, "title": "Clarence Thomas\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Daniel Penny", "label": "Daniel Penny", "shape": "dot", "size": 17, "title": "Daniel Penny\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Geffen", "label": "David Geffen", "shape": "dot", "size": 15, "title": "David Geffen\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dean Acheson", "label": "Dean Acheson", "shape": "dot", "size": 15, "title": "Dean Acheson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Desantis", "label": "Desantis", "shape": "dot", "size": 17, "title": "Desantis\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Don Lemon", "label": "Don Lemon", "shape": "dot", "size": 15, "title": "Don Lemon\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Trump", "label": "Donald Trump", "shape": "dot", "size": 21, "title": "Donald Trump\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dylan Mulvaney", "label": "Dylan Mulvaney", "shape": "dot", "size": 15, "title": "Dylan Mulvaney\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "E. Jean Carroll", "label": "E. Jean Carroll", "shape": "dot", "size": 15, "title": "E. Jean Carroll\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eliana", "label": "Eliana", "shape": "dot", "size": 25, "title": "Eliana\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eliana Jeff Zucker", "label": "Eliana Jeff Zucker", "shape": "dot", "size": 15, "title": "Eliana Jeff Zucker\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eliana Johnson", "label": "Eliana Johnson", "shape": "dot", "size": 15, "title": "Eliana Johnson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Emily", "label": "Emily", "shape": "dot", "size": 15, "title": "Emily\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Emily Cook", "label": "Emily Cook", "shape": "dot", "size": 15, "title": "Emily Cook\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Emily Jasinski", "label": "Emily Jasinski", "shape": "dot", "size": 15, "title": "Emily Jasinski\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Emily Zanotti", "label": "Emily Zanotti", "shape": "dot", "size": 15, "title": "Emily Zanotti\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Emmett Perkins", "label": "Emmett Perkins", "shape": "dot", "size": 17, "title": "Emmett Perkins\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eric Bolling", "label": "Eric Bolling", "shape": "dot", "size": 15, "title": "Eric Bolling\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fanny", "label": "Fanny", "shape": "dot", "size": 15, "title": "Fanny\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Fetterman", "label": "Fetterman", "shape": "dot", "size": 17, "title": "Fetterman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gabe Sherman", "label": "Gabe Sherman", "shape": "dot", "size": 15, "title": "Gabe Sherman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gail King", "label": "Gail King", "shape": "dot", "size": 15, "title": "Gail King\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gayle King", "label": "Gayle King", "shape": "dot", "size": 15, "title": "Gayle King\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gisele Fetterman", "label": "Gisele Fetterman", "shape": "dot", "size": 17, "title": "Gisele Fetterman\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Giselle Fetterman", "label": "Giselle Fetterman", "shape": "dot", "size": 15, "title": "Giselle Fetterman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Glenn Greenwald", "label": "Glenn Greenwald", "shape": "dot", "size": 17, "title": "Glenn Greenwald\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Glenn Youngkin", "label": "Glenn Youngkin", "shape": "dot", "size": 17, "title": "Glenn Youngkin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hassan", "label": "Hassan", "shape": "dot", "size": 15, "title": "Hassan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hillary", "label": "Hillary", "shape": "dot", "size": 15, "title": "Hillary\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Hunter Biden", "label": "Hunter Biden", "shape": "dot", "size": 15, "title": "Hunter Biden\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Irina Shayk", "label": "Irina Shayk", "shape": "dot", "size": 15, "title": "Irina Shayk\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jacob Blake", "label": "Jacob Blake", "shape": "dot", "size": 17, "title": "Jacob Blake\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jake Tapper", "label": "Jake Tapper", "shape": "dot", "size": 15, "title": "Jake Tapper\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "James O\u0027Keefe", "label": "James O\u0027Keefe", "shape": "dot", "size": 15, "title": "James O\u0027Keefe\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jean Carroll", "label": "Jean Carroll", "shape": "dot", "size": 15, "title": "Jean Carroll\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jeff Zucker", "label": "Jeff Zucker", "shape": "dot", "size": 15, "title": "Jeff Zucker\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jfk Jr", "label": "Jfk Jr", "shape": "dot", "size": 15, "title": "Jfk Jr\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jill Biden", "label": "Jill Biden", "shape": "dot", "size": 17, "title": "Jill Biden\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jim Acosta", "label": "Jim Acosta", "shape": "dot", "size": 15, "title": "Jim Acosta\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Biden", "label": "Joe Biden", "shape": "dot", "size": 19, "title": "Joe Biden\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Bolton", "label": "John Bolton", "shape": "dot", "size": 19, "title": "John Bolton\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "John Kasich", "label": "John Kasich", "shape": "dot", "size": 15, "title": "John Kasich\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Johnny Carson", "label": "Johnny Carson", "shape": "dot", "size": 17, "title": "Johnny Carson\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Julia Fox", "label": "Julia Fox", "shape": "dot", "size": 15, "title": "Julia Fox\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Justin Barragona", "label": "Justin Barragona", "shape": "dot", "size": 15, "title": "Justin Barragona\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kamala Harris", "label": "Kamala Harris", "shape": "dot", "size": 15, "title": "Kamala Harris\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kanye West", "label": "Kanye West", "shape": "dot", "size": 15, "title": "Kanye West\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Karen", "label": "Karen", "shape": "dot", "size": 15, "title": "Karen\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kelly Mcguire", "label": "Kelly Mcguire", "shape": "dot", "size": 15, "title": "Kelly Mcguire\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kennedys", "label": "Kennedys", "shape": "dot", "size": 15, "title": "Kennedys\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kevin Mccarthy", "label": "Kevin Mccarthy", "shape": "dot", "size": 15, "title": "Kevin Mccarthy\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lachlan", "label": "Lachlan", "shape": "dot", "size": 15, "title": "Lachlan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lady Macbeth", "label": "Lady Macbeth", "shape": "dot", "size": 15, "title": "Lady Macbeth\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry Elder", "label": "Larry Elder", "shape": "dot", "size": 19, "title": "Larry Elder\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Laura Ingraham", "label": "Laura Ingraham", "shape": "dot", "size": 15, "title": "Laura Ingraham\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leonardo Dicaprio", "label": "Leonardo Dicaprio", "shape": "dot", "size": 15, "title": "Leonardo Dicaprio\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lisa Hutchinson", "label": "Lisa Hutchinson", "shape": "dot", "size": 19, "title": "Lisa Hutchinson\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Martin Scorsese", "label": "Martin Scorsese", "shape": "dot", "size": 15, "title": "Martin Scorsese\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matthew Mcconaughey", "label": "Matthew Mcconaughey", "shape": "dot", "size": 15, "title": "Matthew Mcconaughey\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Megan Markle", "label": "Megan Markle", "shape": "dot", "size": 21, "title": "Megan Markle\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Meghan Markle", "label": "Meghan Markle", "shape": "dot", "size": 15, "title": "Meghan Markle\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Megyn Kelly", "label": "Megyn Kelly", "shape": "dot", "size": 15, "title": "Megyn Kelly\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Corleone", "label": "Michael Corleone", "shape": "dot", "size": 19, "title": "Michael Corleone\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Monique", "label": "Monique", "shape": "dot", "size": 21, "title": "Monique\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nancy Reagan", "label": "Nancy Reagan", "shape": "dot", "size": 15, "title": "Nancy Reagan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nick Sandman", "label": "Nick Sandman", "shape": "dot", "size": 21, "title": "Nick Sandman\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nikki Haley", "label": "Nikki Haley", "shape": "dot", "size": 23, "title": "Nikki Haley\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Obama", "label": "Obama", "shape": "dot", "size": 15, "title": "Obama\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Oprah", "label": "Oprah", "shape": "dot", "size": 15, "title": "Oprah\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Prince Harry", "label": "Prince Harry", "shape": "dot", "size": 15, "title": "Prince Harry\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roger Ailes", "label": "Roger Ailes", "shape": "dot", "size": 15, "title": "Roger Ailes\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Roger Stone", "label": "Roger Stone", "shape": "dot", "size": 15, "title": "Roger Stone\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ron Desantis", "label": "Ron Desantis", "shape": "dot", "size": 21, "title": "Ron Desantis\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rupert Murdoch", "label": "Rupert Murdoch", "shape": "dot", "size": 15, "title": "Rupert Murdoch\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sarah", "label": "Sarah", "shape": "dot", "size": 19, "title": "Sarah\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sarah Comrie", "label": "Sarah Comrie", "shape": "dot", "size": 23, "title": "Sarah Comrie\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sarah Duchess", "label": "Sarah Duchess", "shape": "dot", "size": 15, "title": "Sarah Duchess\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sarah Jane Comrie", "label": "Sarah Jane Comrie", "shape": "dot", "size": 19, "title": "Sarah Jane Comrie\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sean Hannity", "label": "Sean Hannity", "shape": "dot", "size": 15, "title": "Sean Hannity\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Slash Megyn Kelly", "label": "Slash Megyn Kelly", "shape": "dot", "size": 15, "title": "Slash Megyn Kelly\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sonny", "label": "Sonny", "shape": "dot", "size": 17, "title": "Sonny\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Spidey", "label": "Spidey", "shape": "dot", "size": 15, "title": "Spidey\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steele", "label": "Steele", "shape": "dot", "size": 15, "title": "Steele\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Stephen Colbert", "label": "Stephen Colbert", "shape": "dot", "size": 17, "title": "Stephen Colbert\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Steve", "label": "Steve", "shape": "dot", "size": 15, "title": "Steve\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sue Bravo", "label": "Sue Bravo", "shape": "dot", "size": 15, "title": "Sue Bravo\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Suzanne Scott", "label": "Suzanne Scott", "shape": "dot", "size": 15, "title": "Suzanne Scott\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ted Cruz", "label": "Ted Cruz", "shape": "dot", "size": 15, "title": "Ted Cruz\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Scott", "label": "Tim Scott", "shape": "dot", "size": 25, "title": "Tim Scott\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tim Scotts", "label": "Tim Scotts", "shape": "dot", "size": 17, "title": "Tim Scotts\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Truman", "label": "Truman", "shape": "dot", "size": 15, "title": "Truman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trump", "label": "Trump", "shape": "dot", "size": 17, "title": "Trump\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trump Biden", "label": "Trump Biden", "shape": "dot", "size": 15, "title": "Trump Biden\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tucker Carlson", "label": "Tucker Carlson", "shape": "dot", "size": 15, "title": "Tucker Carlson\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Victor Davis Hansen", "label": "Victor Davis Hansen", "shape": "dot", "size": 15, "title": "Victor Davis Hansen\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Whoopi", "label": "Whoopi", "shape": "dot", "size": 17, "title": "Whoopi\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wolf Blitzer", "label": "Wolf Blitzer", "shape": "dot", "size": 15, "title": "Wolf Blitzer\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Wright", "label": "Wright", "shape": "dot", "size": 15, "title": "Wright\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Bellevue", "label": "Bellevue", "shape": "dot", "size": 27, "title": "Bellevue\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Central Park Karen", "label": "Central Park Karen", "shape": "dot", "size": 23, "title": "Central Park Karen\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "City Bike", "label": "City Bike", "shape": "dot", "size": 33, "title": "City Bike\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Eastern Ukraine", "label": "Eastern Ukraine", "shape": "dot", "size": 25, "title": "Eastern Ukraine\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Florida", "label": "Florida", "shape": "dot", "size": 60, "title": "Florida\nType: PLACE\nConnections: 23"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Italy", "label": "Italy", "shape": "dot", "size": 19, "title": "Italy\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Kenosha", "label": "Kenosha", "shape": "dot", "size": 21, "title": "Kenosha\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Mediterranean", "label": "Mediterranean", "shape": "dot", "size": 23, "title": "Mediterranean\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 23, "title": "New York\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York City", "label": "New York City", "shape": "dot", "size": 35, "title": "New York City\nType: PLACE\nConnections: 10"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Syria", "label": "Syria", "shape": "dot", "size": 31, "title": "Syria\nType: PLACE\nConnections: 8"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Tampa Bay", "label": "Tampa Bay", "shape": "dot", "size": 25, "title": "Tampa Bay\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 49, "title": "United States\nType: PLACE\nConnections: 17"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Virginia", "label": "Virginia", "shape": "dot", "size": 27, "title": "Virginia\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Western Canada", "label": "Western Canada", "shape": "dot", "size": 27, "title": "Western Canada\nType: PLACE\nConnections: 6"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#90A4AE", "from": "Al Sharpton", "title": "Al Sharpton \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Al Sharpton", "title": "Al Sharpton \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Anderson Cooper", "title": "Anderson Cooper \u2192 Eastern Ukraine\nWeight: 1\nType: associated_with", "to": "Eastern Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Another Nick Sandman", "title": "Another Nick Sandman \u2192 Bellevue\nWeight: 1\nType: associated_with", "to": "Bellevue", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Another Nick Sandman", "title": "Another Nick Sandman \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Benjamin Crump", "title": "Benjamin Crump \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Benjamin Crump", "title": "Benjamin Crump \u2192 New York City\nWeight: 2\nType: associated_with", "to": "New York City", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Biden", "title": "Biden \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Casey Desantis", "title": "Casey Desantis \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Charlie Kirk", "title": "Charlie Kirk \u2192 United States\nWeight: 2\nType: associated_with", "to": "United States", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Charlie Kirk", "title": "Charlie Kirk \u2192 Florida\nWeight: 2\nType: associated_with", "to": "Florida", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Charlie Kirk", "title": "Charlie Kirk \u2192 Tampa Bay\nWeight: 1\nType: associated_with", "to": "Tampa Bay", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Licht", "title": "Chris Licht \u2192 Eastern Ukraine\nWeight: 1\nType: associated_with", "to": "Eastern Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Chris Wallace", "title": "Chris Wallace \u2192 Eastern Ukraine\nWeight: 1\nType: associated_with", "to": "Eastern Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Clarence Thomas", "title": "Clarence Thomas \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Clarence Thomas", "title": "Clarence Thomas \u2192 Tampa Bay\nWeight: 1\nType: associated_with", "to": "Tampa Bay", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Daniel Penny", "title": "Daniel Penny \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Desantis", "title": "Desantis \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Donald Trump", "title": "Donald Trump \u2192 Florida\nWeight: 2\nType: associated_with", "to": "Florida", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Donald Trump", "title": "Donald Trump \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Donald Trump", "title": "Donald Trump \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eliana", "title": "Eliana \u2192 Virginia\nWeight: 1\nType: associated_with", "to": "Virginia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eliana", "title": "Eliana \u2192 United States\nWeight: 2\nType: associated_with", "to": "United States", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Eliana", "title": "Eliana \u2192 Central Park Karen\nWeight: 1\nType: associated_with", "to": "Central Park Karen", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eliana", "title": "Eliana \u2192 Mediterranean\nWeight: 1\nType: associated_with", "to": "Mediterranean", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Eliana", "title": "Eliana \u2192 Italy\nWeight: 1\nType: associated_with", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Emmett Perkins", "title": "Emmett Perkins \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Fetterman", "title": "Fetterman \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Gisele Fetterman", "title": "Gisele Fetterman \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Glenn Greenwald", "title": "Glenn Greenwald \u2192 Western Canada\nWeight: 1\nType: associated_with", "to": "Western Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Glenn Youngkin", "title": "Glenn Youngkin \u2192 Virginia\nWeight: 1\nType: associated_with", "to": "Virginia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jacob Blake", "title": "Jacob Blake \u2192 Kenosha\nWeight: 1\nType: associated_with", "to": "Kenosha", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Jill Biden", "title": "Jill Biden \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Joe Biden", "title": "Joe Biden \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Bolton", "title": "John Bolton \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "John Bolton", "title": "John Bolton \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Johnny Carson", "title": "Johnny Carson \u2192 Eastern Ukraine\nWeight: 1\nType: associated_with", "to": "Eastern Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Larry Elder", "title": "Larry Elder \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Larry Elder", "title": "Larry Elder \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lisa Hutchinson", "title": "Lisa Hutchinson \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Lisa Hutchinson", "title": "Lisa Hutchinson \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Megan Markle", "title": "Megan Markle \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Megan Markle", "title": "Megan Markle \u2192 Tampa Bay\nWeight: 1\nType: associated_with", "to": "Tampa Bay", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Megan Markle", "title": "Megan Markle \u2192 Kenosha\nWeight: 1\nType: associated_with", "to": "Kenosha", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Corleone", "title": "Michael Corleone \u2192 Central Park Karen\nWeight: 1\nType: associated_with", "to": "Central Park Karen", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Michael Corleone", "title": "Michael Corleone \u2192 Mediterranean\nWeight: 1\nType: associated_with", "to": "Mediterranean", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Monique", "title": "Monique \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Monique", "title": "Monique \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Monique", "title": "Monique \u2192 Bellevue\nWeight: 1\nType: associated_with", "to": "Bellevue", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nick Sandman", "title": "Nick Sandman \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nick Sandman", "title": "Nick Sandman \u2192 New York City\nWeight: 2\nType: associated_with", "to": "New York City", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Nick Sandman", "title": "Nick Sandman \u2192 Bellevue\nWeight: 1\nType: associated_with", "to": "Bellevue", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nikki Haley", "title": "Nikki Haley \u2192 Western Canada\nWeight: 1\nType: associated_with", "to": "Western Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nikki Haley", "title": "Nikki Haley \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nikki Haley", "title": "Nikki Haley \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Nikki Haley", "title": "Nikki Haley \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ron Desantis", "title": "Ron Desantis \u2192 Florida\nWeight: 3\nType: associated_with", "to": "Florida", "value": 3}, {"arrows": "to", "color": "#90A4AE", "from": "Ron Desantis", "title": "Ron Desantis \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Ron Desantis", "title": "Ron Desantis \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah", "title": "Sarah \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah", "title": "Sarah \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Comrie", "title": "Sarah Comrie \u2192 Bellevue\nWeight: 1\nType: associated_with", "to": "Bellevue", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Comrie", "title": "Sarah Comrie \u2192 New York\nWeight: 1\nType: associated_with", "to": "New York", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Comrie", "title": "Sarah Comrie \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Comrie", "title": "Sarah Comrie \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Jane Comrie", "title": "Sarah Jane Comrie \u2192 City Bike\nWeight: 1\nType: associated_with", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sarah Jane Comrie", "title": "Sarah Jane Comrie \u2192 New York City\nWeight: 1\nType: associated_with", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sonny", "title": "Sonny \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Stephen Colbert", "title": "Stephen Colbert \u2192 Eastern Ukraine\nWeight: 1\nType: associated_with", "to": "Eastern Ukraine", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scott", "title": "Tim Scott \u2192 Virginia\nWeight: 1\nType: associated_with", "to": "Virginia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scott", "title": "Tim Scott \u2192 Florida\nWeight: 2\nType: associated_with", "to": "Florida", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scott", "title": "Tim Scott \u2192 United States\nWeight: 2\nType: associated_with", "to": "United States", "value": 2}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scott", "title": "Tim Scott \u2192 Western Canada\nWeight: 1\nType: associated_with", "to": "Western Canada", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scott", "title": "Tim Scott \u2192 Syria\nWeight: 1\nType: associated_with", "to": "Syria", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Tim Scotts", "title": "Tim Scotts \u2192 United States\nWeight: 1\nType: associated_with", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Trump", "title": "Trump \u2192 Virginia\nWeight: 1\nType: associated_with", "to": "Virginia", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Whoopi", "title": "Whoopi \u2192 Florida\nWeight: 1\nType: associated_with", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Bellevue", "title": "Bellevue \u2192 New York\nWeight: 2\nType: movement\nTravelers: Another Nick Sandman, Sarah Comrie", "to": "New York", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Central Park Karen", "title": "Central Park Karen \u2192 Mediterranean\nWeight: 2\nType: movement\nTravelers: Eliana, Michael Corleone", "to": "Mediterranean", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "City Bike", "title": "City Bike \u2192 New York City\nWeight: 7\nType: movement\nTravelers: Al Sharpton, Benjamin Crump, Monique, Nick Sandman, Sarah, Sarah Comrie, Sarah Jane Comrie", "to": "New York City", "value": 7}, {"arrows": "to", "color": "#AB47BC", "from": "Florida", "title": "Florida \u2192 United States\nWeight: 5\nType: movement\nTravelers: Charlie Kirk, Donald Trump, Ron Desantis, Tim Scott, Joe Biden", "to": "United States", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "Florida", "title": "Florida \u2192 Tampa Bay\nWeight: 3\nType: movement\nTravelers: Charlie Kirk, Clarence Thomas, Megan Markle", "to": "Tampa Bay", "value": 3}, {"arrows": "to", "color": "#AB47BC", "from": "Florida", "title": "Florida \u2192 Syria\nWeight: 7\nType: movement\nTravelers: Donald Trump, John Bolton, Larry Elder, Lisa Hutchinson, Nikki Haley, Ron Desantis, Tim Scott", "to": "Syria", "value": 7}, {"arrows": "to", "color": "#AB47BC", "from": "Mediterranean", "title": "Mediterranean \u2192 Italy\nWeight: 1\nType: movement\nTravelers: Eliana", "to": "Italy", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York", "title": "New York \u2192 City Bike\nWeight: 1\nType: movement\nTravelers: Sarah Comrie", "to": "City Bike", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "New York City", "title": "New York City \u2192 Bellevue\nWeight: 2\nType: movement\nTravelers: Monique, Nick Sandman", "to": "Bellevue", "value": 2}, {"arrows": "to", "color": "#AB47BC", "from": "Tampa Bay", "title": "Tampa Bay \u2192 Kenosha\nWeight: 1\nType: movement\nTravelers: Megan Markle", "to": "Kenosha", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Florida\nWeight: 5\nType: movement\nTravelers: Charlie Kirk, Ron Desantis, Donald Trump, Nikki Haley", "to": "Florida", "value": 5}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Western Canada\nWeight: 1\nType: movement\nTravelers: Tim Scott", "to": "Western Canada", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "United States", "title": "United States \u2192 Central Park Karen\nWeight: 1\nType: movement\nTravelers: Eliana", "to": "Central Park Karen", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Virginia", "title": "Virginia \u2192 Florida\nWeight: 1\nType: movement\nTravelers: Tim Scott", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Virginia", "title": "Virginia \u2192 United States\nWeight: 1\nType: movement\nTravelers: Eliana", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Western Canada", "title": "Western Canada \u2192 United States\nWeight: 1\nType: movement\nTravelers: Nikki Haley", "to": "United States", "value": 1}, {"arrows": "to", "color": "#AB47BC", "from": "Western Canada", "title": "Western Canada \u2192 Florida\nWeight: 1\nType: movement\nTravelers: Tim Scott", "to": "Florida", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
