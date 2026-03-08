@@ -7,13 +7,15 @@ Interactive network visualizations of entity relationships in podcast conversati
 - **🔍 Auto-Discovery**: Automatically detects and displays all graphs in `graphs/` directory - no manual HTML editing required
 - **🌐 Interactive Graphs**: vis-network powered visualizations with force-directed layouts
 - **💬 Rich Narrative Context**: Graph edges display actual transcript quotes, speaker attribution, and temporal markers
-- **😊 Sentiment Analysis**: Automatic emotional tone detection (positive/negative/neutral) for all relationship contexts
+- **😊 Sentiment Visualization**: Color-coded edges (green/red/gray) based on emotional tone with distribution charts
 - **🏷️ Topic Clustering**: Cross-episode semantic clustering to identify themes and group similar content
-- **🔎 Search & Filter**: Find episodes by title across all shows in real-time
-- **🎨 Entity Legend**: Color-coded Person/Place nodes with relationship connections
-- **📊 Graph Statistics**: Display counts of people, places, and connections
+- **📚 Topic Browser**: Collapsible sidebar showing all topics with keywords, clusters, and episode lists
+- **🔎 Search & Filter**: Find episodes by title, type, or topic across all shows in real-time
+- **🎨 Entity Legend**: Color-coded Person/Place nodes with sentiment-based edge colors
+- **📊 Graph Statistics**: Display counts of people, places, connections, and sentiment distribution
 - **🎯 Enhanced Tooltips**: Hover over relationships to see who discussed them, when, sentiment, and actual conversation excerpts
 - **📱 Responsive Design**: Works seamlessly on desktop and mobile
+- **🎭 Multi-Level Filtering**: Combine search, type filters, and topic filters simultaneously
 - **🌙 Dark Theme**: Modern dark UI with gradient backgrounds
 - **⚡ Zero Maintenance**: Add new graphs simply by running the generation script
 - **🚀 Fast Performance**: Served from Cloudflare CDN with global distribution
@@ -336,6 +338,41 @@ Open http://localhost:8000 to view the site.
 - **Summary graph**: http://localhost:8000/graphs/summaries/a_bit_fruity_with_matt_bernstein_graph.html
 - **Episode graph**: http://localhost:8000/graphs/a_bit_fruity_with_matt_bernstein/introducing_a_bit_fruity_with_matt_bernstein_graph.html
 
+## Using the Visualizations
+
+### Sentiment Visualization in Graphs
+
+**Edge Colors:**
+- 🟢 **Green edges**: Positive sentiment relationships (discussed favorably)
+- 🔴 **Red edges**: Negative sentiment relationships (discussed critically)
+- ⚪ **Gray edges**: Neutral sentiment relationships
+
+**Sentiment Distribution Chart:**
+Located in the graph header, shows the emotional tone breakdown:
+- Bar chart with percentage breakdown
+- Counts for each sentiment category
+- Example: "😊 12 (45.2%), 😞 8 (30.1%), 😐 7 (24.7%)"
+
+### Topic Browser & Filtering
+
+**Access Topics:**
+1. Click the floating "📚 Topics" button (bottom right)
+2. Sidebar slides in showing all discovered topics
+
+**Browse Topics:**
+- Each topic cluster shows:
+  - Topic label (top keywords)
+  - Episode count
+  - Related keywords
+  - List of episodes (click to expand)
+- Click a topic cluster to filter episodes by that theme
+
+**Filter by Topic:**
+- Use topic filter chips in the navigation bar
+- Click topic tags on episode cards
+- Click topics in the sidebar browser
+- Combine with search and type filters
+
 ### Enhanced Tooltip Example
 
 When hovering over a relationship edge in the graph, you'll see rich context like:
@@ -647,11 +684,15 @@ git push
 
 ## Recent Enhancements
 
-- ✅ **Sentiment analysis** - Automatic emotional tone analysis for relationship contexts (positive/negative/neutral with emojis)
-- ✅ **Topic clustering** - Cross-episode topic modeling to identify themes and cluster similar episodes
-- ✅ **Rich narrative context** - Edges now display actual transcript quotes with speaker attribution
+- ✅ **Sentiment visualization** - Color-coded edges (green=positive, red=negative, gray=neutral) with distribution charts
+- ✅ **Topic clustering** - BERTopic-based semantic clustering with cross-episode theme discovery
+- ✅ **Topic browser sidebar** - Collapsible sidebar with topic clusters, keywords, and episode lists
+- ✅ **Topic filtering** - Filter episodes by topic with visual tags and filter chips
+- ✅ **Multi-level filtering** - Combine search, type, and topic filters simultaneously
+- ✅ **Sentiment distribution chart** - Visual bar chart showing emotional tone breakdown in graphs
+- ✅ **Rich narrative context** - Edges display actual transcript quotes with speaker attribution
 - ✅ **Temporal markers** - Shows when in the conversation relationships occur (early/middle/late)
-- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, context examples, and sentiment
+- ✅ **Enhanced tooltips** - Hover displays relationship details, speakers, sentiment, and context examples
 - ✅ **Semantic labeling** - Better relationship types ("mentioned_in", "traveled_to")
 - ✅ **Responsive graphs** - Viewport-based sizing with minimum height constraints
 
