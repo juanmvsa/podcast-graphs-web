@@ -1877,7 +1877,6 @@ def _build_enhanced_styles() -> str:
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
             }
-            }
 
             .entity-search {
                 font-size: 16px; /* Prevent zoom on iOS */
@@ -2403,20 +2402,6 @@ def visualize_graph(
 
     # inject enhanced scripts before </body>
     html = html.replace("</body>", f"{enhanced_scripts}\n</body>", 1)
-
-    # update network container height to responsive
-    html = re.sub(
-        r'height:\s*\d+px;',
-        'height: 85vh; min-height: 450px;',
-        html
-    )
-
-    # ensure graph container uses full width
-    html = re.sub(
-        r'width:\s*\d+%;',
-        'width: 100%;',
-        html
-    )
 
     output_path.write_text(html, encoding="utf-8")
 

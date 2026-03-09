@@ -148,9 +148,10 @@ def update_html_file(file_path: Path) -> bool:
             html = html.replace("</style>", f"{improved_css}\n        </style>", 1)
 
         # Update network container height to be more responsive
+        # Only target the #mynetwork rule, not all height values
         html = re.sub(
-            r'height:\s*\d+px;',
-            'height: 85vh; min-height: 450px;',
+            r'(#mynetwork\s*\{[^}]*?)height:\s*\d+px;',
+            r'\1height: 85vh; min-height: 450px;',
             html
         )
 
