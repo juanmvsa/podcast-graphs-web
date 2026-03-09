@@ -38,35 +38,48 @@ Excludes specific paths from deployment. Currently excludes:
 
 ## Deployment Workflow
 
-### Recommended Process
+### ⚡ Quick Deploy (Recommended)
+
+The deploy script **automatically clears all caches** and regenerates the index from scratch:
+
+```bash
+./scripts/deploy.sh
+```
+
+This single command:
+1. ✅ Clears Wrangler cache
+2. ✅ Clears Python cache
+3. ✅ Regenerates `index.json` from scratch
+4. ✅ Validates all files are <25MB
+5. ✅ Deploys to Cloudflare Pages
+
+**No stale data - every deployment starts fresh!**
+
+---
+
+### Manual Cache Cleaning
+
+To clean caches without deploying:
+
+```bash
+./scripts/clean.sh
+```
+
+---
+
+### Step-by-Step Process (If Needed)
 
 1. **Generate graphs** (if needed):
    ```bash
-   uv run scripts/generate_entity_graphs.py
+   uv run scripts/generate_entity_graphs.py --visualize
    ```
 
-2. **Generate index** for site directory:
+2. **Clean old caches**:
    ```bash
-   cd site
-   uv run python3 -c "
-   import sys; sys.path.insert(0, '../scripts')
-   from pathlib import Path
-   from generate_index import scan_graphs_directory
-   import json
-   data = scan_graphs_directory(Path('graphs'))
-   with open('index.json', 'w') as f:
-       json.dump(data, f, indent=2)
-   print(f'Generated index with {data[\"totalShows\"]} shows')
-   "
-   cd ..
+   ./scripts/clean.sh
    ```
 
-3. **Validate** before deploying:
-   ```bash
-   uv run scripts/validate_deployment.py
-   ```
-
-4. **Deploy** using the safe wrapper:
+3. **Deploy** (includes fresh index generation):
    ```bash
    ./scripts/deploy.sh
    ```
@@ -113,6 +126,25 @@ These are already excluded from the `site/` deployment directory.
 
 4. Deploy again
 
+### Stale Data / Index Errors
+
+If you see:
+- Missing shows on the deployed site
+- Old episode data
+- Mismatched index.json and actual files
+
+**Solution:** The deploy script now clears all caches automatically:
+
+```bash
+./scripts/deploy.sh
+```
+
+Or manually clean and redeploy:
+```bash
+./scripts/clean.sh
+./scripts/deploy.sh
+```
+
 ### Pre-commit Hook Not Working
 
 Ensure it's executable:
@@ -124,6 +156,6 @@ chmod +x .git/hooks/pre-commit
 
 **Don't do this** unless you know what you're doing:
 - `git commit --no-verify` - Skips pre-commit hook
-- Manual wrangler deploy - Skips validation
+- Manual wrangler deploy - Skips validation and cache clearing
 
-Both can result in failed deployments.
+Both can result in failed deployments or stale data.
