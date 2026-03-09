@@ -1,0 +1,1003 @@
+<html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 85vh;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        
+        /* === Reset and Base === */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* === Breadcrumb Navigation === */
+        .breadcrumb-nav {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 12px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .breadcrumb-nav a {
+            color: #4FC3F7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            color: #9e9e9e;
+            margin: 0 8px;
+        }
+
+        .breadcrumb-current {
+            color: #e0e0e0;
+        }
+
+        /* === Graph Header === */
+        #graph-header {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        #graph-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        #graph-header .subtitle {
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        }
+
+        .toggle-header {
+            display: none;
+            cursor: pointer;
+            color: #4FC3F7;
+            font-size: 1rem;
+            margin-top: 8px;
+            user-select: none;
+            padding: 8px 12px;
+            background: rgba(79, 195, 247, 0.15);
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-header:hover {
+            background: rgba(79, 195, 247, 0.25);
+        }
+
+        .toggle-header:active {
+            transform: scale(0.98);
+        }
+
+        .header-details {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: stretch;
+            margin-top: 16px;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 16px 20px;
+            min-width: 200px;
+            flex: 1 1 auto;
+        }
+
+        .info-box-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #4FC3F7;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legend-items, .stats-items, .controls-items {
+            font-size: 0.95em;
+            line-height: 2;
+            color: #e8e8e8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 16px;
+            height: 85vh; min-height: 450px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 28px;
+            height: 85vh; min-height: 450px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .controls-items div {
+            color: #d0d0d0;
+        }
+
+        /* === Entity Search === */
+        .entity-search-container {
+            margin: 16px 32px;
+        }
+
+        .entity-search {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .entity-search:focus {
+            outline: none;
+            border-color: #4FC3F7;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+        }
+
+        .entity-search::placeholder {
+            color: #a0a0a0;
+        }
+
+        /* === Graph Controls === */
+        .graph-controls {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 0 32px 16px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-right: 6px;
+            font-weight: 500;
+        }
+
+        .control-button {
+            background: rgba(79, 195, 247, 0.15);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: #4FC3F7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .control-button:hover {
+            background: rgba(79, 195, 247, 0.25);
+            border-color: rgba(79, 195, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* === Loading Overlay === */
+        .graph-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .graph-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 85vh; min-height: 450px;
+            border: 4px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4FC3F7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4FC3F7;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 85vh; min-height: 450px;
+            background: rgba(79, 195, 247, 0.2);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: #4FC3F7;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* === Mobile Responsive === */
+        @media (max-width: 768px) {
+            .breadcrumb-nav {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #graph-header {
+                padding: 20px 16px;
+            }
+
+            #graph-header h1 {
+                font-size: 1.35em;
+                line-height: 1.3;
+            }
+
+            #graph-header .subtitle {
+                font-size: 0.9em;
+            }
+
+            .toggle-header {
+                display: inline-block;
+                width: 100%;
+                text-align: center;
+                margin-top: 12px;
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .header-details {
+                display: none;
+                margin-top: 16px;
+                gap: 12px;
+            }
+
+            .header-details.expanded {
+                display: flex;
+            }
+
+            .info-box {
+                min-width: 100%;
+                width: 100%;
+                padding: 16px;
+                flex: 1 1 100%;
+            }
+
+            .info-box-title {
+                font-size: 0.9em;
+                margin-bottom: 12px;
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 1rem;
+                line-height: 2.2;
+            }
+
+            .legend-item {
+                gap: 14px;
+                padding: 6px 0;
+            }
+
+            .legend-dot {
+                width: 18px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .legend-line {
+                width: 32px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .stat-number {
+                font-size: 1.2em;
+            }
+
+            .entity-search-container {
+                margin: 16px;
+            }
+
+            .graph-controls {
+                margin: 0 16px 16px;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: center;
+            }
+
+            #mynetwork {
+                height: calc(100vh - 80px) !important;
+                min-height: 400px !important;
+            }
+
+            /* Make graph container take full width */
+            .card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* === Tablet Responsive === */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-details {
+                gap: 20px;
+            }
+
+            .info-box {
+                min-width: 220px;
+                flex: 1 1 calc(50% - 10px);
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 0.9em;
+            }
+
+            .legend-dot {
+                width: 14px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .legend-line {
+                width: 24px;
+            }
+        }
+
+        /* === Large Screen Optimization === */
+        @media (min-width: 1440px) {
+            #graph-header {
+                padding: 28px 48px 24px;
+            }
+
+            .breadcrumb-nav {
+                padding: 14px 48px;
+            }
+
+            .header-details {
+                gap: 24px;
+            }
+
+            .info-box {
+                padding: 18px 22px;
+            }
+
+            .entity-search-container {
+                margin: 20px 48px;
+            }
+
+            .graph-controls {
+                margin: 0 48px 20px;
+            }
+        }
+
+        /* === Sentiment Distribution Chart === */
+        .sentiment-chart {
+            font-size: 0.95em;
+        }
+
+        .sentiment-bar-container {
+            display: flex;
+            width: 100%;
+            height: 85vh; min-height: 450px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sentiment-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sentiment-bar:hover {
+            opacity: 0.85;
+            transform: scaleY(1.1);
+        }
+
+        .sentiment-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sentiment-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95em;
+            padding: 4px 0;
+        }
+
+        .sentiment-stat span {
+            font-weight: 700;
+        }
+
+        /* === Mobile Touch Enhancements === */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets for mobile */
+            .control-button {
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-height: 85vh; min-height: 450px;
+            }
+
+            .toggle-header {
+                min-height: 85vh; min-height: 450px;
+                padding: 14px;
+            }
+
+            .sentiment-bar-container {
+                height: 85vh; min-height: 450px;
+            }
+
+            /* Prevent text selection on interactive elements */
+            .control-button, .toggle-header, .legend-item {
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            }
+
+            .entity-search {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+    
+</style>
+    </head>
+
+
+    <body>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="../../index.html">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">A Bit Fruity with Matt Bernstein</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Bud Light and the End of Rainbow Marketing for Now</span>
+    </div>
+
+    <!-- Graph Header -->
+    <div id="graph-header">
+        <h1>Bud Light and the End of Rainbow Marketing for Now</h1>
+        <p class="subtitle">A Bit Fruity with Matt Bernstein</p>
+        <span class="toggle-header" onclick="toggleDetails()">
+            ▼ Show Details
+        </span>
+
+        <div class="header-details">
+            <!-- Legend -->
+            <div class="info-box">
+                <div class="info-box-title">Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #4FC3F7;"></span>
+                        <span>Person</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #FF8A65;"></span>
+                        <span>Place</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #66BB6A;"></span>
+                        <span>😊 Positive</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #EF5350;"></span>
+                        <span>😞 Negative</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #90A4AE;"></span>
+                        <span>😐 Neutral</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="info-box">
+                <div class="info-box-title">Stats</div>
+                <div class="stats-items">
+                    <div><span class="stat-number" style="color: #4FC3F7;">21</span> people</div>
+                    <div><span class="stat-number" style="color: #FF8A65;">5</span> places</div>
+                    <div><span class="stat-number">44</span> connections</div>
+                </div>
+            </div>
+
+            <!-- Sentiment Distribution -->
+            <div class="info-box">
+                <div class="info-box-title">Sentiment Distribution</div>
+                <div class="sentiment-chart">
+                    <div class="sentiment-bar-container">
+                        <div class="sentiment-bar" style="width: 13.6%; background: #66BB6A;" title="Positive: 13.6%"></div>
+                        <div class="sentiment-bar" style="width: 86.4%; background: #EF5350;" title="Negative: 86.4%"></div>
+                        <div class="sentiment-bar" style="width: 0.0%; background: #90A4AE;" title="Neutral: 0.0%"></div>
+                    </div>
+                    <div class="sentiment-legend">
+                        <div class="sentiment-stat">
+                            <span style="color: #66BB6A;">😊 6</span> (13.6%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #EF5350;">😞 38</span> (86.4%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #90A4AE;">😐 0</span> (0.0%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="info-box">
+                <div class="info-box-title">Controls</div>
+                <div class="controls-items">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity Search -->
+    <div class="entity-search-container">
+        <input
+            type="text"
+            class="entity-search"
+            id="entitySearch"
+            placeholder="🔍 Search entities (people, places)..."
+            oninput="searchEntities(this.value)"
+        >
+    </div>
+
+    <!-- Graph Controls -->
+    <div class="graph-controls">
+        <div class="control-group">
+            <span class="control-label">View:</span>
+            <button class="control-button" onclick="resetView()">Reset Zoom</button>
+            <button class="control-button" onclick="fitToView()">Fit All</button>
+            <button class="control-button" onclick="togglePhysics()">
+                <span id="physicsLabel">Pause</span> Physics
+            </button>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Filter:</span>
+            <button class="control-button" onclick="showPersonOnly()">People Only</button>
+            <button class="control-button" onclick="showPlaceOnly()">Places Only</button>
+            <button class="control-button" onclick="showAll()">Show All</button>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" style="position: relative;">
+    <div class="graph-loading" id="graphLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing graph...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgress"></div>
+        </div>
+    </div>
+    <div style="width: 100%; height: 100%;" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Alyssa Heinerscheid", "label": "Alyssa Heinerscheid", "shape": "dot", "size": 15, "title": "Alyssa Heinerscheid\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anita Bryant", "label": "Anita Bryant", "shape": "dot", "size": 23, "title": "Anita Bryant\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brendan Whitworth", "label": "Brendan Whitworth", "shape": "dot", "size": 17, "title": "Brendan Whitworth\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Colin Kaepernick", "label": "Colin Kaepernick", "shape": "dot", "size": 23, "title": "Colin Kaepernick\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Trump", "label": "Donald Trump", "shape": "dot", "size": 23, "title": "Donald Trump\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dylan", "label": "Dylan", "shape": "dot", "size": 25, "title": "Dylan\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dylan Mulvaney", "label": "Dylan Mulvaney", "shape": "dot", "size": 23, "title": "Dylan Mulvaney\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dylan One", "label": "Dylan One", "shape": "dot", "size": 15, "title": "Dylan One\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gayle King", "label": "Gayle King", "shape": "dot", "size": 15, "title": "Gayle King\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leah Thomas", "label": "Leah Thomas", "shape": "dot", "size": 17, "title": "Leah Thomas\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marsha Blackburn", "label": "Marsha Blackburn", "shape": "dot", "size": 17, "title": "Marsha Blackburn\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nickelodeon", "label": "Nickelodeon", "shape": "dot", "size": 17, "title": "Nickelodeon\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Patti Gonia", "label": "Patti Gonia", "shape": "dot", "size": 23, "title": "Patti Gonia\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley Gaines", "label": "Riley Gaines", "shape": "dot", "size": 15, "title": "Riley Gaines\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ron Desantis", "label": "Ron Desantis", "shape": "dot", "size": 23, "title": "Ron Desantis\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sarah Huckabee Sanders", "label": "Sarah Huckabee Sanders", "shape": "dot", "size": 17, "title": "Sarah Huckabee Sanders\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Seth Weathers", "label": "Seth Weathers", "shape": "dot", "size": 17, "title": "Seth Weathers\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ted Cruz", "label": "Ted Cruz", "shape": "dot", "size": 17, "title": "Ted Cruz\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Travis Tritt", "label": "Travis Tritt", "shape": "dot", "size": 17, "title": "Travis Tritt\nType: PERSON\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Arkansas", "label": "Arkansas", "shape": "dot", "size": 29, "title": "Arkansas\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Florida", "label": "Florida", "shape": "dot", "size": 33, "title": "Florida\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Israel", "label": "Israel", "shape": "dot", "size": 33, "title": "Israel\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Palestine", "label": "Palestine", "shape": "dot", "size": 33, "title": "Palestine\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 45, "title": "United States\nType: PLACE\nConnections: 15"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_02", "label": "Speaker_02", "shape": "dot", "size": 17, "title": "Speaker_02\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_03", "label": "Speaker_03", "shape": "dot", "size": 17, "title": "Speaker_03\nType: PERSON\nConnections: 1"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#EF5350", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Brendan Whitworth", "title": "\ud83d\udccd Brendan Whitworth \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And to the rest of you woke corporations, stay the f*** away from our kids. And this is still f***ing going on, guys. W...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Colin Kaepernick", "title": "\ud83d\udccd Colin Kaepernick \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Colin Kaepernick", "title": "\ud83d\udccd Colin Kaepernick \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Colin Kaepernick", "title": "\ud83d\udccd Colin Kaepernick \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Colin Kaepernick", "title": "\ud83d\udccd Colin Kaepernick \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Dylan", "title": "\ud83d\udccd Dylan \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan", "title": "\ud83d\udccd Dylan \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And to the rest of you woke corporations, stay the f*** away from our kids. And this is still f***ing going on, guys. W...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Dylan", "title": "\ud83d\udccd Dylan \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan", "title": "\ud83d\udccd Dylan \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan", "title": "\ud83d\udccd Dylan \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan Mulvaney", "title": "\ud83d\udccd Dylan Mulvaney \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan Mulvaney", "title": "\ud83d\udccd Dylan Mulvaney \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan Mulvaney", "title": "\ud83d\udccd Dylan Mulvaney \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dylan Mulvaney", "title": "\ud83d\udccd Dylan Mulvaney \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Leah Thomas", "title": "\ud83d\udccd Leah Thomas \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And to the rest of you woke corporations, stay the f*** away from our kids. And this is still f***ing going on, guys. W...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Marsha Blackburn", "title": "\ud83d\udccd Marsha Blackburn \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Nickelodeon", "title": "\ud83d\udccd Nickelodeon \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And to the rest of you woke corporations, stay the f*** away from our kids. And this is still f***ing going on, guys. W...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Patti Gonia", "title": "\ud83d\udccd Patti Gonia \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Patti Gonia", "title": "\ud83d\udccd Patti Gonia \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Patti Gonia", "title": "\ud83d\udccd Patti Gonia \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Patti Gonia", "title": "\ud83d\udccd Patti Gonia \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sarah Huckabee Sanders", "title": "\ud83d\udccd Sarah Huckabee Sanders \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Seth Weathers", "title": "\ud83d\udccd Seth Weathers \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Travis Tritt", "title": "\ud83d\udccd Travis Tritt \u2192 Arkansas\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" Travis Tritt, a country singer, pulled Bud Light from his upcoming tour events. Restaurants around the country whose ow...\"\n  Sentiment: POSITIVE", "to": "Arkansas", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Arkansas", "title": "\ud83d\udccd Arkansas \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Dylan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Dylan)\n  \" And to the rest of you woke corporations, stay the f*** away from our kids. And this is still f***ing going on, guys. W...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Florida", "title": "\ud83d\udccd Florida \u2192 Israel\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 7\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Anita Bryant, Colin Kaepernick, Donald Trump, Dylan, Dylan Mulvaney, Patti Gonia, Ron Desantis\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Anita Bryant)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Colin Kaepernick)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Israel", "value": 7}, {"arrows": "to", "color": "#EF5350", "from": "Israel", "title": "\ud83d\udccd Israel \u2192 Palestine\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 7\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Anita Bryant, Colin Kaepernick, Donald Trump, Dylan, Dylan Mulvaney, Patti Gonia, Ron Desantis\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Anita Bryant)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Colin Kaepernick)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Palestine", "value": 7}, {"arrows": "to", "color": "#EF5350", "from": "Palestine", "title": "\ud83d\udccd Palestine \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 7\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Anita Bryant, Colin Kaepernick, Donald Trump, Dylan, Dylan Mulvaney, Patti Gonia, Ron Desantis\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Anita Bryant)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Colin Kaepernick)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 7}, {"arrows": "to", "color": "#EF5350", "from": "United States", "title": "\ud83d\udccd United States \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Dylan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Dylan)\n  \" And the hate doesn\u0027t end with me. It has serious and grave consequences for the rest of our community. And, you know, w...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Speaker_02", "title": "\ud83d\udccd Speaker_02 \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_02\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_02:\n  \" America\u0027s been drinking beer from a company that doesn\u0027t even know which restroom to use. That\u0027s why I created Conserva...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Speaker_03", "title": "\ud83d\udccd Speaker_03 \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_03\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_03:\n  \" But if you\u0027re going to enter the ring, fucking stand in it. Given the moment we\u0027re in, this moment in America with tran...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+    <script>
+        // === Global Variables ===
+        let physicsEnabled = true;
+
+        // === Header Toggle (Mobile) ===
+        function toggleDetails() {
+            const details = document.querySelector('.header-details');
+            const toggle = document.querySelector('.toggle-header');
+            details.classList.toggle('expanded');
+            toggle.textContent = details.classList.contains('expanded')
+                ? '▲ Hide Details'
+                : '▼ Show Details';
+        }
+
+        // === Graph Control Functions ===
+        function resetView() {
+            if (typeof network !== 'undefined') {
+                network.moveTo({ scale: 1, position: {x: 0, y: 0}, animation: true });
+            }
+        }
+
+        function fitToView() {
+            if (typeof network !== 'undefined') {
+                network.fit({ animation: true });
+            }
+        }
+
+        function togglePhysics() {
+            if (typeof network !== 'undefined') {
+                physicsEnabled = !physicsEnabled;
+                network.setOptions({ physics: { enabled: physicsEnabled } });
+                document.getElementById('physicsLabel').textContent =
+                    physicsEnabled ? 'Pause' : 'Resume';
+            }
+        }
+
+        function showPersonOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#4FC3F7'
+                });
+            });
+        }
+
+        function showPlaceOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#FF8A65'
+                });
+            });
+        }
+
+        function showAll() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                nodes.update({ id: id, hidden: false });
+            });
+            // Reset search
+            document.getElementById('entitySearch').value = '';
+        }
+
+        // === Entity Search ===
+        function searchEntities(query) {
+            if (typeof nodes === 'undefined') return;
+
+            if (!query) {
+                showAll();
+                return;
+            }
+
+            const lowerQuery = query.toLowerCase();
+            const nodeIds = nodes.getIds();
+            const matchingIds = [];
+
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                const matches = node.label.toLowerCase().includes(lowerQuery);
+                nodes.update({
+                    id: id,
+                    hidden: !matches,
+                    borderWidth: matches ? 3 : 1,
+                    color: {
+                        background: node.color,
+                        border: matches ? '#FFD700' : node.color
+                    }
+                });
+                if (matches) matchingIds.push(id);
+            });
+
+            // Focus on matching nodes
+            if (matchingIds.length > 0 && typeof network !== 'undefined') {
+                network.fit({
+                    nodes: matchingIds,
+                    animation: true
+                });
+            }
+        }
+
+        // === Loading State Management ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for network to be defined
+            const checkNetwork = setInterval(function() {
+                if (typeof network !== 'undefined') {
+                    clearInterval(checkNetwork);
+
+                    // Setup loading progress
+                    network.on('stabilizationProgress', function(params) {
+                        const progress = Math.round((params.iterations / params.total) * 100);
+                        const progressBar = document.getElementById('loadingProgress');
+                        const loadingText = document.querySelector('.loading-text');
+                        if (progressBar) progressBar.style.width = progress + '%';
+                        if (loadingText) loadingText.textContent = `Stabilizing layout... ${progress}%`;
+                    });
+
+                    network.on('stabilizationIterationsDone', function() {
+                        const loadingText = document.querySelector('.loading-text');
+                        if (loadingText) loadingText.textContent = 'Complete!';
+                        setTimeout(() => {
+                            const loading = document.getElementById('graphLoading');
+                            if (loading) loading.classList.add('hidden');
+                        }, 300);
+                    });
+
+                    // Enable navigation buttons for mobile
+                    network.setOptions({
+                        interaction: {
+                            navigationButtons: window.innerWidth <= 768,
+                            keyboard: {
+                                enabled: true,
+                                bindToWindow: false
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // === Mobile Touch Enhancements ===
+        if ('ontouchstart' in window) {
+            window.addEventListener('load', function() {
+                const networkDiv = document.getElementById('mynetwork');
+                if (networkDiv) {
+                    // Prevent pull-to-refresh when panning graph
+                    let lastY = 0;
+                    networkDiv.addEventListener('touchmove', function(e) {
+                        const currentY = e.touches[0].clientY;
+                        if (lastY < currentY && window.scrollY === 0) {
+                            e.preventDefault();
+                        }
+                        lastY = currentY;
+                    }, { passive: false });
+
+                    // Disable double-tap zoom on network canvas
+                    networkDiv.addEventListener('touchstart', function(e) {
+                        if (e.touches.length > 1) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+                }
+            });
+        }
+
+        // === Responsive Navigation Buttons ===
+        window.addEventListener('resize', function() {
+            if (typeof network !== 'undefined') {
+                network.setOptions({
+                    interaction: {
+                        navigationButtons: window.innerWidth <= 768
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>

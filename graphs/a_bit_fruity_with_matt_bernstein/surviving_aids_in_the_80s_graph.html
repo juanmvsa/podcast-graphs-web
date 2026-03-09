@@ -1,0 +1,1003 @@
+<html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 85vh;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        
+        /* === Reset and Base === */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* === Breadcrumb Navigation === */
+        .breadcrumb-nav {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 12px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .breadcrumb-nav a {
+            color: #4FC3F7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            color: #9e9e9e;
+            margin: 0 8px;
+        }
+
+        .breadcrumb-current {
+            color: #e0e0e0;
+        }
+
+        /* === Graph Header === */
+        #graph-header {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        #graph-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        #graph-header .subtitle {
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #9e9e9e;
+        }
+
+        .toggle-header {
+            display: none;
+            cursor: pointer;
+            color: #4FC3F7;
+            font-size: 1rem;
+            margin-top: 8px;
+            user-select: none;
+            padding: 8px 12px;
+            background: rgba(79, 195, 247, 0.15);
+            border-radius: 6px;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-header:hover {
+            background: rgba(79, 195, 247, 0.25);
+        }
+
+        .toggle-header:active {
+            transform: scale(0.98);
+        }
+
+        .header-details {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: stretch;
+            margin-top: 16px;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 16px 20px;
+            min-width: 200px;
+            flex: 1 1 auto;
+        }
+
+        .info-box-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #4FC3F7;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legend-items, .stats-items, .controls-items {
+            font-size: 0.95em;
+            line-height: 2;
+            color: #e8e8e8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 16px;
+            height: 85vh; min-height: 450px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 28px;
+            height: 85vh; min-height: 450px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .controls-items div {
+            color: #d0d0d0;
+        }
+
+        /* === Entity Search === */
+        .entity-search-container {
+            margin: 16px 32px;
+        }
+
+        .entity-search {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .entity-search:focus {
+            outline: none;
+            border-color: #4FC3F7;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+        }
+
+        .entity-search::placeholder {
+            color: #a0a0a0;
+        }
+
+        /* === Graph Controls === */
+        .graph-controls {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 0 32px 16px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-right: 6px;
+            font-weight: 500;
+        }
+
+        .control-button {
+            background: rgba(79, 195, 247, 0.15);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: #4FC3F7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .control-button:hover {
+            background: rgba(79, 195, 247, 0.25);
+            border-color: rgba(79, 195, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* === Loading Overlay === */
+        .graph-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .graph-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 85vh; min-height: 450px;
+            border: 4px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4FC3F7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4FC3F7;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 85vh; min-height: 450px;
+            background: rgba(79, 195, 247, 0.2);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: #4FC3F7;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* === Mobile Responsive === */
+        @media (max-width: 768px) {
+            .breadcrumb-nav {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #graph-header {
+                padding: 20px 16px;
+            }
+
+            #graph-header h1 {
+                font-size: 1.35em;
+                line-height: 1.3;
+            }
+
+            #graph-header .subtitle {
+                font-size: 0.9em;
+            }
+
+            .toggle-header {
+                display: inline-block;
+                width: 100%;
+                text-align: center;
+                margin-top: 12px;
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .header-details {
+                display: none;
+                margin-top: 16px;
+                gap: 12px;
+            }
+
+            .header-details.expanded {
+                display: flex;
+            }
+
+            .info-box {
+                min-width: 100%;
+                width: 100%;
+                padding: 16px;
+                flex: 1 1 100%;
+            }
+
+            .info-box-title {
+                font-size: 0.9em;
+                margin-bottom: 12px;
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 1rem;
+                line-height: 2.2;
+            }
+
+            .legend-item {
+                gap: 14px;
+                padding: 6px 0;
+            }
+
+            .legend-dot {
+                width: 18px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .legend-line {
+                width: 32px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .stat-number {
+                font-size: 1.2em;
+            }
+
+            .entity-search-container {
+                margin: 16px;
+            }
+
+            .graph-controls {
+                margin: 0 16px 16px;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: center;
+            }
+
+            #mynetwork {
+                height: calc(100vh - 80px) !important;
+                min-height: 400px !important;
+            }
+
+            /* Make graph container take full width */
+            .card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* === Tablet Responsive === */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-details {
+                gap: 20px;
+            }
+
+            .info-box {
+                min-width: 220px;
+                flex: 1 1 calc(50% - 10px);
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 0.9em;
+            }
+
+            .legend-dot {
+                width: 14px;
+                height: 85vh; min-height: 450px;
+            }
+
+            .legend-line {
+                width: 24px;
+            }
+        }
+
+        /* === Large Screen Optimization === */
+        @media (min-width: 1440px) {
+            #graph-header {
+                padding: 28px 48px 24px;
+            }
+
+            .breadcrumb-nav {
+                padding: 14px 48px;
+            }
+
+            .header-details {
+                gap: 24px;
+            }
+
+            .info-box {
+                padding: 18px 22px;
+            }
+
+            .entity-search-container {
+                margin: 20px 48px;
+            }
+
+            .graph-controls {
+                margin: 0 48px 20px;
+            }
+        }
+
+        /* === Sentiment Distribution Chart === */
+        .sentiment-chart {
+            font-size: 0.95em;
+        }
+
+        .sentiment-bar-container {
+            display: flex;
+            width: 100%;
+            height: 85vh; min-height: 450px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sentiment-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sentiment-bar:hover {
+            opacity: 0.85;
+            transform: scaleY(1.1);
+        }
+
+        .sentiment-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sentiment-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95em;
+            padding: 4px 0;
+        }
+
+        .sentiment-stat span {
+            font-weight: 700;
+        }
+
+        /* === Mobile Touch Enhancements === */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets for mobile */
+            .control-button {
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-height: 85vh; min-height: 450px;
+            }
+
+            .toggle-header {
+                min-height: 85vh; min-height: 450px;
+                padding: 14px;
+            }
+
+            .sentiment-bar-container {
+                height: 85vh; min-height: 450px;
+            }
+
+            /* Prevent text selection on interactive elements */
+            .control-button, .toggle-header, .legend-item {
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            }
+
+            .entity-search {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+    
+</style>
+    </head>
+
+
+    <body>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="../../index.html">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">A Bit Fruity with Matt Bernstein</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Surviving Aids in the 80s</span>
+    </div>
+
+    <!-- Graph Header -->
+    <div id="graph-header">
+        <h1>Surviving Aids in the 80s</h1>
+        <p class="subtitle">A Bit Fruity with Matt Bernstein</p>
+        <span class="toggle-header" onclick="toggleDetails()">
+            ▼ Show Details
+        </span>
+
+        <div class="header-details">
+            <!-- Legend -->
+            <div class="info-box">
+                <div class="info-box-title">Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #4FC3F7;"></span>
+                        <span>Person</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #FF8A65;"></span>
+                        <span>Place</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #66BB6A;"></span>
+                        <span>😊 Positive</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #EF5350;"></span>
+                        <span>😞 Negative</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #90A4AE;"></span>
+                        <span>😐 Neutral</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="info-box">
+                <div class="info-box-title">Stats</div>
+                <div class="stats-items">
+                    <div><span class="stat-number" style="color: #4FC3F7;">24</span> people</div>
+                    <div><span class="stat-number" style="color: #FF8A65;">19</span> places</div>
+                    <div><span class="stat-number">80</span> connections</div>
+                </div>
+            </div>
+
+            <!-- Sentiment Distribution -->
+            <div class="info-box">
+                <div class="info-box-title">Sentiment Distribution</div>
+                <div class="sentiment-chart">
+                    <div class="sentiment-bar-container">
+                        <div class="sentiment-bar" style="width: 31.2%; background: #66BB6A;" title="Positive: 31.2%"></div>
+                        <div class="sentiment-bar" style="width: 65.0%; background: #EF5350;" title="Negative: 65.0%"></div>
+                        <div class="sentiment-bar" style="width: 3.8%; background: #90A4AE;" title="Neutral: 3.8%"></div>
+                    </div>
+                    <div class="sentiment-legend">
+                        <div class="sentiment-stat">
+                            <span style="color: #66BB6A;">😊 25</span> (31.2%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #EF5350;">😞 52</span> (65.0%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #90A4AE;">😐 3</span> (3.8%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="info-box">
+                <div class="info-box-title">Controls</div>
+                <div class="controls-items">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity Search -->
+    <div class="entity-search-container">
+        <input
+            type="text"
+            class="entity-search"
+            id="entitySearch"
+            placeholder="🔍 Search entities (people, places)..."
+            oninput="searchEntities(this.value)"
+        >
+    </div>
+
+    <!-- Graph Controls -->
+    <div class="graph-controls">
+        <div class="control-group">
+            <span class="control-label">View:</span>
+            <button class="control-button" onclick="resetView()">Reset Zoom</button>
+            <button class="control-button" onclick="fitToView()">Fit All</button>
+            <button class="control-button" onclick="togglePhysics()">
+                <span id="physicsLabel">Pause</span> Physics
+            </button>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Filter:</span>
+            <button class="control-button" onclick="showPersonOnly()">People Only</button>
+            <button class="control-button" onclick="showPlaceOnly()">Places Only</button>
+            <button class="control-button" onclick="showAll()">Show All</button>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" style="position: relative;">
+    <div class="graph-loading" id="graphLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing graph...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgress"></div>
+        </div>
+    </div>
+    <div style="width: 100%; height: 100%;" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Aidan Quidd", "label": "Aidan Quidd", "shape": "dot", "size": 19, "title": "Aidan Quidd\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Aiden Quinn", "label": "Aiden Quinn", "shape": "dot", "size": 19, "title": "Aiden Quinn\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Attenborough", "label": "Attenborough", "shape": "dot", "size": 25, "title": "Attenborough\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Barbra Streisand", "label": "Barbra Streisand", "shape": "dot", "size": 19, "title": "Barbra Streisand\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Cardinal O\u0027Connor", "label": "Cardinal O\u0027Connor", "shape": "dot", "size": 23, "title": "Cardinal O\u0027Connor\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "David Geffen", "label": "David Geffen", "shape": "dot", "size": 21, "title": "David Geffen\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Donald Trump", "label": "Donald Trump", "shape": "dot", "size": 19, "title": "Donald Trump\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Eisenhower", "label": "Eisenhower", "shape": "dot", "size": 25, "title": "Eisenhower\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Frost", "label": "Frost", "shape": "dot", "size": 19, "title": "Frost\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Griffin Gold", "label": "Griffin Gold", "shape": "dot", "size": 17, "title": "Griffin Gold\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jacob Alordi", "label": "Jacob Alordi", "shape": "dot", "size": 15, "title": "Jacob Alordi\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesse Helms", "label": "Jesse Helms", "shape": "dot", "size": 29, "title": "Jesse Helms\nType: PERSON\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jesse Helms\u0027", "label": "Jesse Helms\u0027", "shape": "dot", "size": 19, "title": "Jesse Helms\u0027\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jon Stewart", "label": "Jon Stewart", "shape": "dot", "size": 19, "title": "Jon Stewart\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kevin", "label": "Kevin", "shape": "dot", "size": 21, "title": "Kevin\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry Kramers", "label": "Larry Kramers", "shape": "dot", "size": 19, "title": "Larry Kramers\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Madonna", "label": "Madonna", "shape": "dot", "size": 21, "title": "Madonna\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Molly", "label": "Molly", "shape": "dot", "size": 21, "title": "Molly\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Obama", "label": "Obama", "shape": "dot", "size": 19, "title": "Obama\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Pat Buchanan", "label": "Pat Buchanan", "shape": "dot", "size": 15, "title": "Pat Buchanan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter Staley", "label": "Peter Staley", "shape": "dot", "size": 21, "title": "Peter Staley\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Reagan", "label": "Reagan", "shape": "dot", "size": 21, "title": "Reagan\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ted Cruz", "label": "Ted Cruz", "shape": "dot", "size": 15, "title": "Ted Cruz\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Berwyn", "label": "Berwyn", "shape": "dot", "size": 21, "title": "Berwyn\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Brooklyn", "label": "Brooklyn", "shape": "dot", "size": 21, "title": "Brooklyn\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Fire Island", "label": "Fire Island", "shape": "dot", "size": 27, "title": "Fire Island\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Grove", "label": "Grove", "shape": "dot", "size": 19, "title": "Grove\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Long Island", "label": "Long Island", "shape": "dot", "size": 27, "title": "Long Island\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Midtown Manhattan", "label": "Midtown Manhattan", "shape": "dot", "size": 25, "title": "Midtown Manhattan\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 53, "title": "New York\nType: PLACE\nConnections: 19"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York City", "label": "New York City", "shape": "dot", "size": 23, "title": "New York City\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "North Carolina", "label": "North Carolina", "shape": "dot", "size": 23, "title": "North Carolina\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Pennsylvania", "label": "Pennsylvania", "shape": "dot", "size": 23, "title": "Pennsylvania\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Philadelphia", "label": "Philadelphia", "shape": "dot", "size": 23, "title": "Philadelphia\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Sacramento", "label": "Sacramento", "shape": "dot", "size": 23, "title": "Sacramento\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "San Diego", "label": "San Diego", "shape": "dot", "size": 27, "title": "San Diego\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "South Africa", "label": "South Africa", "shape": "dot", "size": 21, "title": "South Africa\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "South America", "label": "South America", "shape": "dot", "size": 19, "title": "South America\nType: PLACE\nConnections: 2"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Southern California", "label": "Southern California", "shape": "dot", "size": 33, "title": "Southern California\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Washington Square Park", "label": "Washington Square Park", "shape": "dot", "size": 27, "title": "Washington Square Park\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "West Hollywood", "label": "West Hollywood", "shape": "dot", "size": 29, "title": "West Hollywood\nType: PLACE\nConnections: 7"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "White House", "label": "White House", "shape": "dot", "size": 19, "title": "White House\nType: PLACE\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matt_Bernstein", "label": "Matt_Bernstein", "shape": "dot", "size": 21, "title": "Matt_Bernstein\nType: PERSON\nConnections: 3"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#EF5350", "from": "Aidan Quidd", "title": "\ud83d\udccd Aidan Quidd \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Aidan Quidd", "title": "\ud83d\udccd Aidan Quidd \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Aiden Quinn", "title": "\ud83d\udccd Aiden Quinn \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Aiden Quinn", "title": "\ud83d\udccd Aiden Quinn \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Attenborough", "title": "\ud83d\udccd Attenborough \u2192 Berwyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Berwyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Attenborough", "title": "\ud83d\udccd Attenborough \u2192 Pennsylvania\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Pennsylvania", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Attenborough", "title": "\ud83d\udccd Attenborough \u2192 Philadelphia\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Attenborough", "title": "\ud83d\udccd Attenborough \u2192 Sacramento\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Sacramento", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Attenborough", "title": "\ud83d\udccd Attenborough \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Barbra Streisand", "title": "\ud83d\udccd Barbra Streisand \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Barbra Streisand", "title": "\ud83d\udccd Barbra Streisand \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Cardinal O\u0027Connor", "title": "\ud83d\udccd Cardinal O\u0027Connor \u2192 Midtown Manhattan\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "Midtown Manhattan", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Cardinal O\u0027Connor", "title": "\ud83d\udccd Cardinal O\u0027Connor \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Cardinal O\u0027Connor", "title": "\ud83d\udccd Cardinal O\u0027Connor \u2192 South Africa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "South Africa", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Cardinal O\u0027Connor", "title": "\ud83d\udccd Cardinal O\u0027Connor \u2192 South America\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "South America", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "David Geffen", "title": "\ud83d\udccd David Geffen \u2192 Long Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Long Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "David Geffen", "title": "\ud83d\udccd David Geffen \u2192 San Diego\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "David Geffen", "title": "\ud83d\udccd David Geffen \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Donald Trump", "title": "\ud83d\udccd Donald Trump \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Eisenhower", "title": "\ud83d\udccd Eisenhower \u2192 Berwyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Berwyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Eisenhower", "title": "\ud83d\udccd Eisenhower \u2192 Pennsylvania\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Pennsylvania", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Eisenhower", "title": "\ud83d\udccd Eisenhower \u2192 Philadelphia\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Philadelphia", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Eisenhower", "title": "\ud83d\udccd Eisenhower \u2192 Sacramento\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Sacramento", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Eisenhower", "title": "\ud83d\udccd Eisenhower \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Frost", "title": "\ud83d\udccd Frost \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Frost", "title": "\ud83d\udccd Frost \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Griffin Gold", "title": "\ud83d\udccd Griffin Gold \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" So it was a year and a half after my diagnosis. I had already met some AIDS activists in New York. I had finally met ot...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 North Carolina\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" homophobic. Far right, the worst of homophobes. And he was a powerful US Senator from North Carolina. He actually harme...\"\n  Sentiment: NEGATIVE", "to": "North Carolina", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 Fire Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Fire Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 Washington Square Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Washington Square Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 Long Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Long Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 San Diego\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Jesse Helms", "title": "\ud83d\udccd Jesse Helms \u2192 White House\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: surviving_aids_in\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a surviving_aids_in:\n  \" So it was effective in more ways than just it being funny. It did exactly what I hoped it would. And there were no furt...\"\n  Sentiment: POSITIVE", "to": "White House", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms\u0027", "title": "\ud83d\udccd Jesse Helms\u0027 \u2192 Fire Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Fire Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jesse Helms\u0027", "title": "\ud83d\udccd Jesse Helms\u0027 \u2192 Washington Square Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Washington Square Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jon Stewart", "title": "\ud83d\udccd Jon Stewart \u2192 Fire Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Fire Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jon Stewart", "title": "\ud83d\udccd Jon Stewart \u2192 Washington Square Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Washington Square Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Kevin", "title": "\ud83d\udccd Kevin \u2192 Long Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Long Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Kevin", "title": "\ud83d\udccd Kevin \u2192 San Diego\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Kevin", "title": "\ud83d\udccd Kevin \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Larry Kramers", "title": "\ud83d\udccd Larry Kramers \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Larry Kramers", "title": "\ud83d\udccd Larry Kramers \u2192 New York City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Madonna", "title": "\ud83d\udccd Madonna \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Madonna", "title": "\ud83d\udccd Madonna \u2192 Midtown Manhattan\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "Midtown Manhattan", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Madonna", "title": "\ud83d\udccd Madonna \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Molly", "title": "\ud83d\udccd Molly \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Molly", "title": "\ud83d\udccd Molly \u2192 Midtown Manhattan\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "Midtown Manhattan", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Molly", "title": "\ud83d\udccd Molly \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Obama", "title": "\ud83d\udccd Obama \u2192 Fire Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Fire Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Obama", "title": "\ud83d\udccd Obama \u2192 Washington Square Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Washington Square Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Peter Staley", "title": "\ud83d\udccd Peter Staley \u2192 Long Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Long Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Peter Staley", "title": "\ud83d\udccd Peter Staley \u2192 San Diego\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "San Diego", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Peter Staley", "title": "\ud83d\udccd Peter Staley \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: NEUTRAL \ud83d\ude10\nDiscussed by: matt_bernstein, speaker_02\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude0a speaker_02:\n  \" Would you tell him not to engage in homosexual activity? Absolutely not. Why not? I believe in safe sex. I\u0027m a sex-posi...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Reagan", "title": "\ud83d\udccd Reagan \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Reagan", "title": "\ud83d\udccd Reagan \u2192 New York City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE", "to": "New York City", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Reagan", "title": "\ud83d\udccd Reagan \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Berwyn", "title": "\ud83d\udccd Berwyn \u2192 Pennsylvania\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Attenborough, Eisenhower\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Attenborough)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Eisenhower)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Pennsylvania", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Brooklyn", "title": "\ud83d\udccd Brooklyn \u2192 Midtown Manhattan\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Madonna, Molly\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Madonna)\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Molly)\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "Midtown Manhattan", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Fire Island", "title": "\ud83d\udccd Fire Island \u2192 Washington Square Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Jesse Helms, Jesse Helms\u0027, Jon Stewart, Obama\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms)\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms\u0027)\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Washington Square Park", "value": 4}, {"arrows": "to", "color": "#90A4AE", "from": "Grove", "title": "\ud83d\udccd Grove \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEUTRAL \ud83d\ude10\nPeople: Matt_Bernstein\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] matt_bernstein:\n  (Matt_Bernstein)\n  \" So I was like plodding through life as a Wall Street bond trader by workday and a slutty little gay boy by weekend. But...\"", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Long Island", "title": "\ud83d\udccd Long Island \u2192 San Diego\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: David Geffen, Jesse Helms, Kevin, Peter Staley\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (David Geffen)\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms)\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "San Diego", "value": 4}, {"arrows": "to", "color": "#66BB6A", "from": "Midtown Manhattan", "title": "\ud83d\udccd Midtown Manhattan \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Cardinal O\u0027Connor, Madonna, Molly\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Cardinal O\u0027Connor)\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Madonna)\n  \" Well, it was a rollercoaster, emotional rollercoaster.  And I think for those of us who survived, there are two things ...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 3}, {"arrows": "to", "color": "#EF5350", "from": "New York", "title": "\ud83d\udccd New York \u2192 New York City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Larry Kramers, Reagan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Larry Kramers)\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Reagan)\n  \" Well, I had the six months. It was it was great. But it was also longer than that because I was not a gay New Yorker ye...\"\n  Sentiment: NEGATIVE", "to": "New York City", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "New York", "title": "\ud83d\udccd New York \u2192 West Hollywood\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 6\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Aidan Quidd, Aiden Quinn, Barbra Streisand, Donald Trump, Frost, Reagan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Aidan Quidd)\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Aiden Quinn)\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "West Hollywood", "value": 6}, {"arrows": "to", "color": "#EF5350", "from": "New York", "title": "\ud83d\udccd New York \u2192 South Africa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Cardinal O\u0027Connor\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Cardinal O\u0027Connor)\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "South Africa", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "New York", "title": "\ud83d\udccd New York \u2192 North Carolina\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEUTRAL \ud83d\ude10\nPeople: Matt_Bernstein\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] matt_bernstein:\n  (Matt_Bernstein)\n  \" Not to me. That\u0027s one of the things that really made it easy for our movement. Because people felt like they had so lit...\"", "to": "North Carolina", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "New York City", "title": "\ud83d\udccd New York City \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Reagan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Reagan)\n  \" So he was the Jacob Elordi of his day, but even bigger because Hollywood stars back then were like huge. He was closete...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "North Carolina", "title": "\ud83d\udccd North Carolina \u2192 Fire Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Jesse Helms\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms)\n  \" activities with people who are infected with AIDS already. He was the worst of the worst. And here it was 1991, four ye...\"\n  Sentiment: NEGATIVE", "to": "Fire Island", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Pennsylvania", "title": "\ud83d\udccd Pennsylvania \u2192 Philadelphia\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Attenborough, Eisenhower\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Attenborough)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Eisenhower)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Philadelphia", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Philadelphia", "title": "\ud83d\udccd Philadelphia \u2192 Sacramento\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Attenborough, Eisenhower\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Attenborough)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Eisenhower)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Sacramento", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Sacramento", "title": "\ud83d\udccd Sacramento \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Attenborough, Eisenhower\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Attenborough)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Eisenhower)\n  \" I\u0027m old. You\u0027re dating me now. I was born in the last days of the Eisenhower presidency. Okay.  In 1961 in Sacramento, ...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "San Diego", "title": "\ud83d\udccd San Diego \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: David Geffen, Jesse Helms, Kevin, Peter Staley\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (David Geffen)\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms)\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 4}, {"arrows": "to", "color": "#EF5350", "from": "South Africa", "title": "\ud83d\udccd South Africa \u2192 South America\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Cardinal O\u0027Connor\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Cardinal O\u0027Connor)\n  \" So what\u0027s going on here? ACT UP and another group called WHAM, W-H-A-M, announced a  gigantic confrontation against the...\"\n  Sentiment: NEGATIVE", "to": "South America", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Southern California", "title": "\ud83d\udccd Southern California \u2192 White House\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Jesse Helms\nDiscussed by: surviving_aids_in\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a surviving_aids_in:\n  (Jesse Helms)\n  \" So it was effective in more ways than just it being funny. It did exactly what I hoped it would. And there were no furt...\"\n  Sentiment: POSITIVE", "to": "White House", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Washington Square Park", "title": "\ud83d\udccd Washington Square Park \u2192 Long Island\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Jesse Helms\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Jesse Helms)\n  \" And after I had led an action that shut down the New York Stock Exchange in 1989, he reached out to me and he said, if ...\"\n  Sentiment: NEGATIVE", "to": "Long Island", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 Grove\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So I was like plodding through life as a Wall Street bond trader by workday and a slutty little gay boy by weekend. But...\"\n  Sentiment: NEGATIVE", "to": "Grove", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" So I was like plodding through life as a Wall Street bond trader by workday and a slutty little gay boy by weekend. But...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 North Carolina\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Not to me. That\u0027s one of the things that really made it easy for our movement. Because people felt like they had so lit...\"\n  Sentiment: POSITIVE", "to": "North Carolina", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+    <script>
+        // === Global Variables ===
+        let physicsEnabled = true;
+
+        // === Header Toggle (Mobile) ===
+        function toggleDetails() {
+            const details = document.querySelector('.header-details');
+            const toggle = document.querySelector('.toggle-header');
+            details.classList.toggle('expanded');
+            toggle.textContent = details.classList.contains('expanded')
+                ? '▲ Hide Details'
+                : '▼ Show Details';
+        }
+
+        // === Graph Control Functions ===
+        function resetView() {
+            if (typeof network !== 'undefined') {
+                network.moveTo({ scale: 1, position: {x: 0, y: 0}, animation: true });
+            }
+        }
+
+        function fitToView() {
+            if (typeof network !== 'undefined') {
+                network.fit({ animation: true });
+            }
+        }
+
+        function togglePhysics() {
+            if (typeof network !== 'undefined') {
+                physicsEnabled = !physicsEnabled;
+                network.setOptions({ physics: { enabled: physicsEnabled } });
+                document.getElementById('physicsLabel').textContent =
+                    physicsEnabled ? 'Pause' : 'Resume';
+            }
+        }
+
+        function showPersonOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#4FC3F7'
+                });
+            });
+        }
+
+        function showPlaceOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#FF8A65'
+                });
+            });
+        }
+
+        function showAll() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                nodes.update({ id: id, hidden: false });
+            });
+            // Reset search
+            document.getElementById('entitySearch').value = '';
+        }
+
+        // === Entity Search ===
+        function searchEntities(query) {
+            if (typeof nodes === 'undefined') return;
+
+            if (!query) {
+                showAll();
+                return;
+            }
+
+            const lowerQuery = query.toLowerCase();
+            const nodeIds = nodes.getIds();
+            const matchingIds = [];
+
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                const matches = node.label.toLowerCase().includes(lowerQuery);
+                nodes.update({
+                    id: id,
+                    hidden: !matches,
+                    borderWidth: matches ? 3 : 1,
+                    color: {
+                        background: node.color,
+                        border: matches ? '#FFD700' : node.color
+                    }
+                });
+                if (matches) matchingIds.push(id);
+            });
+
+            // Focus on matching nodes
+            if (matchingIds.length > 0 && typeof network !== 'undefined') {
+                network.fit({
+                    nodes: matchingIds,
+                    animation: true
+                });
+            }
+        }
+
+        // === Loading State Management ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for network to be defined
+            const checkNetwork = setInterval(function() {
+                if (typeof network !== 'undefined') {
+                    clearInterval(checkNetwork);
+
+                    // Setup loading progress
+                    network.on('stabilizationProgress', function(params) {
+                        const progress = Math.round((params.iterations / params.total) * 100);
+                        const progressBar = document.getElementById('loadingProgress');
+                        const loadingText = document.querySelector('.loading-text');
+                        if (progressBar) progressBar.style.width = progress + '%';
+                        if (loadingText) loadingText.textContent = `Stabilizing layout... ${progress}%`;
+                    });
+
+                    network.on('stabilizationIterationsDone', function() {
+                        const loadingText = document.querySelector('.loading-text');
+                        if (loadingText) loadingText.textContent = 'Complete!';
+                        setTimeout(() => {
+                            const loading = document.getElementById('graphLoading');
+                            if (loading) loading.classList.add('hidden');
+                        }, 300);
+                    });
+
+                    // Enable navigation buttons for mobile
+                    network.setOptions({
+                        interaction: {
+                            navigationButtons: window.innerWidth <= 768,
+                            keyboard: {
+                                enabled: true,
+                                bindToWindow: false
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // === Mobile Touch Enhancements ===
+        if ('ontouchstart' in window) {
+            window.addEventListener('load', function() {
+                const networkDiv = document.getElementById('mynetwork');
+                if (networkDiv) {
+                    // Prevent pull-to-refresh when panning graph
+                    let lastY = 0;
+                    networkDiv.addEventListener('touchmove', function(e) {
+                        const currentY = e.touches[0].clientY;
+                        if (lastY < currentY && window.scrollY === 0) {
+                            e.preventDefault();
+                        }
+                        lastY = currentY;
+                    }, { passive: false });
+
+                    // Disable double-tap zoom on network canvas
+                    networkDiv.addEventListener('touchstart', function(e) {
+                        if (e.touches.length > 1) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+                }
+            });
+        }
+
+        // === Responsive Navigation Buttons ===
+        window.addEventListener('resize', function() {
+            if (typeof network !== 'undefined') {
+                network.setOptions({
+                    interaction: {
+                        navigationButtons: window.innerWidth <= 768
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>
