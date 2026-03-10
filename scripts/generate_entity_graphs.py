@@ -1393,7 +1393,7 @@ def _build_enhanced_styles() -> str:
         }
 
         .breadcrumb-separator {
-            color: #9e9e9e;
+            color: #b0b0b0;
             margin: 0 8px;
         }
 
@@ -1421,7 +1421,7 @@ def _build_enhanced_styles() -> str:
         #graph-header .subtitle {
             margin: 0 0 16px 0;
             font-size: 0.95em;
-            color: #9e9e9e;
+            color: #b0b0b0;
         }
 
         .toggle-header {
@@ -1434,8 +1434,9 @@ def _build_enhanced_styles() -> str:
             padding: 8px 12px;
             background: rgba(79, 195, 247, 0.15);
             border-radius: 6px;
-            display: inline-block;
             transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
         }
 
         .toggle-header:hover {
@@ -1744,7 +1745,8 @@ def _build_enhanced_styles() -> str:
             }
 
             #mynetwork {
-                height: calc(100vh - 80px) !important;
+                height: calc(100vh - 200px) !important;
+                height: calc(100dvh - 200px) !important;
                 min-height: 400px !important;
             }
 
@@ -1853,6 +1855,15 @@ def _build_enhanced_styles() -> str:
             font-weight: 700;
         }
 
+        /* === Focus Styles === */
+        .toggle-header:focus-visible,
+        .control-button:focus-visible,
+        .entity-search:focus-visible,
+        .breadcrumb-nav a:focus-visible {
+            outline: 2px solid #4FC3F7;
+            outline-offset: 2px;
+        }
+
         /* === Mobile Touch Enhancements === */
         @media (hover: none) and (pointer: coarse) {
             /* Larger touch targets for mobile */
@@ -1877,7 +1888,6 @@ def _build_enhanced_styles() -> str:
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
             }
-            }
 
             .entity-search {
                 font-size: 16px; /* Prevent zoom on iOS */
@@ -1898,9 +1908,11 @@ def _build_enhanced_scripts() -> str:
             const details = document.querySelector('.header-details');
             const toggle = document.querySelector('.toggle-header');
             details.classList.toggle('expanded');
-            toggle.textContent = details.classList.contains('expanded')
+            const isExpanded = details.classList.contains('expanded');
+            toggle.textContent = isExpanded
                 ? '▲ Hide Details'
                 : '▼ Show Details';
+            toggle.setAttribute('aria-expanded', String(isExpanded));
         }
 
         // === Graph Control Functions ===
@@ -2102,34 +2114,34 @@ def _build_legend_html(
     <div id="graph-header">
         <h1>{title}</h1>
         <p class="subtitle">{subtitle}</p>
-        <span class="toggle-header" onclick="toggleDetails()">
+        <button class="toggle-header" aria-expanded="false" aria-controls="headerDetails" onclick="toggleDetails()">
             ▼ Show Details
-        </span>
+        </button>
 
-        <div class="header-details">
+        <div class="header-details" id="headerDetails">
             <!-- Legend -->
             <div class="info-box">
                 <div class="info-box-title">Legend</div>
                 <div class="legend-items">
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: {PERSON_COLOR};"></span>
-                        <span>Person</span>
+                        <span class="legend-dot" style="background: {PERSON_COLOR};" aria-hidden="true"></span>
+                        <span>Person (blue)</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-dot" style="background: {PLACE_COLOR};"></span>
-                        <span>Place</span>
+                        <span class="legend-dot" style="background: {PLACE_COLOR};" aria-hidden="true"></span>
+                        <span>Place (orange)</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-line" style="background: {SENTIMENT_POSITIVE_COLOR};"></span>
-                        <span>😊 Positive</span>
+                        <span class="legend-line" style="background: {SENTIMENT_POSITIVE_COLOR};" aria-hidden="true"></span>
+                        <span>😊 Positive (green)</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-line" style="background: {SENTIMENT_NEGATIVE_COLOR};"></span>
-                        <span>😞 Negative</span>
+                        <span class="legend-line" style="background: {SENTIMENT_NEGATIVE_COLOR};" aria-hidden="true"></span>
+                        <span>😞 Negative (red)</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-line" style="background: {SENTIMENT_NEUTRAL_COLOR};"></span>
-                        <span>😐 Neutral</span>
+                        <span class="legend-line" style="background: {SENTIMENT_NEUTRAL_COLOR};" aria-hidden="true"></span>
+                        <span>😐 Neutral (gray)</span>
                     </div>
                 </div>
             </div>
@@ -2186,6 +2198,7 @@ def _build_legend_html(
             class="entity-search"
             id="entitySearch"
             placeholder="🔍 Search entities (people, places)..."
+            aria-label="Search entities by name"
             oninput="searchEntities(this.value)"
         >
     </div>
@@ -2403,20 +2416,6 @@ def visualize_graph(
 
     # inject enhanced scripts before </body>
     html = html.replace("</body>", f"{enhanced_scripts}\n</body>", 1)
-
-    # update network container height to responsive
-    html = re.sub(
-        r'height:\s*\d+px;',
-        'height: 85vh; min-height: 450px;',
-        html
-    )
-
-    # ensure graph container uses full width
-    html = re.sub(
-        r'width:\s*\d+%;',
-        'width: 100%;',
-        html
-    )
 
     output_path.write_text(html, encoding="utf-8")
 
