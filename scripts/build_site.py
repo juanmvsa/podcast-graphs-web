@@ -9,47 +9,12 @@ from pathlib import Path
 
 # define paths.
 PROJECT_ROOT = Path(__file__).parent.parent
-GRAPHS_DIR = PROJECT_ROOT / "graphs"  # Changed from outputs/graphs
+GRAPHS_DIR = PROJECT_ROOT / "graphs"
 LIB_DIR = PROJECT_ROOT / "lib"
 INDEX_HTML = PROJECT_ROOT / "index.html"
 SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
-# For backwards compatibility
-OUTPUTS_DIR = GRAPHS_DIR
 
-def clean_site():
-    """remove existing site/graphs and site/lib directories."""
-    if SITE_GRAPHS_DIR.exists():
-        print(f"removing {SITE_GRAPHS_DIR}")
-        shutil.rmtree(SITE_GRAPHS_DIR)
-
-    site_lib = SITE_DIR / "lib"
-    if site_lib.exists():
-        print(f"removing {site_lib}")
-        shutil.rmtree(site_lib)
-
-def copy_graphs():
-    """copy all graph HTML files to site/graphs/."""
-    print(f"\ncopying graphs from {OUTPUTS_DIR} to {SITE_GRAPHS_DIR}")
-
-    if not OUTPUTS_DIR.exists():
-        print(f"error: {OUTPUTS_DIR} does not exist")
-        return
-
-    # create site/graphs directory.
-    SITE_GRAPHS_DIR.mkdir(parents=True, exist_ok=True)
-
-    # copy the entire graphs directory structure.
-    for item in OUTPUTS_DIR.iterdir():
-        dest = SITE_GRAPHS_DIR / item.name
-        if item.is_dir():
-            print(f"  copying directory: {item.name}/")
-            shutil.copytree(item, dest, dirs_exist_ok=True)
-        else:
-            print(f"  copying file: {item.name}")
-            shutil.copy2(item, dest)
-
-    print(f"✓ graphs copied successfully")
 
 def copy_lib():
     """copy lib directory to site/lib/ for JavaScript dependencies."""

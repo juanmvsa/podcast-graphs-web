@@ -43,11 +43,6 @@ def humanize_filename(filename: str) -> str:
     return " ".join(result)
 
 
-def humanize_show_name(show_name: str) -> str:
-    """Convert a snake_case show name to a human-readable title."""
-    return humanize_filename(show_name)
-
-
 def scan_graphs_directory(graphs_dir: Path) -> dict:
     """Scan the graphs directory and build an index structure."""
     if not graphs_dir.exists():
@@ -144,7 +139,7 @@ def scan_graphs_directory(graphs_dir: Path) -> dict:
 
             shows.append({
                 "name": show_name,
-                "displayName": humanize_show_name(show_name),
+                "displayName": humanize_filename(show_name),
                 "episodeCount": len(episodes),
                 "episodes": episodes,
                 "summaryPath": summary_path,

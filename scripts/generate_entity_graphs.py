@@ -53,18 +53,14 @@ from __future__ import annotations
 import json
 import logging
 import re
+import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-# add src to path for imports.
+# add scripts to path for utils import.
 script_dir = Path(__file__).resolve().parent
 project_root = script_dir.parent
-src_dir = project_root / "src"
-if src_dir.exists() and str(src_dir) not in sys.path:
-    sys.path.insert(0, str(src_dir))
-
-# add scripts to path for utils import.
 if str(script_dir) not in sys.path:
     sys.path.insert(0, str(script_dir))
 
@@ -89,8 +85,38 @@ from utils.rich_utils import console, setup_logging
 
 logger = logging.getLogger(__name__)
 
+# ── Constants ──────────────────────────────────────────────────────────────────
+
 # spacy entity labels that map to PLACE.
 PLACE_LABELS = {"GPE", "LOC", "FAC"}
+
+# edge context limits
+MAX_CONTEXTS_PER_EDGE = 3
+MAX_CONTEXTS_MERGED = 5
+MAX_CONTEXTS_DISPLAY = 2
+
+# text truncation
+MAX_SEGMENT_TEXT = 200
+MAX_CONTEXT_DISPLAY_TEXT = 120
+
+# temporal thresholds (percentage of episode)
+EARLY_THRESHOLD = 33
+LATE_THRESHOLD = 66
+
+# sentiment emoji mapping (single source of truth)
+SENTIMENT_EMOJI = {
+    "POSITIVE": "😊",
+    "NEGATIVE": "😞",
+    "NEUTRAL": "😐",
+}
+
+# names that are both common person names and geographic places
+AMBIGUOUS_GEO_NAMES = {
+    "Jordan", "Israel", "Georgia", "Virginia", "Carolina", "Charlotte",
+    "Dallas", "Houston", "Jackson", "Madison", "Austin", "Florence",
+    "Hamilton", "Lincoln", "Nelson", "Washington", "Clinton", "Monroe",
+    "Springfield",
+}
 
 # global sentiment analyzer (initialized lazily)
 _sentiment_analyzer = None
@@ -123,15 +149,10 @@ def analyze_sentiment(text: str) -> dict:
         result = analyzer(text[:512])[0]
 
         # map labels to emojis
-        emoji_map = {
-            "POSITIVE": "😊",
-            "NEGATIVE": "😞",
-        }
-
         return {
             "label": result["label"],
             "score": result["score"],
-            "emoji": emoji_map.get(result["label"], "😐")
+            "emoji": SENTIMENT_EMOJI.get(result["label"], "😐")
         }
     except Exception as e:
         logger.warning(f"Sentiment analysis failed: {e}")
@@ -971,9 +992,8 @@ def extract_episode_entities(
         all_persons.update(persons)
         all_places.update(places)
 
-        # truncate text for context snippets (max 200 chars)
-        text_snippet = segment.get("text", "")[:200]
-        if len(segment.get("text", "")) > 200:
+        text_snippet = segment.get("text", "")[:MAX_SEGMENT_TEXT]
+        if len(segment.get("text", "")) > MAX_SEGMENT_TEXT:
             text_snippet += "..."
 
         segment_entities.append(
@@ -1037,6 +1057,78 @@ def extract_episode_entities(
     )
 
 
+def _add_or_update_association_edge(
+    graph: nx.DiGraph,
+    person: str,
+    place: str,
+    text: str,
+    speaker: str,
+    temporal: str,
+    timestamp: float,
+) -> None:
+    """add or update a person → place 'mentioned_in' edge."""
+    if graph.has_edge(person, place):
+        edge_data = graph[person][place]
+        edge_data["weight"] += 1
+        if len(edge_data.get("contexts", [])) < MAX_CONTEXTS_PER_EDGE:
+            sentiment = analyze_sentiment(text)
+            edge_data.setdefault("contexts", []).append({
+                "text": text, "speaker": speaker, "temporal": temporal,
+                "timestamp": timestamp, "sentiment": sentiment,
+            })
+        if speaker and speaker not in edge_data.get("speakers", []):
+            edge_data.setdefault("speakers", []).append(speaker)
+    else:
+        sentiment = analyze_sentiment(text)
+        graph.add_edge(
+            person, place, weight=1, relation="mentioned_in",
+            contexts=[{
+                "text": text, "speaker": speaker, "temporal": temporal,
+                "timestamp": timestamp, "sentiment": sentiment,
+            }],
+            speakers=[speaker] if speaker else [],
+        )
+
+
+def _add_or_update_movement_edge(
+    graph: nx.DiGraph,
+    traveler: str,
+    prev_place: str,
+    place: str,
+    text: str,
+    speaker: str,
+    temporal: str,
+    timestamp: float,
+) -> None:
+    """add or update a place → place 'traveled_to' edge for a traveler."""
+    if graph.has_edge(prev_place, place):
+        edge_data = graph[prev_place][place]
+        edge_data["weight"] += 1
+        travelers = edge_data.get("travelers", [])
+        if traveler not in travelers:
+            travelers.append(traveler)
+            edge_data["travelers"] = travelers
+        if len(edge_data.get("contexts", [])) < MAX_CONTEXTS_PER_EDGE:
+            sentiment = analyze_sentiment(text)
+            edge_data.setdefault("contexts", []).append({
+                "text": text, "speaker": speaker, "temporal": temporal,
+                "timestamp": timestamp, "person": traveler, "sentiment": sentiment,
+            })
+        if speaker and speaker not in edge_data.get("speakers", []):
+            edge_data.setdefault("speakers", []).append(speaker)
+    else:
+        sentiment = analyze_sentiment(text)
+        graph.add_edge(
+            prev_place, place, weight=1, relation="traveled_to",
+            travelers=[traveler],
+            contexts=[{
+                "text": text, "speaker": speaker, "temporal": temporal,
+                "timestamp": timestamp, "person": traveler, "sentiment": sentiment,
+            }],
+            speakers=[speaker] if speaker else [],
+        )
+
+
 def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
     """build a directed graph from episode entity data.
 
@@ -1070,9 +1162,9 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
 
         # calculate temporal position (early/mid/late)
         position_pct = (seg_idx / total_segments) * 100 if total_segments > 0 else 0
-        if position_pct < 33:
+        if position_pct < EARLY_THRESHOLD:
             temporal = "early"
-        elif position_pct < 66:
+        elif position_pct < LATE_THRESHOLD:
             temporal = "middle"
         else:
             temporal = "late"
@@ -1080,160 +1172,32 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
         if not places_in_seg:
             continue
 
-        for person in persons_in_seg:
-            for place in places_in_seg:
-                # create person -> place edge (person is associated with place).
-                if graph.has_edge(person, place):
-                    edge_data = graph[person][place]
-                    edge_data["weight"] += 1
-                    # append context if not too many already
-                    if len(edge_data.get("contexts", [])) < 3:
-                        sentiment = analyze_sentiment(text)
-                        edge_data.setdefault("contexts", []).append({
-                            "text": text,
-                            "speaker": speaker,
-                            "temporal": temporal,
-                            "timestamp": timestamp,
-                            "sentiment": sentiment
-                        })
-                    # track speakers
-                    if speaker and speaker not in edge_data.get("speakers", []):
-                        edge_data.setdefault("speakers", []).append(speaker)
-                else:
-                    sentiment = analyze_sentiment(text)
-                    graph.add_edge(
-                        person,
-                        place,
-                        weight=1,
-                        relation="mentioned_in",
-                        contexts=[{
-                            "text": text,
-                            "speaker": speaker,
-                            "temporal": temporal,
-                            "timestamp": timestamp,
-                            "sentiment": sentiment
-                        }],
-                        speakers=[speaker] if speaker else []
-                    )
+        # determine which persons to attribute (named persons, or speaker as fallback)
+        if persons_in_seg:
+            active_persons = persons_in_seg
+        else:
+            speaker_name = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
+            if not speaker_name:
+                continue
+            speaker_normalized = normalize_entity(speaker_name)
+            if not graph.has_node(speaker_normalized):
+                graph.add_node(speaker_normalized, entity_type="PERSON")
+            active_persons = [speaker_normalized]
 
+        for person in active_persons:
+            for place in places_in_seg:
+                _add_or_update_association_edge(
+                    graph, person, place, text, speaker, temporal, timestamp,
+                )
                 # detect movement: previous place -> new place via person.
                 if person in person_last_place:
                     prev_place = person_last_place[person]
                     if prev_place != place:
-                        if graph.has_edge(prev_place, place):
-                            edge_data = graph[prev_place][place]
-                            edge_data["weight"] += 1
-                            travelers = edge_data.get("travelers", [])
-                            if person not in travelers:
-                                travelers.append(person)
-                                edge_data["travelers"] = travelers
-                            # append context
-                            if len(edge_data.get("contexts", [])) < 3:
-                                sentiment = analyze_sentiment(text)
-                                edge_data.setdefault("contexts", []).append({
-                                    "text": text,
-                                    "speaker": speaker,
-                                    "temporal": temporal,
-                                    "timestamp": timestamp,
-                                    "person": person,
-                                    "sentiment": sentiment
-                                })
-                            # track speakers
-                            if speaker and speaker not in edge_data.get("speakers", []):
-                                edge_data.setdefault("speakers", []).append(speaker)
-                        else:
-                            sentiment = analyze_sentiment(text)
-                            graph.add_edge(
-                                prev_place,
-                                place,
-                                weight=1,
-                                relation="traveled_to",
-                                travelers=[person],
-                                contexts=[{
-                                    "text": text,
-                                    "speaker": speaker,
-                                    "temporal": temporal,
-                                    "timestamp": timestamp,
-                                    "person": person,
-                                    "sentiment": sentiment
-                                }],
-                                speakers=[speaker] if speaker else []
-                            )
-
-                person_last_place[person] = place
-
-        # also handle segments with places but no named persons:
-        # attribute to the speaker if available.
-        if not persons_in_seg and places_in_seg:
-            speaker_name = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
-            if speaker_name:
-                speaker_normalized = normalize_entity(speaker_name)
-                if not graph.has_node(speaker_normalized):
-                    graph.add_node(speaker_normalized, entity_type="PERSON")
-                for place in places_in_seg:
-                    if graph.has_edge(speaker_normalized, place):
-                        edge_data = graph[speaker_normalized][place]
-                        edge_data["weight"] += 1
-                        if len(edge_data.get("contexts", [])) < 3:
-                            sentiment = analyze_sentiment(text)
-                            edge_data.setdefault("contexts", []).append({
-                                "text": text,
-                                "speaker": speaker_name,
-                                "temporal": temporal,
-                                "timestamp": timestamp,
-                                "sentiment": sentiment
-                            })
-                    else:
-                        sentiment = analyze_sentiment(text)
-                        graph.add_edge(
-                            speaker_normalized,
-                            place,
-                            weight=1,
-                            relation="mentioned_in",
-                            contexts=[{
-                                "text": text,
-                                "speaker": speaker_name,
-                                "temporal": temporal,
-                                "timestamp": timestamp,
-                                "sentiment": sentiment
-                            }],
-                            speakers=[speaker_name]
+                        _add_or_update_movement_edge(
+                            graph, person, prev_place, place,
+                            text, speaker, temporal, timestamp,
                         )
-                    if speaker_normalized in person_last_place:
-                        prev_place = person_last_place[speaker_normalized]
-                        if prev_place != place:
-                            if graph.has_edge(prev_place, place):
-                                edge_data = graph[prev_place][place]
-                                edge_data["weight"] += 1
-                                travelers = edge_data.get("travelers", [])
-                                if speaker_normalized not in travelers:
-                                    travelers.append(speaker_normalized)
-                                    edge_data["travelers"] = travelers
-                                if len(edge_data.get("contexts", [])) < 3:
-                                    edge_data.setdefault("contexts", []).append({
-                                        "text": text,
-                                        "speaker": speaker_name,
-                                        "temporal": temporal,
-                                        "timestamp": timestamp,
-                                        "person": speaker_normalized
-                                    })
-                            else:
-                                graph.add_edge(
-                                    prev_place,
-                                    place,
-                                    weight=1,
-                                    relation="traveled_to",
-                                    travelers=[speaker_normalized],
-                                    contexts=[{
-                                        "text": text,
-                                        "speaker": speaker_name,
-                                        "temporal": temporal,
-                                        "timestamp": timestamp,
-                                        "person": speaker_normalized
-                                    }],
-                                    speakers=[speaker_name]
-                                )
-                    person_last_place[speaker_normalized] = place
+                person_last_place[person] = place
 
     return graph
 
@@ -1331,8 +1295,8 @@ def merge_graphs(graphs: list[nx.DiGraph]) -> nx.DiGraph:
                 # merge contexts (cap at 5 to avoid bloat in merged graphs)
                 existing_contexts = merged[u][v].get("contexts", [])
                 new_contexts = data.get("contexts", [])
-                if len(existing_contexts) < 5:
-                    remaining = 5 - len(existing_contexts)
+                if len(existing_contexts) < MAX_CONTEXTS_MERGED:
+                    remaining = MAX_CONTEXTS_MERGED - len(existing_contexts)
                     existing_contexts.extend(new_contexts[:remaining])
                     merged[u][v]["contexts"] = existing_contexts
             else:
@@ -2249,6 +2213,23 @@ def _build_legend_html(
     """
 
 
+def _dominant_sentiment(contexts: list[dict]) -> str:
+    """determine the dominant sentiment from a list of edge contexts."""
+    sentiments = [
+        ctx.get("sentiment", {}).get("label", "NEUTRAL")
+        for ctx in contexts if ctx.get("sentiment")
+    ]
+    if not sentiments:
+        return "NEUTRAL"
+    pos = sentiments.count("POSITIVE")
+    neg = sentiments.count("NEGATIVE")
+    if pos > neg:
+        return "POSITIVE"
+    elif neg > pos:
+        return "NEGATIVE"
+    return "NEUTRAL"
+
+
 def visualize_graph(
     graph: nx.DiGraph,
     output_path: Path,
@@ -2281,22 +2262,8 @@ def visualize_graph(
         contexts = data.get("contexts", [])
         speakers = data.get("speakers", [])
 
-        # calculate average sentiment from contexts
-        sentiments = [ctx.get("sentiment", {}).get("label", "NEUTRAL") for ctx in contexts if ctx.get("sentiment")]
-        if sentiments:
-            # count sentiment types
-            positive_count = sentiments.count("POSITIVE")
-            negative_count = sentiments.count("NEGATIVE")
-
-            # determine dominant sentiment
-            if positive_count > negative_count:
-                dominant_sentiment = "POSITIVE"
-            elif negative_count > positive_count:
-                dominant_sentiment = "NEGATIVE"
-            else:
-                dominant_sentiment = "NEUTRAL"
-        else:
-            dominant_sentiment = "NEUTRAL"
+        # calculate dominant sentiment from contexts
+        dominant_sentiment = _dominant_sentiment(contexts)
 
         # determine edge color based on sentiment
         if dominant_sentiment == "POSITIVE":
@@ -2307,8 +2274,7 @@ def visualize_graph(
             color = SENTIMENT_NEUTRAL_COLOR
 
         # build rich tooltip with narrative context
-        sentiment_emoji_map = {"POSITIVE": "😊", "NEGATIVE": "😞", "NEUTRAL": "😐"}
-        dominant_emoji = sentiment_emoji_map.get(dominant_sentiment, "😐")
+        dominant_emoji = SENTIMENT_EMOJI.get(dominant_sentiment, "😐")
 
         hover_parts = [
             f"📍 {u} → {v}",
@@ -2327,7 +2293,7 @@ def visualize_graph(
         # add narrative context snippets
         if contexts:
             hover_parts.append(f"\n💬 Context:")
-            for idx, ctx in enumerate(contexts[:2], 1):  # limit to 2 examples
+            for idx, ctx in enumerate(contexts[:MAX_CONTEXTS_DISPLAY], 1):
                 temporal = ctx.get("temporal", "")
                 speaker = ctx.get("speaker", "Unknown")
                 text = ctx.get("text", "")
@@ -2337,8 +2303,8 @@ def visualize_graph(
                 sentiment_label = sentiment.get("label", "")
 
                 # truncate text if too long
-                if len(text) > 120:
-                    text = text[:120] + "..."
+                if len(text) > MAX_CONTEXT_DISPLAY_TEXT:
+                    text = text[:MAX_CONTEXT_DISPLAY_TEXT] + "..."
 
                 sentiment_str = f" {sentiment_emoji}" if sentiment_emoji else ""
                 hover_parts.append(f"\n[{temporal.upper()}]{sentiment_str} {speaker}:")
@@ -2357,19 +2323,7 @@ def visualize_graph(
     sentiment_counts = {"POSITIVE": 0, "NEGATIVE": 0, "NEUTRAL": 0}
     total_edges = 0
     for _, _, data in graph.edges(data=True):
-        contexts = data.get("contexts", [])
-        sentiments = [ctx.get("sentiment", {}).get("label", "NEUTRAL") for ctx in contexts if ctx.get("sentiment")]
-        if sentiments:
-            positive_count = sentiments.count("POSITIVE")
-            negative_count = sentiments.count("NEGATIVE")
-            if positive_count > negative_count:
-                sentiment_counts["POSITIVE"] += 1
-            elif negative_count > positive_count:
-                sentiment_counts["NEGATIVE"] += 1
-            else:
-                sentiment_counts["NEUTRAL"] += 1
-        else:
-            sentiment_counts["NEUTRAL"] += 1
+        sentiment_counts[_dominant_sentiment(data.get("contexts", []))] += 1
         total_edges += 1
 
     # inject custom header with legend into the generated html.
@@ -2536,28 +2490,7 @@ def build_global_resolution_maps(
             if len(place_tokens) == 1 and place in person_name_tokens:
                 # only block if matching persons exist and the token isn't a common
                 # geographic name (e.g., "Jordan", "Israel" are both person and place).
-                _common_geo_names = {
-                    "Jordan",
-                    "Israel",
-                    "Georgia",
-                    "Virginia",
-                    "Carolina",
-                    "Charlotte",
-                    "Dallas",
-                    "Houston",
-                    "Jackson",
-                    "Madison",
-                    "Austin",
-                    "Florence",
-                    "Hamilton",
-                    "Lincoln",
-                    "Nelson",
-                    "Washington",
-                    "Clinton",
-                    "Monroe",
-                    "Springfield",
-                }
-                if place not in _common_geo_names:
+                if place not in AMBIGUOUS_GEO_NAMES:
                     place_blocklist.add(place)
 
     person_blocklist: set[str] = set()
@@ -3188,7 +3121,6 @@ def generate_entity_graphs(
     if total_processed > 0:
         console.print("\n[bold cyan]Updating web app index...[/bold cyan]")
         try:
-            import subprocess
             index_script = script_dir / "generate_index.py"
             if index_script.exists():
                 result = subprocess.run(
