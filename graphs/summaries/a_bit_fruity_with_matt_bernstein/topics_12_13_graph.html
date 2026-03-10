@@ -1,0 +1,1111 @@
+<html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 85vh;
+                 background-color: #1e1e1e;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 85vh;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        
+        /* === Reset and Base === */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* === Breadcrumb Navigation === */
+        .breadcrumb-nav {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 12px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .breadcrumb-nav a {
+            color: #4FC3F7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-nav a:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            color: #b0b0b0;
+            margin: 0 8px;
+        }
+
+        .breadcrumb-current {
+            color: #e0e0e0;
+        }
+
+        /* === Graph Header === */
+        #graph-header {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 24px 32px 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        #graph-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        #graph-header .subtitle {
+            margin: 0 0 16px 0;
+            font-size: 0.95em;
+            color: #b0b0b0;
+        }
+
+        .toggle-header {
+            display: none;
+            cursor: pointer;
+            color: #4FC3F7;
+            font-size: 1rem;
+            margin-top: 8px;
+            user-select: none;
+            padding: 8px 12px;
+            background: rgba(79, 195, 247, 0.15);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .toggle-header:hover {
+            background: rgba(79, 195, 247, 0.25);
+        }
+
+        .toggle-header:active {
+            transform: scale(0.98);
+        }
+
+        .header-details {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: stretch;
+            margin-top: 16px;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 16px 20px;
+            min-width: 200px;
+            flex: 1 1 auto;
+        }
+
+        .info-box-title {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #4FC3F7;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .legend-items, .stats-items, .controls-items {
+            font-size: 0.95em;
+            line-height: 2;
+            color: #e8e8e8;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 28px;
+            height: 4px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .controls-items div {
+            color: #d0d0d0;
+        }
+
+        /* === Entity Search === */
+        .entity-search-container {
+            margin: 16px 32px;
+        }
+
+        .entity-search {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .entity-search:focus {
+            outline: none;
+            border-color: #4FC3F7;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+        }
+
+        .entity-search::placeholder {
+            color: #a0a0a0;
+        }
+
+        /* === Graph Controls === */
+        .graph-controls {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 0 32px 16px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin-right: 6px;
+            font-weight: 500;
+        }
+
+        .control-button {
+            background: rgba(79, 195, 247, 0.15);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: #4FC3F7;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .control-button:hover {
+            background: rgba(79, 195, 247, 0.25);
+            border-color: rgba(79, 195, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* === Loading Overlay === */
+        .graph-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+
+        .graph-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(79, 195, 247, 0.2);
+            border-top-color: #4FC3F7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4FC3F7;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(79, 195, 247, 0.2);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: #4FC3F7;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* === Mobile Responsive === */
+        @media (max-width: 768px) {
+            .breadcrumb-nav {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            #graph-header {
+                padding: 20px 16px;
+            }
+
+            #graph-header h1 {
+                font-size: 1.35em;
+                line-height: 1.3;
+            }
+
+            #graph-header .subtitle {
+                font-size: 0.9em;
+            }
+
+            .toggle-header {
+                display: inline-block;
+                width: 100%;
+                text-align: center;
+                margin-top: 12px;
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            .header-details {
+                display: none;
+                margin-top: 16px;
+                gap: 12px;
+            }
+
+            .header-details.expanded {
+                display: flex;
+            }
+
+            .info-box {
+                min-width: 100%;
+                width: 100%;
+                padding: 16px;
+                flex: 1 1 100%;
+            }
+
+            .info-box-title {
+                font-size: 0.9em;
+                margin-bottom: 12px;
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 1rem;
+                line-height: 2.2;
+            }
+
+            .legend-item {
+                gap: 14px;
+                padding: 6px 0;
+            }
+
+            .legend-dot {
+                width: 18px;
+                height: 18px;
+            }
+
+            .legend-line {
+                width: 32px;
+                height: 5px;
+            }
+
+            .stat-number {
+                font-size: 1.2em;
+            }
+
+            .entity-search-container {
+                margin: 16px;
+            }
+
+            .graph-controls {
+                margin: 0 16px 16px;
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: center;
+            }
+
+            #mynetwork {
+                height: calc(100vh - 200px) !important;
+                height: calc(100dvh - 200px) !important;
+                min-height: 400px !important;
+            }
+
+            /* Make graph container take full width */
+            .card {
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+        }
+
+        /* === Tablet Responsive === */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .header-details {
+                gap: 20px;
+            }
+
+            .info-box {
+                min-width: 220px;
+                flex: 1 1 calc(50% - 10px);
+            }
+
+            .legend-items, .stats-items, .controls-items {
+                font-size: 0.9em;
+            }
+
+            .legend-dot {
+                width: 14px;
+                height: 14px;
+            }
+
+            .legend-line {
+                width: 24px;
+            }
+        }
+
+        /* === Large Screen Optimization === */
+        @media (min-width: 1440px) {
+            #graph-header {
+                padding: 28px 48px 24px;
+            }
+
+            .breadcrumb-nav {
+                padding: 14px 48px;
+            }
+
+            .header-details {
+                gap: 24px;
+            }
+
+            .info-box {
+                padding: 18px 22px;
+            }
+
+            .entity-search-container {
+                margin: 20px 48px;
+            }
+
+            .graph-controls {
+                margin: 0 48px 20px;
+            }
+        }
+
+        /* === Sentiment Distribution Chart === */
+        .sentiment-chart {
+            font-size: 0.95em;
+        }
+
+        .sentiment-bar-container {
+            display: flex;
+            width: 100%;
+            height: 28px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sentiment-bar {
+            height: 100%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .sentiment-bar:hover {
+            opacity: 0.85;
+            transform: scaleY(1.1);
+        }
+
+        .sentiment-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sentiment-stat {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95em;
+            padding: 4px 0;
+        }
+
+        .sentiment-stat span {
+            font-weight: 700;
+        }
+
+        /* === Focus Styles === */
+        .toggle-header:focus-visible,
+        .control-button:focus-visible,
+        .entity-search:focus-visible,
+        .breadcrumb-nav a:focus-visible {
+            outline: 2px solid #4FC3F7;
+            outline-offset: 2px;
+        }
+
+        /* === Mobile Touch Enhancements === */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets for mobile */
+            .control-button {
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-height: 44px;
+            }
+
+            .toggle-header {
+                min-height: 48px;
+                padding: 14px;
+            }
+
+            .sentiment-bar-container {
+                height: 36px;
+            }
+
+            /* Prevent text selection on interactive elements */
+            .control-button, .toggle-header, .legend-item {
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .entity-search {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+    
+</style>
+    </head>
+
+
+    <body>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <a href="../../index.html">🏠 Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Topics 5: 4 episodes</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">A Bit Fruity with Matt Bernstein</span>
+    </div>
+
+    <!-- Graph Header -->
+    <div id="graph-header">
+        <h1>A Bit Fruity with Matt Bernstein</h1>
+        <p class="subtitle">Topics 5: 4 episodes</p>
+        <button class="toggle-header" aria-expanded="false" aria-controls="headerDetails" onclick="toggleDetails()">
+            ▼ Show Details
+        </button>
+
+        <div class="header-details" id="headerDetails">
+            <!-- Legend -->
+            <div class="info-box">
+                <div class="info-box-title">Legend</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #4FC3F7;" aria-hidden="true"></span>
+                        <span>Person (blue)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background: #FF8A65;" aria-hidden="true"></span>
+                        <span>Place (orange)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #66BB6A;" aria-hidden="true"></span>
+                        <span>😊 Positive (green)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #EF5350;" aria-hidden="true"></span>
+                        <span>😞 Negative (red)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line" style="background: #90A4AE;" aria-hidden="true"></span>
+                        <span>😐 Neutral (gray)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="info-box">
+                <div class="info-box-title">Stats</div>
+                <div class="stats-items">
+                    <div><span class="stat-number" style="color: #4FC3F7;">101</span> people</div>
+                    <div><span class="stat-number" style="color: #FF8A65;">25</span> places</div>
+                    <div><span class="stat-number">188</span> connections</div>
+                </div>
+            </div>
+
+            <!-- Sentiment Distribution -->
+            <div class="info-box">
+                <div class="info-box-title">Sentiment Distribution</div>
+                <div class="sentiment-chart">
+                    <div class="sentiment-bar-container">
+                        <div class="sentiment-bar" style="width: 64.4%; background: #66BB6A;" title="Positive: 64.4%"></div>
+                        <div class="sentiment-bar" style="width: 34.0%; background: #EF5350;" title="Negative: 34.0%"></div>
+                        <div class="sentiment-bar" style="width: 1.6%; background: #90A4AE;" title="Neutral: 1.6%"></div>
+                    </div>
+                    <div class="sentiment-legend">
+                        <div class="sentiment-stat">
+                            <span style="color: #66BB6A;">😊 121</span> (64.4%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #EF5350;">😞 64</span> (34.0%)
+                        </div>
+                        <div class="sentiment-stat">
+                            <span style="color: #90A4AE;">😐 3</span> (1.6%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="info-box">
+                <div class="info-box-title">Controls</div>
+                <div class="controls-items">
+                    <div>🖱️ Drag nodes to rearrange</div>
+                    <div>🔍 Scroll to zoom in/out</div>
+                    <div>💬 Hover for details</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity Search -->
+    <div class="entity-search-container">
+        <input
+            type="text"
+            class="entity-search"
+            id="entitySearch"
+            placeholder="🔍 Search entities (people, places)..."
+            aria-label="Search entities by name"
+            oninput="searchEntities(this.value)"
+        >
+    </div>
+
+    <!-- Graph Controls -->
+    <div class="graph-controls">
+        <div class="control-group">
+            <span class="control-label">View:</span>
+            <button class="control-button" onclick="resetView()">Reset Zoom</button>
+            <button class="control-button" onclick="fitToView()">Fit All</button>
+            <button class="control-button" onclick="togglePhysics()">
+                <span id="physicsLabel">Pause</span> Physics
+            </button>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Filter:</span>
+            <button class="control-button" onclick="showPersonOnly()">People Only</button>
+            <button class="control-button" onclick="showPlaceOnly()">Places Only</button>
+            <button class="control-button" onclick="showAll()">Show All</button>
+        </div>
+    </div>
+    
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" style="position: relative;">
+    <div class="graph-loading" id="graphLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Initializing graph...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="loadingProgress"></div>
+        </div>
+    </div>
+    <div style="width: 100%; height: 100%;" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chaya", "label": "Chaya", "shape": "dot", "size": 31, "title": "Chaya\nType: PERSON\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Elon Musk", "label": "Elon Musk", "shape": "dot", "size": 23, "title": "Elon Musk\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Haya Raychik", "label": "Haya Raychik", "shape": "dot", "size": 29, "title": "Haya Raychik\nType: PERSON\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kirby", "label": "Kirby", "shape": "dot", "size": 23, "title": "Kirby\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Next Benedict", "label": "Next Benedict", "shape": "dot", "size": 23, "title": "Next Benedict\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ron Desantis", "label": "Ron Desantis", "shape": "dot", "size": 23, "title": "Ron Desantis\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ryan Walter", "label": "Ryan Walter", "shape": "dot", "size": 23, "title": "Ryan Walter\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ryan Walters", "label": "Ryan Walters", "shape": "dot", "size": 35, "title": "Ryan Walters\nType: PERSON\nConnections: 10"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sue Benedict", "label": "Sue Benedict", "shape": "dot", "size": 29, "title": "Sue Benedict\nType: PERSON\nConnections: 7"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Taylor Lorenz", "label": "Taylor Lorenz", "shape": "dot", "size": 35, "title": "Taylor Lorenz\nType: PERSON\nConnections: 10"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ted Cruz", "label": "Ted Cruz", "shape": "dot", "size": 25, "title": "Ted Cruz\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trump", "label": "Trump", "shape": "dot", "size": 23, "title": "Trump\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tyler Wren", "label": "Tyler Wren", "shape": "dot", "size": 23, "title": "Tyler Wren\nType: PERSON\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Brooklyn", "label": "Brooklyn", "shape": "dot", "size": 37, "title": "Brooklyn\nType: PLACE\nConnections: 11"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Florida", "label": "Florida", "shape": "dot", "size": 57, "title": "Florida\nType: PLACE\nConnections: 21"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Los Angeles", "label": "Los Angeles", "shape": "dot", "size": 47, "title": "Los Angeles\nType: PLACE\nConnections: 16"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Ohio State", "label": "Ohio State", "shape": "dot", "size": 39, "title": "Ohio State\nType: PLACE\nConnections: 12"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Oklahoma City", "label": "Oklahoma City", "shape": "dot", "size": 51, "title": "Oklahoma City\nType: PLACE\nConnections: 18"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Owasso", "label": "Owasso", "shape": "dot", "size": 25, "title": "Owasso\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Owosso", "label": "Owosso", "shape": "dot", "size": 25, "title": "Owosso\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Tulsa", "label": "Tulsa", "shape": "dot", "size": 27, "title": "Tulsa\nType: PLACE\nConnections: 6"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "United States", "label": "United States", "shape": "dot", "size": 60, "title": "United States\nType: PLACE\nConnections: 29"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Western Heights", "label": "Western Heights", "shape": "dot", "size": 31, "title": "Western Heights\nType: PLACE\nConnections: 8"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Andy Ngo", "label": "Andy Ngo", "shape": "dot", "size": 17, "title": "Andy Ngo\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Babylon", "label": "Babylon", "shape": "dot", "size": 15, "title": "Babylon\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Biden", "label": "Biden", "shape": "dot", "size": 21, "title": "Biden\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Billy Porter", "label": "Billy Porter", "shape": "dot", "size": 15, "title": "Billy Porter\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Catherine Levy", "label": "Catherine Levy", "shape": "dot", "size": 21, "title": "Catherine Levy\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Christine Pushaw", "label": "Christine Pushaw", "shape": "dot", "size": 17, "title": "Christine Pushaw\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dylan", "label": "Dylan", "shape": "dot", "size": 15, "title": "Dylan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gays Against Groomers", "label": "Gays Against Groomers", "shape": "dot", "size": 15, "title": "Gays Against Groomers\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Glenn Greenwald", "label": "Glenn Greenwald", "shape": "dot", "size": 17, "title": "Glenn Greenwald\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Haya Raychek", "label": "Haya Raychek", "shape": "dot", "size": 21, "title": "Haya Raychek\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 15, "title": "Joe Rogan\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marjorie Taylor Greene", "label": "Marjorie Taylor Greene", "shape": "dot", "size": 17, "title": "Marjorie Taylor Greene\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matt Bernstein", "label": "Matt Bernstein", "shape": "dot", "size": 21, "title": "Matt Bernstein\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Max Fox", "label": "Max Fox", "shape": "dot", "size": 15, "title": "Max Fox\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Seth Dillon", "label": "Seth Dillon", "shape": "dot", "size": 21, "title": "Seth Dillon\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Trevor Project", "label": "Trevor Project", "shape": "dot", "size": 15, "title": "Trevor Project\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tucker Carlson", "label": "Tucker Carlson", "shape": "dot", "size": 21, "title": "Tucker Carlson\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tyler Cherry", "label": "Tyler Cherry", "shape": "dot", "size": 15, "title": "Tyler Cherry\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tyler Kincaid", "label": "Tyler Kincaid", "shape": "dot", "size": 15, "title": "Tyler Kincaid\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Canada", "label": "Canada", "shape": "dot", "size": 17, "title": "Canada\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Colorado", "label": "Colorado", "shape": "dot", "size": 23, "title": "Colorado\nType: PLACE\nConnections: 4"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Illinois", "label": "Illinois", "shape": "dot", "size": 17, "title": "Illinois\nType: PLACE\nConnections: 1"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Massachusetts", "label": "Massachusetts", "shape": "dot", "size": 25, "title": "Massachusetts\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "New York", "label": "New York", "shape": "dot", "size": 33, "title": "New York\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Seattle", "label": "Seattle", "shape": "dot", "size": 25, "title": "Seattle\nType: PLACE\nConnections: 5"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Southern California", "label": "Southern California", "shape": "dot", "size": 53, "title": "Southern California\nType: PLACE\nConnections: 19"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Times Square", "label": "Times Square", "shape": "dot", "size": 23, "title": "Times Square\nType: PLACE\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_00", "label": "Speaker_00", "shape": "dot", "size": 17, "title": "Speaker_00\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Libs_Of_Tiktok", "label": "Libs_Of_Tiktok", "shape": "dot", "size": 17, "title": "Libs_Of_Tiktok\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Speaker_01", "label": "Speaker_01", "shape": "dot", "size": 19, "title": "Speaker_01\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anita Thrakeesian", "label": "Anita Thrakeesian", "shape": "dot", "size": 15, "title": "Anita Thrakeesian\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bi-Sister", "label": "Bi-Sister", "shape": "dot", "size": 15, "title": "Bi-Sister\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brianna Wu", "label": "Brianna Wu", "shape": "dot", "size": 15, "title": "Brianna Wu\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Brody Malone", "label": "Brody Malone", "shape": "dot", "size": 15, "title": "Brody Malone\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Champlin Park", "label": "Champlin Park", "shape": "dot", "size": 15, "title": "Champlin Park\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Child", "label": "Child", "shape": "dot", "size": 15, "title": "Child\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gavin Newsom", "label": "Gavin Newsom", "shape": "dot", "size": 15, "title": "Gavin Newsom\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Halo Beauty", "label": "Halo Beauty", "shape": "dot", "size": 15, "title": "Halo Beauty\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "J.K. Rowling", "label": "J.K. Rowling", "shape": "dot", "size": 19, "title": "J.K. Rowling\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jeffrey Epstein", "label": "Jeffrey Epstein", "shape": "dot", "size": 15, "title": "Jeffrey Epstein\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jimmy Dore", "label": "Jimmy Dore", "shape": "dot", "size": 15, "title": "Jimmy Dore\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Kat Tenbarge", "label": "Kat Tenbarge", "shape": "dot", "size": 15, "title": "Kat Tenbarge\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Larry Nassar", "label": "Larry Nassar", "shape": "dot", "size": 15, "title": "Larry Nassar\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Leah Thomas", "label": "Leah Thomas", "shape": "dot", "size": 15, "title": "Leah Thomas\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Maya Poet", "label": "Maya Poet", "shape": "dot", "size": 15, "title": "Maya Poet\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Nancy Mace", "label": "Nancy Mace", "shape": "dot", "size": 19, "title": "Nancy Mace\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Natalie Wynn", "label": "Natalie Wynn", "shape": "dot", "size": 15, "title": "Natalie Wynn\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Overton", "label": "Overton", "shape": "dot", "size": 15, "title": "Overton\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Palantir", "label": "Palantir", "shape": "dot", "size": 15, "title": "Palantir\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley", "label": "Riley", "shape": "dot", "size": 19, "title": "Riley\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley Gaines", "label": "Riley Gaines", "shape": "dot", "size": 15, "title": "Riley Gaines\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley Gaines\u0027", "label": "Riley Gaines\u0027", "shape": "dot", "size": 15, "title": "Riley Gaines\u0027\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley Gaines-Simone Biles", "label": "Riley Gaines-Simone Biles", "shape": "dot", "size": 15, "title": "Riley Gaines-Simone Biles\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Riley Gansky", "label": "Riley Gansky", "shape": "dot", "size": 15, "title": "Riley Gansky\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Rupert Murdoch", "label": "Rupert Murdoch", "shape": "dot", "size": 17, "title": "Rupert Murdoch\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Simone", "label": "Simone", "shape": "dot", "size": 17, "title": "Simone\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Simone Biles", "label": "Simone Biles", "shape": "dot", "size": 15, "title": "Simone Biles\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Simone Biles\u0027", "label": "Simone Biles\u0027", "shape": "dot", "size": 15, "title": "Simone Biles\u0027\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tati Westbrook", "label": "Tati Westbrook", "shape": "dot", "size": 15, "title": "Tati Westbrook\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Taylor Silverman", "label": "Taylor Silverman", "shape": "dot", "size": 15, "title": "Taylor Silverman\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Yurchenko", "label": "Yurchenko", "shape": "dot", "size": 15, "title": "Yurchenko\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Zoe Quinn", "label": "Zoe Quinn", "shape": "dot", "size": 15, "title": "Zoe Quinn\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Central Park", "label": "Central Park", "shape": "dot", "size": 21, "title": "Central Park\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Minnesota", "label": "Minnesota", "shape": "dot", "size": 23, "title": "Minnesota\nType: PLACE\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Matt_Bernstein", "label": "Matt_Bernstein", "shape": "dot", "size": 25, "title": "Matt_Bernstein\nType: PERSON\nConnections: 5"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Never_Apologize_To_Fascists", "label": "Never_Apologize_To_Fascists", "shape": "dot", "size": 19, "title": "Never_Apologize_To_Fascists\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Adolf Hitler", "label": "Adolf Hitler", "shape": "dot", "size": 17, "title": "Adolf Hitler\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Anita Bryant", "label": "Anita Bryant", "shape": "dot", "size": 21, "title": "Anita Bryant\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ben Shapiro", "label": "Ben Shapiro", "shape": "dot", "size": 15, "title": "Ben Shapiro\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Benny", "label": "Benny", "shape": "dot", "size": 15, "title": "Benny\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Bill O\u0027Reilly", "label": "Bill O\u0027Reilly", "shape": "dot", "size": 19, "title": "Bill O\u0027Reilly\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Candace Owens", "label": "Candace Owens", "shape": "dot", "size": 21, "title": "Candace Owens\nType: PERSON\nConnections: 3"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Chelsea Weber-Smith", "label": "Chelsea Weber-Smith", "shape": "dot", "size": 15, "title": "Chelsea Weber-Smith\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Crystal", "label": "Crystal", "shape": "dot", "size": 15, "title": "Crystal\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Dumbledore", "label": "Dumbledore", "shape": "dot", "size": 19, "title": "Dumbledore\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ellen", "label": "Ellen", "shape": "dot", "size": 19, "title": "Ellen\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ernie", "label": "Ernie", "shape": "dot", "size": 19, "title": "Ernie\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "George Santos", "label": "George Santos", "shape": "dot", "size": 15, "title": "George Santos\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Gerald Ford", "label": "Gerald Ford", "shape": "dot", "size": 19, "title": "Gerald Ford\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jerry Falwell", "label": "Jerry Falwell", "shape": "dot", "size": 23, "title": "Jerry Falwell\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jerry Falwell Sr", "label": "Jerry Falwell Sr", "shape": "dot", "size": 19, "title": "Jerry Falwell Sr\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Jimmy Carter", "label": "Jimmy Carter", "shape": "dot", "size": 19, "title": "Jimmy Carter\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Joseph Stalin", "label": "Joseph Stalin", "shape": "dot", "size": 17, "title": "Joseph Stalin\nType: PERSON\nConnections: 1"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Katie Couric", "label": "Katie Couric", "shape": "dot", "size": 19, "title": "Katie Couric\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Laverne Cox", "label": "Laverne Cox", "shape": "dot", "size": 15, "title": "Laverne Cox\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lawrence Fox", "label": "Lawrence Fox", "shape": "dot", "size": 15, "title": "Lawrence Fox\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Lawrence Foxx", "label": "Lawrence Foxx", "shape": "dot", "size": 15, "title": "Lawrence Foxx\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Marsha P. Johnson", "label": "Marsha P. Johnson", "shape": "dot", "size": 19, "title": "Marsha P. Johnson\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Michael Musto", "label": "Michael Musto", "shape": "dot", "size": 19, "title": "Michael Musto\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Obama", "label": "Obama", "shape": "dot", "size": 19, "title": "Obama\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Peter Staley", "label": "Peter Staley", "shape": "dot", "size": 15, "title": "Peter Staley\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Ronald Reagan", "label": "Ronald Reagan", "shape": "dot", "size": 19, "title": "Ronald Reagan\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Smith", "label": "Smith", "shape": "dot", "size": 15, "title": "Smith\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Sylvia Rivera", "label": "Sylvia Rivera", "shape": "dot", "size": 19, "title": "Sylvia Rivera\nType: PERSON\nConnections: 2"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Target", "label": "Target", "shape": "dot", "size": 15, "title": "Target\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Teletubby", "label": "Teletubby", "shape": "dot", "size": 15, "title": "Teletubby\nType: PERSON\nConnections: 0"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tinky Winky", "label": "Tinky Winky", "shape": "dot", "size": 23, "title": "Tinky Winky\nType: PERSON\nConnections: 4"}, {"color": "#4FC3F7", "font": {"color": "white"}, "id": "Tinky-Winky", "label": "Tinky-Winky", "shape": "dot", "size": 15, "title": "Tinky-Winky\nType: PERSON\nConnections: 0"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "England", "label": "England", "shape": "dot", "size": 21, "title": "England\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Europe", "label": "Europe", "shape": "dot", "size": 21, "title": "Europe\nType: PLACE\nConnections: 3"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Lifespring", "label": "Lifespring", "shape": "dot", "size": 33, "title": "Lifespring\nType: PLACE\nConnections: 9"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Miami", "label": "Miami", "shape": "dot", "size": 41, "title": "Miami\nType: PLACE\nConnections: 13"}, {"color": "#FF8A65", "font": {"color": "white"}, "id": "Tennessee", "label": "Tennessee", "shape": "dot", "size": 23, "title": "Tennessee\nType: PLACE\nConnections: 4"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Chaya", "title": "\ud83d\udccd Chaya \u2192 Times Square\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  \" Oh, my God. Yeah, I almost forgot about the billboard. What happened after I published the story is a cycle that I\u0027ve u...\"\n  Sentiment: NEGATIVE", "to": "Times Square", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Elon Musk", "title": "\ud83d\udccd Elon Musk \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEUTRAL \ud83d\ude10\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" I was watching videos of him in preparation for this podcast. I was like, what is the world really making of Oli London...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Elon Musk", "title": "\ud83d\udccd Elon Musk \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Elon Musk", "title": "\ud83d\udccd Elon Musk \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Elon Musk", "title": "\ud83d\udccd Elon Musk \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: incoherent_sexual_politics_of, matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" I mean, this does kind of tie into our episode. Not that Elon Musk was ever like an icon of culture for gays or anybody...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychik", "title": "\ud83d\udccd Haya Raychik \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Kirby", "title": "\ud83d\udccd Kirby \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Kirby", "title": "\ud83d\udccd Kirby \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Kirby", "title": "\ud83d\udccd Kirby \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Kirby", "title": "\ud83d\udccd Kirby \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Next Benedict", "title": "\ud83d\udccd Next Benedict \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Next Benedict", "title": "\ud83d\udccd Next Benedict \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Next Benedict", "title": "\ud83d\udccd Next Benedict \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Next Benedict", "title": "\ud83d\udccd Next Benedict \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ron Desantis", "title": "\ud83d\udccd Ron Desantis \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walter", "title": "\ud83d\udccd Ryan Walter \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walter", "title": "\ud83d\udccd Ryan Walter \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walter", "title": "\ud83d\udccd Ryan Walter \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walter", "title": "\ud83d\udccd Ryan Walter \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: liberal_wine_moms_are_radicalizing, matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 3}, {"arrows": "to", "color": "#EF5350", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Owasso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owasso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Owosso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owosso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Tulsa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Tulsa", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ryan Walters", "title": "\ud83d\udccd Ryan Walters \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: NEUTRAL \ud83d\ude10\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Owasso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owasso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Owosso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owosso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Tulsa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Tulsa", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sue Benedict", "title": "\ud83d\udccd Sue Benedict \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" So I first witnessed Hawk Tua. I can\u0027t believe we\u0027re about to talk about this for 90 minutes. But we are, and there\u0027s g...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Colorado\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Colorado", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Massachusetts\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Massachusetts", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Taylor Lorenz", "title": "\ud83d\udccd Taylor Lorenz \u2192 Times Square\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00, matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  \" Oh, my God. Yeah, I almost forgot about the billboard. What happened after I published the story is a cycle that I\u0027ve u...\"\n  Sentiment: NEGATIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" you know, whatever. I think she said, like, Ted Cruz or some politician was offering her, like, hiding or something. Li...\"\n  Sentiment: NEGATIVE", "to": "Times Square", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Owasso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owasso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Owosso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owosso", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Tulsa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Tulsa", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ted Cruz", "title": "\ud83d\udccd Ted Cruz \u2192 Times Square\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" you know, whatever. I think she said, like, Ted Cruz or some politician was offering her, like, hiding or something. Li...\"\n  Sentiment: NEGATIVE", "to": "Times Square", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Trump", "title": "\ud83d\udccd Trump \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Trump", "title": "\ud83d\udccd Trump \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Trump", "title": "\ud83d\udccd Trump \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Trump", "title": "\ud83d\udccd Trump \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" Yeah, that\u0027s too cunty of a description, honestly. These people don\u0027t deserve that. Self-annihilating gay person is kin...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tyler Wren", "title": "\ud83d\udccd Tyler Wren \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tyler Wren", "title": "\ud83d\udccd Tyler Wren \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tyler Wren", "title": "\ud83d\udccd Tyler Wren \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tyler Wren", "title": "\ud83d\udccd Tyler Wren \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Brooklyn", "title": "\ud83d\udccd Brooklyn \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 9\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Haya Raychik, Kirby, Ryan Walter, Ryan Walters, Taylor Lorenz, Biden, Haya Raychek, Seth Dillon\nDiscussed by: speaker_00, matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Haya Raychik)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 9}, {"arrows": "to", "color": "#66BB6A", "from": "Florida", "title": "\ud83d\udccd Florida \u2192 Ohio State\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 10\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Elon Musk, Haya Raychik, Next Benedict, Ron Desantis, Ryan Walters, Sue Benedict, Taylor Lorenz, Trump, Tyler Wren\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Elon Musk)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Ohio State", "value": 10}, {"arrows": "to", "color": "#66BB6A", "from": "Florida", "title": "\ud83d\udccd Florida \u2192 Seattle\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Tucker Carlson\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  (Tucker Carlson)\n  \" Well, she does. I would say she does have a very right wing ideology. I mean, I went to her house and I saw the books o...\"\n  Sentiment: POSITIVE", "to": "Seattle", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Florida", "title": "\ud83d\udccd Florida \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Anita Bryant, Marsha P. Johnson, Sylvia Rivera\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  (Anita Bryant)\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  (Marsha P. Johnson)\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 4}, {"arrows": "to", "color": "#66BB6A", "from": "Los Angeles", "title": "\ud83d\udccd Los Angeles \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 6\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Haya Raychik, Kirby, Ryan Walter, Ryan Walters, Taylor Lorenz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Haya Raychik)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 6}, {"arrows": "to", "color": "#66BB6A", "from": "Los Angeles", "title": "\ud83d\udccd Los Angeles \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Biden, Haya Raychek, Seth Dillon, Donald Trump, Zoran Mamdani\nDiscussed by: speaker_00, speaker_10\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  (Biden)\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a speaker_00:\n  (Haya Raychek)\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 3}, {"arrows": "to", "color": "#66BB6A", "from": "Ohio State", "title": "\ud83d\udccd Ohio State \u2192 Oklahoma City\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 10\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Elon Musk, Haya Raychik, Next Benedict, Ron Desantis, Ryan Walters, Sue Benedict, Taylor Lorenz, Trump, Tyler Wren\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Elon Musk)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Oklahoma City", "value": 10}, {"arrows": "to", "color": "#EF5350", "from": "Oklahoma City", "title": "\ud83d\udccd Oklahoma City \u2192 Owasso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Ryan Walters, Sue Benedict, Ted Cruz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Ryan Walters)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Sue Benedict)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owasso", "value": 3}, {"arrows": "to", "color": "#66BB6A", "from": "Oklahoma City", "title": "\ud83d\udccd Oklahoma City \u2192 Western Heights\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 6\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Haya Raychik, Kirby, Ryan Walter, Ryan Walters, Taylor Lorenz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Haya Raychik)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Western Heights", "value": 6}, {"arrows": "to", "color": "#66BB6A", "from": "Oklahoma City", "title": "\ud83d\udccd Oklahoma City \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 10\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Elon Musk, Haya Raychik, Next Benedict, Ron Desantis, Ryan Walters, Sue Benedict, Taylor Lorenz, Trump, Tyler Wren, Aipac, Benjamin Netanyahu, Cory Booker, Donald Trump, Hakeem Jeffries, Jesus Christ, Joe Biden, Netanyahu\nDiscussed by: liberal_wine_moms_are_radicalizing, matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Elon Musk)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 10}, {"arrows": "to", "color": "#EF5350", "from": "Owasso", "title": "\ud83d\udccd Owasso \u2192 Owosso\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Ryan Walters, Sue Benedict, Ted Cruz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Ryan Walters)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Sue Benedict)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Owosso", "value": 3}, {"arrows": "to", "color": "#EF5350", "from": "Owosso", "title": "\ud83d\udccd Owosso \u2192 Tulsa\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Ryan Walters, Sue Benedict, Ted Cruz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Ryan Walters)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Sue Benedict)\n  \" Next Benedict was 16 years old. They were a sophomore at Owosso High School in Owosso, Oklahoma, a suburb of about 40,0...\"\n  Sentiment: NEGATIVE", "to": "Tulsa", "value": 3}, {"arrows": "to", "color": "#66BB6A", "from": "Tulsa", "title": "\ud83d\udccd Tulsa \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Ryan Walters\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Ryan Walters)\n  \" It\u0027s a great day for Oklahoma schools. Big win today. The drag queen is out at Western Heights. I\u0027ve demanded it from d...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tulsa", "title": "\ud83d\udccd Tulsa \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Sue Benedict\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Sue Benedict)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "United States", "title": "\ud83d\udccd United States \u2192 Times Square\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Taylor Lorenz, Sydney Sweeney\nDiscussed by: speaker_00, sydney_sweeney\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  (Taylor Lorenz)\n  \" Oh, my God. Yeah, I almost forgot about the billboard. What happened after I published the story is a cycle that I\u0027ve u...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e sydney_sweeney:\n  (Sydney Sweeney)\n  \" And I think that one of the things they relish so much about a moment like this is that to them, and perhaps rightfully...\"\n  Sentiment: NEGATIVE", "to": "Times Square", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "United States", "title": "\ud83d\udccd United States \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Jerry Falwell, Tinky Winky\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Jerry Falwell)\n  \" Yeah, happily. Interestingly, considering the story of the gay agenda, Anita Bryant actually took secret conspiratorial...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Tinky Winky)\n  \" Yeah, happily. Interestingly, considering the story of the gay agenda, Anita Bryant actually took secret conspiratorial...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 2}, {"arrows": "to", "color": "#EF5350", "from": "United States", "title": "\ud83d\udccd United States \u2192 England\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Matt_Bernstein\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Matt_Bernstein)\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE", "to": "England", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Western Heights", "title": "\ud83d\udccd Western Heights \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Chaya, Haya Raychik, Ryan Walters, Taylor Lorenz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Chaya)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Haya Raychik)\n  \" The fact that she can\u0027t string together a sentence if her life depended on it aside, these are softball fucking questio...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 4}, {"arrows": "to", "color": "#66BB6A", "from": "Andy Ngo", "title": "\ud83d\udccd Andy Ngo \u2192 Seattle\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" Well, she does. I would say she does have a very right wing ideology. I mean, I went to her house and I saw the books o...\"\n  Sentiment: POSITIVE", "to": "Seattle", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Biden", "title": "\ud83d\udccd Biden \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Biden", "title": "\ud83d\udccd Biden \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Biden", "title": "\ud83d\udccd Biden \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Catherine Levy", "title": "\ud83d\udccd Catherine Levy \u2192 Colorado\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Colorado", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Catherine Levy", "title": "\ud83d\udccd Catherine Levy \u2192 Massachusetts\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Massachusetts", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Catherine Levy", "title": "\ud83d\udccd Catherine Levy \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Christine Pushaw", "title": "\ud83d\udccd Christine Pushaw \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  \" So what motivated you to figure out who was behind the account or tipped you off or write this article in the first pla...\"\n  Sentiment: NEGATIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Glenn Greenwald", "title": "\ud83d\udccd Glenn Greenwald \u2192 Seattle\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" Well, she does. I would say she does have a very right wing ideology. I mean, I went to her house and I saw the books o...\"\n  Sentiment: POSITIVE", "to": "Seattle", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychek", "title": "\ud83d\udccd Haya Raychek \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychek", "title": "\ud83d\udccd Haya Raychek \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Haya Raychek", "title": "\ud83d\udccd Haya Raychek \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Marjorie Taylor Greene", "title": "\ud83d\udccd Marjorie Taylor Greene \u2192 Canada\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_08\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a speaker_08:\n  \" Hi, my name is ****** and I\u0027m up in Canada. Last year, a teacher here, who is also a drag performer, was doing a drag q...\"\n  Sentiment: POSITIVE", "to": "Canada", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Matt Bernstein", "title": "\ud83d\udccd Matt Bernstein \u2192 Colorado\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Colorado", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Matt Bernstein", "title": "\ud83d\udccd Matt Bernstein \u2192 Massachusetts\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Massachusetts", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Matt Bernstein", "title": "\ud83d\udccd Matt Bernstein \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Seth Dillon", "title": "\ud83d\udccd Seth Dillon \u2192 Brooklyn\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Brooklyn", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Seth Dillon", "title": "\ud83d\udccd Seth Dillon \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Seth Dillon", "title": "\ud83d\udccd Seth Dillon \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" So Haya Raychek is around 30 years old. She\u0027s a part of this Orthodox Jewish community. She lives in Los Angeles. She r...\"\n  Sentiment: POSITIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Tucker Carlson", "title": "\ud83d\udccd Tucker Carlson \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e speaker_00:\n  \" Really fall of 2021 and early 2022. In January of 2022, or really by like January, February, March, the groomer conspir...\"\n  Sentiment: NEGATIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tucker Carlson", "title": "\ud83d\udccd Tucker Carlson \u2192 Seattle\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_00:\n  \" Well, she does. I would say she does have a very right wing ideology. I mean, I went to her house and I saw the books o...\"\n  Sentiment: POSITIVE", "to": "Seattle", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Tucker Carlson", "title": "\ud83d\udccd Tucker Carlson \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  \" So what motivated you to figure out who was behind the account or tipped you off or write this article in the first pla...\"\n  Sentiment: NEGATIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Colorado", "title": "\ud83d\udccd Colorado \u2192 Massachusetts\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Catherine Levy, Matt Bernstein, Taylor Lorenz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Catherine Levy)\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Matt Bernstein)\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "Massachusetts", "value": 3}, {"arrows": "to", "color": "#66BB6A", "from": "Massachusetts", "title": "\ud83d\udccd Massachusetts \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Catherine Levy, Matt Bernstein, Taylor Lorenz\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Catherine Levy)\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Matt Bernstein)\n  \" people have always come came after me and like these specific types of people like they\u0027ve always called me a pedophile...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 3}, {"arrows": "to", "color": "#EF5350", "from": "Seattle", "title": "\ud83d\udccd Seattle \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Tucker Carlson\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  (Tucker Carlson)\n  \" So what motivated you to figure out who was behind the account or tipped you off or write this article in the first pla...\"\n  Sentiment: NEGATIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Southern California", "title": "\ud83d\udccd Southern California \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 4\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Candace Owens, Jerry Falwell, Tinky Winky, Matt_Bernstein\nDiscussed by: matt_bernstein, speaker_04\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_04:\n  (Candace Owens)\n  \" It just takes this like really normal desire for progress and turns it into something far more sinister and well organi...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a speaker_04:\n  (Jerry Falwell)\n  \" It just takes this like really normal desire for progress and turns it into something far more sinister and well organi...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 4}, {"arrows": "to", "color": "#EF5350", "from": "Speaker_00", "title": "\ud83d\udccd Speaker_00 \u2192 Los Angeles\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_00\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e speaker_00:\n  \" I just want to be clear, I definitely did not dox her. Doxing is revealing private information. I never linked to any a...\"\n  Sentiment: NEGATIVE", "to": "Los Angeles", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Libs_Of_Tiktok", "title": "\ud83d\udccd Libs_Of_Tiktok \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: libs_of_tiktok\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e libs_of_tiktok:\n  \" In my town, I\u0027m a sophomore, I\u0027m 16, I live in a small town in California, and about 9 or 10 weeks ago, the anti-trans ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Speaker_01", "title": "\ud83d\udccd Speaker_01 \u2192 Illinois\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: speaker_01\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e speaker_01:\n  \" My cousin\u0027s elementary school in Illinois had to evacuate two days in a row because it received bomb threats. She asked...\"\n  Sentiment: NEGATIVE", "to": "Illinois", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Speaker_01", "title": "\ud83d\udccd Speaker_01 \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_01\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a speaker_01:\n  \" Time to get up, kids. You too, Orange Bird. My twins love 100% orange juice from Florida any time of day. It comes many...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "J.K. Rowling", "title": "\ud83d\udccd J.K. Rowling \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein, speaker_04\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a speaker_04:\n  \" you know, was an orange juice salesman, which feel or not salesman. She was like an orange juice superstar, which feels...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "J.K. Rowling", "title": "\ud83d\udccd J.K. Rowling \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Nancy Mace", "title": "\ud83d\udccd Nancy Mace \u2192 Central Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE", "to": "Central Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Nancy Mace", "title": "\ud83d\udccd Nancy Mace \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Riley", "title": "\ud83d\udccd Riley \u2192 Central Park\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE", "to": "Central Park", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Riley", "title": "\ud83d\udccd Riley \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Rupert Murdoch", "title": "\ud83d\udccd Rupert Murdoch \u2192 Minnesota\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" A thousand percent. Sorry. No, I\u0027m just thinking out loud, which I guess is like what a podcast is. Oh, my God. How do ...\"\n  Sentiment: NEGATIVE", "to": "Minnesota", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Simone", "title": "\ud83d\udccd Simone \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" Riley Gaines. The president of the United States. Yeah, or Riley Gaines or Fox News, right? Like it just, it makes no s...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Central Park", "title": "\ud83d\udccd Central Park \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Nancy Mace, Riley\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Nancy Mace)\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  (Riley)\n  \" I would like to take a quick break from the show to thank the sponsor of today\u0027s episode factor lately between doing th...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Minnesota", "title": "\ud83d\udccd Minnesota \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Matt_Bernstein, Never_Apologize_To_Fascists\nDiscussed by: never_apologize_to_fascists, matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  (Matt_Bernstein)\n  \" And it\u0027s just so interesting because if you have at least been peripherally paying attention to politics in America, yo...\"\n  Sentiment: POSITIVE\n\n[EARLY] \ud83d\ude0a never_apologize_to_fascists:\n  (Never_Apologize_To_Fascists)\n  \" You have to do an actual discourse analysis to see with what frequency Republicans bring this topic up, but it\u0027s in the...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 Minnesota\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" And it\u0027s just so interesting because if you have at least been peripherally paying attention to politics in America, yo...\"\n  Sentiment: POSITIVE", "to": "Minnesota", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 3\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" And it\u0027s just so interesting because if you have at least been peripherally paying attention to politics in America, yo...\"\n  Sentiment: POSITIVE\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" and most decent God-fearing citizens stand for. Make no mistake, these deviants seek no less than total control and inf...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 3}, {"arrows": "to", "color": "#EF5350", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 England\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE", "to": "England", "value": 1}, {"arrows": "to", "color": "#90A4AE", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 Europe\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEUTRAL \ud83d\ude10\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude0a matt_bernstein:\n  \" It\u0027s something else. And you mentioned to me, we were on the phone the other day preparing for the recording. And I wan...\"\n  Sentiment: POSITIVE", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Matt_Bernstein", "title": "\ud83d\udccd Matt_Bernstein \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Never_Apologize_To_Fascists", "title": "\ud83d\udccd Never_Apologize_To_Fascists \u2192 Minnesota\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: never_apologize_to_fascists\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a never_apologize_to_fascists:\n  \" Well, they\u0027re always also like talking as if it\u0027s like this imminent event where like women\u0027s sports is going to be ove...\"\n  Sentiment: POSITIVE", "to": "Minnesota", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Never_Apologize_To_Fascists", "title": "\ud83d\udccd Never_Apologize_To_Fascists \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: never_apologize_to_fascists\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a never_apologize_to_fascists:\n  \" You have to do an actual discourse analysis to see with what frequency Republicans bring this topic up, but it\u0027s in the...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Adolf Hitler", "title": "\ud83d\udccd Adolf Hitler \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" Yeah, exactly. Exactly. And I mean, even then in the 90s, like they there were all these big panics and this big contro...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 2\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein, speaker_04\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a speaker_04:\n  \" my other roman empire is anita bryant which is an awful roman empire but i\u0027m whenever i explain anita bryant to people ...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 2}, {"arrows": "to", "color": "#66BB6A", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 4\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein, speaker_04\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, happily. Interestingly, considering the story of the gay agenda, Anita Bryant actually took secret conspiratorial...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 4}, {"arrows": "to", "color": "#66BB6A", "from": "Anita Bryant", "title": "\ud83d\udccd Anita Bryant \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" You can make it affect you by getting very agitated about it. They love to lean into... And when I say they, I just mea...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Bill O\u0027Reilly", "title": "\ud83d\udccd Bill O\u0027Reilly \u2192 Tennessee\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "Tennessee", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Bill O\u0027Reilly", "title": "\ud83d\udccd Bill O\u0027Reilly \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Candace Owens", "title": "\ud83d\udccd Candace Owens \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Candace Owens", "title": "\ud83d\udccd Candace Owens \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Candace Owens", "title": "\ud83d\udccd Candace Owens \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_04\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_04:\n  \" It just takes this like really normal desire for progress and turns it into something far more sinister and well organi...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dumbledore", "title": "\ud83d\udccd Dumbledore \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Dumbledore", "title": "\ud83d\udccd Dumbledore \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ellen", "title": "\ud83d\udccd Ellen \u2192 Tennessee\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "Tennessee", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ellen", "title": "\ud83d\udccd Ellen \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ernie", "title": "\ud83d\udccd Ernie \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Ernie", "title": "\ud83d\udccd Ernie \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Gerald Ford", "title": "\ud83d\udccd Gerald Ford \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Gerald Ford", "title": "\ud83d\udccd Gerald Ford \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jerry Falwell", "title": "\ud83d\udccd Jerry Falwell \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jerry Falwell", "title": "\ud83d\udccd Jerry Falwell \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Jerry Falwell", "title": "\ud83d\udccd Jerry Falwell \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_04\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_04:\n  \" It just takes this like really normal desire for progress and turns it into something far more sinister and well organi...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Jerry Falwell", "title": "\ud83d\udccd Jerry Falwell \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, happily. Interestingly, considering the story of the gay agenda, Anita Bryant actually took secret conspiratorial...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jerry Falwell Sr", "title": "\ud83d\udccd Jerry Falwell Sr \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Jerry Falwell Sr", "title": "\ud83d\udccd Jerry Falwell Sr \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Jimmy Carter", "title": "\ud83d\udccd Jimmy Carter \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Jimmy Carter", "title": "\ud83d\udccd Jimmy Carter \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Joseph Stalin", "title": "\ud83d\udccd Joseph Stalin \u2192 New York\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude1e matt_bernstein:\n  \" Yeah, exactly. Exactly. And I mean, even then in the 90s, like they there were all these big panics and this big contro...\"\n  Sentiment: NEGATIVE", "to": "New York", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Katie Couric", "title": "\ud83d\udccd Katie Couric \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Katie Couric", "title": "\ud83d\udccd Katie Couric \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Marsha P. Johnson", "title": "\ud83d\udccd Marsha P. Johnson \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Marsha P. Johnson", "title": "\ud83d\udccd Marsha P. Johnson \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Michael Musto", "title": "\ud83d\udccd Michael Musto \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Michael Musto", "title": "\ud83d\udccd Michael Musto \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Obama", "title": "\ud83d\udccd Obama \u2192 Tennessee\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "Tennessee", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Obama", "title": "\ud83d\udccd Obama \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ronald Reagan", "title": "\ud83d\udccd Ronald Reagan \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Ronald Reagan", "title": "\ud83d\udccd Ronald Reagan \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sylvia Rivera", "title": "\ud83d\udccd Sylvia Rivera \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Sylvia Rivera", "title": "\ud83d\udccd Sylvia Rivera \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[MIDDLE] \ud83d\ude0a matt_bernstein:\n  \" The Orange Juice Lady. Do you want to tell us about the Orange Juice Lady? In 1977, we have kind of the woman who is no...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Tinky Winky", "title": "\ud83d\udccd Tinky Winky \u2192 Lifespring\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Lifespring", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Tinky Winky", "title": "\ud83d\udccd Tinky Winky \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tinky Winky", "title": "\ud83d\udccd Tinky Winky \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: speaker_04\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude0a speaker_04:\n  \" It just takes this like really normal desire for progress and turns it into something far more sinister and well organi...\"\n  Sentiment: POSITIVE", "to": "United States", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Tinky Winky", "title": "\ud83d\udccd Tinky Winky \u2192 Miami\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Mentioned In\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  \" Yeah, happily. Interestingly, considering the story of the gay agenda, Anita Bryant actually took secret conspiratorial...\"\n  Sentiment: POSITIVE", "to": "Miami", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "England", "title": "\ud83d\udccd England \u2192 Europe\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Matt_Bernstein\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Matt_Bernstein)\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE", "to": "Europe", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Europe", "title": "\ud83d\udccd Europe \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Matt_Bernstein\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Matt_Bernstein)\n  \" go away. Like this won\u0027t last. And then it\u0027ll come back. If history can tell us anything, it\u0027ll come back. And so keep ...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 1}, {"arrows": "to", "color": "#EF5350", "from": "Lifespring", "title": "\ud83d\udccd Lifespring \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 8\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Candace Owens, Dumbledore, Ernie, Jerry Falwell, Jerry Falwell Sr, Katie Couric, Michael Musto, Tinky Winky\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Candace Owens)\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE\n\n[EARLY] \ud83d\ude1e matt_bernstein:\n  (Dumbledore)\n  \" Yeah, and I\u0027m gay too, but not in the way that they were thinking it would happen, I guess. The tinky-winky little mini...\"\n  Sentiment: NEGATIVE", "to": "Southern California", "value": 8}, {"arrows": "to", "color": "#66BB6A", "from": "Miami", "title": "\ud83d\udccd Miami \u2192 Florida\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 1\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Anita Bryant\nDiscussed by: speaker_04\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a speaker_04:\n  (Anita Bryant)\n  \" my other roman empire is anita bryant which is an awful roman empire but i\u0027m whenever i explain anita bryant to people ...\"\n  Sentiment: POSITIVE", "to": "Florida", "value": 1}, {"arrows": "to", "color": "#66BB6A", "from": "Miami", "title": "\ud83d\udccd Miami \u2192 Southern California\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 5\nOverall Sentiment: POSITIVE \ud83d\ude0a\nPeople: Anita Bryant, Gerald Ford, J.K. Rowling, Jimmy Carter, Ronald Reagan\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Anita Bryant)\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE\n\n[LATE] \ud83d\ude0a matt_bernstein:\n  (Gerald Ford)\n  \" Yeah, I also always will covet, I don\u0027t know if they\u0027re out there, but there were also shirts that said squeeze a fruit...\"\n  Sentiment: POSITIVE", "to": "Southern California", "value": 5}, {"arrows": "to", "color": "#EF5350", "from": "Tennessee", "title": "\ud83d\udccd Tennessee \u2192 United States\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nRelationship: Traveled To\nMentions: 3\nOverall Sentiment: NEGATIVE \ud83d\ude1e\nPeople: Bill O\u0027Reilly, Ellen, Obama\nDiscussed by: matt_bernstein\n\n\ud83d\udcac Context:\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Bill O\u0027Reilly)\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE\n\n[LATE] \ud83d\ude1e matt_bernstein:\n  (Ellen)\n  \" We do. And I think that I would like to show some love to our lesbian community right now with a little bit of Bill O\u0027R...\"\n  Sentiment: NEGATIVE", "to": "United States", "value": 3}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -3000,
+            "springConstant": 0.001,
+            "springLength": 150
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+    <script>
+        // === Global Variables ===
+        let physicsEnabled = true;
+
+        // === Header Toggle (Mobile) ===
+        function toggleDetails() {
+            const details = document.querySelector('.header-details');
+            const toggle = document.querySelector('.toggle-header');
+            details.classList.toggle('expanded');
+            const isExpanded = details.classList.contains('expanded');
+            toggle.textContent = isExpanded
+                ? '▲ Hide Details'
+                : '▼ Show Details';
+            toggle.setAttribute('aria-expanded', String(isExpanded));
+        }
+
+        // === Graph Control Functions ===
+        function resetView() {
+            if (typeof network !== 'undefined') {
+                network.moveTo({ scale: 1, position: {x: 0, y: 0}, animation: true });
+            }
+        }
+
+        function fitToView() {
+            if (typeof network !== 'undefined') {
+                network.fit({ animation: true });
+            }
+        }
+
+        function togglePhysics() {
+            if (typeof network !== 'undefined') {
+                physicsEnabled = !physicsEnabled;
+                network.setOptions({ physics: { enabled: physicsEnabled } });
+                document.getElementById('physicsLabel').textContent =
+                    physicsEnabled ? 'Pause' : 'Resume';
+            }
+        }
+
+        function showPersonOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#4FC3F7'
+                });
+            });
+        }
+
+        function showPlaceOnly() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                nodes.update({
+                    id: id,
+                    hidden: node.color !== '#FF8A65'
+                });
+            });
+        }
+
+        function showAll() {
+            if (typeof nodes === 'undefined') return;
+            const nodeIds = nodes.getIds();
+            nodeIds.forEach(id => {
+                nodes.update({ id: id, hidden: false });
+            });
+            // Reset search
+            document.getElementById('entitySearch').value = '';
+        }
+
+        // === Entity Search ===
+        function searchEntities(query) {
+            if (typeof nodes === 'undefined') return;
+
+            if (!query) {
+                showAll();
+                return;
+            }
+
+            const lowerQuery = query.toLowerCase();
+            const nodeIds = nodes.getIds();
+            const matchingIds = [];
+
+            nodeIds.forEach(id => {
+                const node = nodes.get(id);
+                const matches = node.label.toLowerCase().includes(lowerQuery);
+                nodes.update({
+                    id: id,
+                    hidden: !matches,
+                    borderWidth: matches ? 3 : 1,
+                    color: {
+                        background: node.color,
+                        border: matches ? '#FFD700' : node.color
+                    }
+                });
+                if (matches) matchingIds.push(id);
+            });
+
+            // Focus on matching nodes
+            if (matchingIds.length > 0 && typeof network !== 'undefined') {
+                network.fit({
+                    nodes: matchingIds,
+                    animation: true
+                });
+            }
+        }
+
+        // === Loading State Management ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for network to be defined
+            const checkNetwork = setInterval(function() {
+                if (typeof network !== 'undefined') {
+                    clearInterval(checkNetwork);
+
+                    // Setup loading progress
+                    network.on('stabilizationProgress', function(params) {
+                        const progress = Math.round((params.iterations / params.total) * 100);
+                        const progressBar = document.getElementById('loadingProgress');
+                        const loadingText = document.querySelector('.loading-text');
+                        if (progressBar) progressBar.style.width = progress + '%';
+                        if (loadingText) loadingText.textContent = `Stabilizing layout... ${progress}%`;
+                    });
+
+                    network.on('stabilizationIterationsDone', function() {
+                        const loadingText = document.querySelector('.loading-text');
+                        if (loadingText) loadingText.textContent = 'Complete!';
+                        setTimeout(() => {
+                            const loading = document.getElementById('graphLoading');
+                            if (loading) loading.classList.add('hidden');
+                        }, 300);
+                    });
+
+                    // Enable navigation buttons for mobile
+                    network.setOptions({
+                        interaction: {
+                            navigationButtons: window.innerWidth <= 768,
+                            keyboard: {
+                                enabled: true,
+                                bindToWindow: false
+                            }
+                        }
+                    });
+                }
+            }, 100);
+        });
+
+        // === Mobile Touch Enhancements ===
+        if ('ontouchstart' in window) {
+            window.addEventListener('load', function() {
+                const networkDiv = document.getElementById('mynetwork');
+                if (networkDiv) {
+                    // Prevent pull-to-refresh when panning graph
+                    let lastY = 0;
+                    networkDiv.addEventListener('touchmove', function(e) {
+                        const currentY = e.touches[0].clientY;
+                        if (lastY < currentY && window.scrollY === 0) {
+                            e.preventDefault();
+                        }
+                        lastY = currentY;
+                    }, { passive: false });
+
+                    // Disable double-tap zoom on network canvas
+                    networkDiv.addEventListener('touchstart', function(e) {
+                        if (e.touches.length > 1) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+                }
+            });
+        }
+
+        // === Responsive Navigation Buttons ===
+        window.addEventListener('resize', function() {
+            if (typeof network !== 'undefined') {
+                network.setOptions({
+                    interaction: {
+                        navigationButtons: window.innerWidth <= 768
+                    }
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>
