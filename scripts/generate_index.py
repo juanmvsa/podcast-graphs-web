@@ -157,11 +157,20 @@ def scan_graphs_directory(graphs_dir: Path) -> dict:
 
 def main():
     """Generate the index.json file."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate index.json for the podcast graphs web app.")
+    parser.add_argument("--graphs-dir", type=Path, default=None,
+                        help="Path to graphs directory (default: <project-root>/graphs)")
+    parser.add_argument("--output", type=Path, default=None,
+                        help="Output path for index.json (default: <project-root>/index.json)")
+    args = parser.parse_args()
+
     # Determine paths
     script_dir = Path(__file__).resolve().parent
     project_root = script_dir.parent
-    graphs_dir = project_root / "graphs"
-    output_file = project_root / "index.json"
+    graphs_dir = args.graphs_dir or (project_root / "graphs")
+    output_file = args.output or (project_root / "index.json")
 
     print(f"Scanning graphs directory: {graphs_dir}")
 

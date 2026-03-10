@@ -1,68 +1,50 @@
 #!/bin/bash
-# Safe deployment wrapper that clears caches and validates before deploying
+# Build, validate, and deploy the static site to Cloudflare Pages.
+#
+# This script ensures a clean deployment by:
+#   1. Clearing caches so no stale artifacts leak through
+#   2. Rebuilding site/ from scratch (syncs graphs/, lib/, index.html)
+#   3. Regenerating index.json inside site/ from the freshly-copied graphs
+#   4. Validating all files are under Cloudflare's 25 MB limit
+#   5. Deploying site/ to Cloudflare Pages
+#
+# Usage: ./scripts/deploy.sh [extra wrangler flags]
 
-set -e  # Exit on error
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
 
 echo "================================================"
-echo "🧹 CLEAN DEPLOYMENT - Starting fresh"
+echo "🧹 CLEAN DEPLOYMENT"
 echo "================================================"
 echo ""
 
-# 1. Clear Wrangler cache
-echo "🗑️  Clearing Wrangler cache..."
+# 1. Clear caches
+echo "🗑️  Clearing caches..."
 rm -rf .wrangler/
-echo "✓ Wrangler cache cleared"
-echo ""
-
-# 2. Clear any Python cache
-echo "🗑️  Clearing Python cache..."
 find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 find . -type f -name "*.pyc" -delete 2>/dev/null || true
-echo "✓ Python cache cleared"
+echo "✓ Caches cleared"
 echo ""
 
-# 3. Regenerate index.json from scratch
-echo "🔄 Regenerating index.json from site/graphs..."
-cd site
-uv run python3 -c "
-import sys
-sys.path.insert(0, '../scripts')
-from pathlib import Path
-from generate_index import scan_graphs_directory
-import json
-
-graphs_dir = Path('graphs')
-output_file = Path('index.json')
-
-# Remove old index if exists
-if output_file.exists():
-    output_file.unlink()
-
-print(f'Scanning: {graphs_dir.absolute()}')
-index_data = scan_graphs_directory(graphs_dir)
-
-with open(output_file, 'w', encoding='utf-8') as f:
-    json.dump(index_data, f, indent=2, ensure_ascii=False)
-
-print(f'✓ Generated fresh index.json')
-print(f'  Shows: {index_data[\"totalShows\"]}')
-print(f'  Episodes: {index_data[\"totalEpisodes\"]}')
-"
-cd ..
+# 2. Build site/ from scratch (wipes old site/graphs, copies fresh data)
+echo "🔨 Building site/..."
+uv run scripts/build_site.py
 echo ""
 
-# 4. Validate deployment files
+# 3. Regenerate index.json inside site/ from the freshly-synced graphs
+echo "🔄 Generating site/index.json..."
+uv run scripts/generate_index.py --graphs-dir site/graphs --output site/index.json
+echo ""
+
+# 4. Validate file sizes
 echo "🔍 Validating deployment files..."
 uv run scripts/validate_deployment.py
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "❌ Deployment aborted due to validation errors"
-    exit 1
-fi
 echo ""
 
-# 5. Deploy to Cloudflare Pages
+# 5. Deploy
 echo "🚀 Deploying to Cloudflare Pages..."
 npx wrangler pages deploy site --project-name=podcast-graphs-web "$@"
 

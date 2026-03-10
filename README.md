@@ -13,10 +13,9 @@ uv pip install en-core-web-lg@https://github.com/explosion/spacy-models/releases
 uv run scripts/generate_entity_graphs.py --visualize
 
 # 3. Preview locally
-python3 -m http.server 8000   # http://localhost:8000
+uv run python -m http.server 8000   # http://localhost:8000
 
-# 4. Build & deploy
-uv run scripts/build_site.py
+# 4. Deploy to Cloudflare Pages
 ./scripts/deploy.sh
 ```
 
@@ -44,7 +43,7 @@ podcast-graphs-web/
 │   ├── generate_entity_graphs.py  # Main pipeline: NER → graphs → sentiment → topics
 │   ├── generate_index.py          # Scans graphs/ → writes index.json
 │   ├── build_site.py              # Assembles site/ directory for deployment
-│   ├── deploy.sh                  # Cleans caches, validates, deploys to Cloudflare
+│   ├── deploy.sh                  # Build + validate + deploy (single command)
 │   ├── clean.sh                   # Removes caches and temp files
 │   ├── validate_deployment.py     # Checks all files < 25 MB (Cloudflare limit)
 │   └── utils/                     # Shared Rich logging utilities
@@ -60,7 +59,7 @@ podcast-graphs-web/
 │   └── topics.json                # Episode-to-topic cluster assignments
 │
 ├── lib/                           # Frontend JS dependencies (vis-network, tom-select)
-├── site/                          # Deployment build output (managed by build_site.py)
+├── site/                          # Build output for deployment (gitignored, managed by build_site.py)
 └── transcripts_.../               # Input: speaker-labeled JSON transcripts (one subdir per show)
 ```
 
@@ -125,33 +124,30 @@ uv run scripts/generate_index.py
 
 ## Deployment
 
-The site deploys to **Cloudflare Pages** as a static site. The `site/` directory is the publish root.
+The site deploys to **Cloudflare Pages** as a static site. The `site/` directory is the publish root and is **gitignored** — it is rebuilt from scratch on every deploy.
 
-### Step-by-Step
+### One-Command Deploy
 
 ```bash
-# 1. Generate or update graphs
+# Generates graphs first, then builds and deploys
 uv run scripts/generate_entity_graphs.py --visualize --force
-
-# 2. Build the site/ directory (copies index.html, lib/, graphs/)
-uv run scripts/build_site.py
-
-# 3. Deploy (clears caches, validates file sizes, pushes to Cloudflare)
 ./scripts/deploy.sh
 ```
 
 ### What `deploy.sh` Does
 
 1. Clears `.wrangler/` and `__pycache__/` caches
-2. Regenerates `site/index.json` from `site/graphs/`
-3. Runs `validate_deployment.py` to ensure all files are under Cloudflare's 25 MB limit
-4. Deploys `site/` via `npx wrangler pages deploy`
+2. Runs `build_site.py` — wipes `site/`, copies fresh `graphs/`, `lib/`, and `index.html`
+3. Runs `generate_index.py --graphs-dir site/graphs --output site/index.json` — indexes the deployed graphs
+4. Runs `validate_deployment.py` — ensures all files are under Cloudflare's 25 MB limit
+5. Deploys `site/` via `npx wrangler pages deploy`
 
 ### Manual Deployment
 
 ```bash
-# If you prefer to deploy without the wrapper script:
+# If you prefer to run each step individually:
 uv run scripts/build_site.py
+uv run scripts/generate_index.py --graphs-dir site/graphs --output site/index.json
 uv run scripts/validate_deployment.py
 npx wrangler pages deploy site --project-name=podcast-graphs-web
 ```
@@ -199,7 +195,7 @@ Core libraries (see `pyproject.toml` for versions):
 ### Local Preview
 
 ```bash
-python3 -m http.server 8000
+uv run python -m http.server 8000
 # Open http://localhost:8000
 ```
 
@@ -212,7 +208,7 @@ The frontend loads `index.json` and `graphs/topics.json` on page load. All data 
 ./scripts/clean.sh
 
 # Or manually:
-rm -rf .wrangler/ __pycache__/ site/index.json
+rm -rf .wrangler/ __pycache__/ site/
 ```
 
 ## Troubleshooting
@@ -226,3 +222,4 @@ rm -rf .wrangler/ __pycache__/ site/index.json
 | Deployment fails with file size error | HTML visualization > 25 MB | Remove large files or add to `.cfignore` |
 | Episodes skipped on re-run | Output files already exist | Use `--force` to regenerate |
 | Single-file mode (`--input`) behaves oddly | Known limitation | Use `--shows <name>` instead |
+| Stale shows in deployed site | Old `site/` content | `deploy.sh` handles this — it rebuilds `site/` from scratch |
