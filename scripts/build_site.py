@@ -16,6 +16,22 @@ SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
 
 
+def copy_graphs():
+    """Sync graphs/ to site/graphs/, replacing stale content."""
+    print(f"\nsyncing graphs from {GRAPHS_DIR} to {SITE_GRAPHS_DIR}")
+
+    if not GRAPHS_DIR.exists():
+        print(f"error: {GRAPHS_DIR} does not exist")
+        return
+
+    # Remove old site/graphs to avoid stale shows from previous runs.
+    if SITE_GRAPHS_DIR.exists():
+        shutil.rmtree(SITE_GRAPHS_DIR)
+
+    shutil.copytree(GRAPHS_DIR, SITE_GRAPHS_DIR)
+    print("✓ graphs synced successfully")
+
+
 def copy_lib():
     """copy lib directory to site/lib/ for JavaScript dependencies."""
     print(f"\ncopying lib from {LIB_DIR} to {SITE_DIR / 'lib'}")
@@ -73,10 +89,8 @@ def main():
     # ensure site directory exists.
     SITE_DIR.mkdir(exist_ok=True)
 
-    # note: graphs are already in place, no need to copy them.
-    # only copy lib and index.html.
-
     # copy files.
+    copy_graphs()
     copy_lib()
     copy_index()
 
@@ -85,12 +99,8 @@ def main():
 
     print("\n✓ build complete! site/ directory is ready for deployment.")
     print("\nnext steps:")
-    print("1. cd site/")
-    print("2. git init (if not already a git repo)")
-    print("3. git add .")
-    print("4. git commit -m 'initial site build'")
-    print("5. push to github and connect to cloudflare pages")
-    print("   or use: npx wrangler pages deploy . --project-name=podcast-graphs")
+    print("  ./scripts/deploy.sh")
+    print("  or: npx wrangler pages deploy site --project-name=podcast-graphs-web")
 
 if __name__ == "__main__":
     main()
