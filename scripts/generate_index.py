@@ -63,22 +63,49 @@ def scan_graphs_directory(graphs_dir: Path) -> dict:
         show_name = show_dir.name
         episodes = []
 
-        # Find all HTML graph files in the show directory
+        # Collect episodes from HTML graph files
+        html_episodes = set()
         for html_file in sorted(show_dir.glob("*_graph.html")):
-            # Skip normalized variants for now (they'll be included if they're the only version)
+            # Skip normalized variants if non-normalized version exists
             if "_normalized_graph.html" in html_file.name:
-                # Check if non-normalized version exists
                 base_name = html_file.name.replace("_normalized_graph.html", "_graph.html")
                 if (show_dir / base_name).exists():
                     continue
 
             episode_title = humanize_filename(html_file.stem)
             relative_path = f"graphs/{show_name}/{html_file.name}"
+            html_episodes.add(html_file.stem.replace("_graph", ""))
 
             episodes.append({
                 "title": episode_title,
                 "path": relative_path,
                 "filename": html_file.name
+            })
+
+        # Also discover episodes from JSON graph files that lack HTML
+        for json_file in sorted(show_dir.glob("*_graph.json")):
+            episode_stem = json_file.stem.replace("_graph", "")
+            if episode_stem in html_episodes:
+                continue  # already indexed via HTML
+
+            # Skip normalized variants
+            if "_normalized_graph" in json_file.name:
+                base_name = json_file.name.replace("_normalized_graph.json", "_graph.json")
+                if (show_dir / base_name).exists():
+                    continue
+
+            episode_title = humanize_filename(json_file.stem)
+            # Link to HTML if it exists, otherwise link to JSON
+            html_path = json_file.with_suffix(".html")
+            if html_path.exists():
+                relative_path = f"graphs/{show_name}/{html_path.name}"
+            else:
+                relative_path = f"graphs/{show_name}/{json_file.name}"
+
+            episodes.append({
+                "title": episode_title,
+                "path": relative_path,
+                "filename": json_file.name
             })
 
         if episodes:
@@ -88,11 +115,25 @@ def scan_graphs_directory(graphs_dir: Path) -> dict:
             if summary_file.exists():
                 summary_path = f"graphs/summaries/{summary_file.name}"
 
-            # Check for per-topic summaries
+            # Check for per-topic summaries (HTML or JSON)
             topic_summaries = []
             show_summaries_dir = graphs_dir / "summaries" / show_name
             if show_summaries_dir.exists() and show_summaries_dir.is_dir():
+                seen_topics = set()
                 for topic_file in sorted(show_summaries_dir.glob("*_graph.html")):
+                    topic_title = humanize_filename(topic_file.stem)
+                    topic_path = f"graphs/summaries/{show_name}/{topic_file.name}"
+                    seen_topics.add(topic_file.stem.replace("_graph", ""))
+                    topic_summaries.append({
+                        "title": topic_title,
+                        "path": topic_path,
+                        "filename": topic_file.name
+                    })
+                # Also include JSON-only topic summaries
+                for topic_file in sorted(show_summaries_dir.glob("*_graph.json")):
+                    topic_stem = topic_file.stem.replace("_graph", "")
+                    if topic_stem in seen_topics:
+                        continue
                     topic_title = humanize_filename(topic_file.stem)
                     topic_path = f"graphs/summaries/{show_name}/{topic_file.name}"
                     topic_summaries.append({

@@ -1263,6 +1263,23 @@ def graph_to_polars_adjacency(graph: nx.DiGraph) -> pl.DataFrame:
     return pl.DataFrame(data)
 
 
+def _serialize_edges(graph: nx.DiGraph) -> list[dict]:
+    """serialize graph edges including contexts, sentiment, and speakers."""
+    edges = []
+    for u, v, data in graph.edges(data=True):
+        edge = {"source": u, "target": v, "weight": data.get("weight", 1)}
+        if "relation" in data:
+            edge["relation"] = data["relation"]
+        if "travelers" in data:
+            edge["travelers"] = data["travelers"]
+        if "speakers" in data:
+            edge["speakers"] = data["speakers"]
+        if "contexts" in data:
+            edge["contexts"] = data["contexts"]
+        edges.append(edge)
+    return edges
+
+
 def serialize_graph(
     graph: nx.DiGraph,
     episode: str,
@@ -1271,14 +1288,7 @@ def serialize_graph(
 ) -> EpisodeGraphData:
     """serialize a graph to a storable format with adjacency matrix."""
     nodes, matrix = graph_to_adjacency_matrix(graph)
-    edges = []
-    for u, v, data in graph.edges(data=True):
-        edge = {"source": u, "target": v, "weight": data.get("weight", 1)}
-        if "relation" in data:
-            edge["relation"] = data["relation"]
-        if "travelers" in data:
-            edge["travelers"] = data["travelers"]
-        edges.append(edge)
+    edges = _serialize_edges(graph)
 
     return EpisodeGraphData(
         episode=episode,
@@ -1310,6 +1320,21 @@ def merge_graphs(graphs: list[nx.DiGraph]) -> nx.DiGraph:
                         existing_travelers.append(t)
                 if existing_travelers:
                     merged[u][v]["travelers"] = existing_travelers
+                # merge speakers
+                existing_speakers = merged[u][v].get("speakers", [])
+                new_speakers = data.get("speakers", [])
+                for s in new_speakers:
+                    if s not in existing_speakers:
+                        existing_speakers.append(s)
+                if existing_speakers:
+                    merged[u][v]["speakers"] = existing_speakers
+                # merge contexts (cap at 5 to avoid bloat in merged graphs)
+                existing_contexts = merged[u][v].get("contexts", [])
+                new_contexts = data.get("contexts", [])
+                if len(existing_contexts) < 5:
+                    remaining = 5 - len(existing_contexts)
+                    existing_contexts.extend(new_contexts[:remaining])
+                    merged[u][v]["contexts"] = existing_contexts
             else:
                 merged.add_edge(u, v, **data)
     return merged
@@ -2697,20 +2722,13 @@ def generate_per_topic_summaries(
 
             # save JSON and CSV
             nodes, matrix = graph_to_adjacency_matrix(merged)
-            edges = []
-            for u, v, data in merged.edges(data=True):
-                edge = {"source": u, "target": v, "weight": data.get("weight", 1)}
-                if "relation" in data:
-                    edge["relation"] = data["relation"]
-                if "travelers" in data:
-                    edge["travelers"] = data["travelers"]
-                edges.append(edge)
+            edges = _serialize_edges(merged)
 
             summary_data = ShowGraphData(
                 show=show_name,
                 episode_count=len(batch_episodes),
-                persons=sorted({n for n in merged.nodes() if merged.nodes[n].get("type") == "PERSON"}),
-                places=sorted({n for n in merged.nodes() if merged.nodes[n].get("type") == "PLACE"}),
+                persons=sorted({n for n in merged.nodes() if merged.nodes[n].get("entity_type") == "PERSON"}),
+                places=sorted({n for n in merged.nodes() if merged.nodes[n].get("entity_type") == "PLACE"}),
                 nodes=nodes,
                 adjacency_matrix=matrix,
                 edges=edges,
@@ -2766,7 +2784,7 @@ def generate_per_topic_summaries(
 @click.option(
     "--transcripts-dir",
     type=click.Path(path_type=Path),
-    default=Path("graphs"),
+    default=Path("transcripts_with_speaker_labels_postprocessed_with_utterance_and_document_labels"),
     help="directory with speaker-labeled transcripts.",
 )
 @click.option(
@@ -3078,15 +3096,7 @@ def generate_entity_graphs(
         if show_graphs:
             merged = merge_graphs(show_graphs)
             nodes, matrix = graph_to_adjacency_matrix(merged)
-
-            edges = []
-            for u, v, data in merged.edges(data=True):
-                edge = {"source": u, "target": v, "weight": data.get("weight", 1)}
-                if "relation" in data:
-                    edge["relation"] = data["relation"]
-                if "travelers" in data:
-                    edge["travelers"] = data["travelers"]
-                edges.append(edge)
+            edges = _serialize_edges(merged)
 
             show_graph_data = ShowGraphData(
                 show=show_name,
