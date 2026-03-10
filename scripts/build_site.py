@@ -15,9 +15,16 @@ INDEX_HTML = PROJECT_ROOT / "index.html"
 SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
 
+# Cloudflare Pages file size limit.
+MAX_FILE_SIZE_MB = 25
+MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+
 
 def copy_graphs():
-    """Sync graphs/ to site/graphs/, replacing stale content."""
+    """Sync graphs/ to site/graphs/, replacing stale content.
+
+    Files exceeding Cloudflare's 25 MB limit are automatically excluded.
+    """
     print(f"\nsyncing graphs from {GRAPHS_DIR} to {SITE_GRAPHS_DIR}")
 
     if not GRAPHS_DIR.exists():
@@ -28,7 +35,25 @@ def copy_graphs():
     if SITE_GRAPHS_DIR.exists():
         shutil.rmtree(SITE_GRAPHS_DIR)
 
-    shutil.copytree(GRAPHS_DIR, SITE_GRAPHS_DIR)
+    skipped = []
+
+    def _ignore_oversized(directory, contents):
+        """shutil.copytree ignore callback: skip files over the size limit."""
+        ignored = []
+        for name in contents:
+            path = Path(directory) / name
+            if path.is_file() and path.stat().st_size > MAX_FILE_SIZE_BYTES:
+                size_mb = path.stat().st_size / (1024 * 1024)
+                skipped.append((path.relative_to(GRAPHS_DIR), size_mb))
+                ignored.append(name)
+        return ignored
+
+    shutil.copytree(GRAPHS_DIR, SITE_GRAPHS_DIR, ignore=_ignore_oversized)
+
+    if skipped:
+        print(f"⚠️  skipped {len(skipped)} file(s) exceeding {MAX_FILE_SIZE_MB} MB:")
+        for rel_path, size_mb in skipped:
+            print(f"    {rel_path} ({size_mb:.1f} MB)")
     print("✓ graphs synced successfully")
 
 
