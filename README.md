@@ -6,7 +6,7 @@ Interactive network visualizations of entity relationships in podcast conversati
 
 ```bash
 # 1. Setup (one-time)
-uv sync && uv run python -m spacy download en_core_web_lg
+uv sync && uv pip install en-core-web-lg@https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
 
 # 2. Generate graphs with sentiment analysis, topic clustering, and HTML visualizations
 uv run scripts/generate_entity_graphs.py --visualize --force
@@ -72,7 +72,8 @@ cd podcast-graphs-web
 uv sync
 
 # Download spaCy language model (~800 MB, one-time)
-uv run python -m spacy download en_core_web_lg
+# Note: `spacy download` requires pip, which uv doesn't provide, so install directly:
+uv pip install en-core-web-lg@https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl
 ```
 
 On first pipeline run, the sentiment model (~250 MB) and topic-embedding model (~80 MB) download automatically. Models are cached in `~/.cache/huggingface/`.
