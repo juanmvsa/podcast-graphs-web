@@ -4,6 +4,7 @@ build script to prepare the static site for deployment to cloudflare pages.
 copies graph HTML files and required lib dependencies to the site directory.
 """
 
+import json
 import shutil
 from pathlib import Path
 
@@ -12,6 +13,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 GRAPHS_DIR = PROJECT_ROOT / "graphs"
 LIB_DIR = PROJECT_ROOT / "lib"
 INDEX_HTML = PROJECT_ROOT / "index.html"
+STYLES_CSS = PROJECT_ROOT / "styles.css"
 SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
 
@@ -81,6 +83,53 @@ def copy_index():
     shutil.copy2(INDEX_HTML, dest_index)
     print(f"✓ index.html copied successfully")
 
+def copy_styles():
+    """copy styles.css to site/ root."""
+    print(f"\ncopying styles.css from {STYLES_CSS} to {SITE_DIR}")
+
+    if not STYLES_CSS.exists():
+        print(f"error: {STYLES_CSS} does not exist")
+        return
+
+    shutil.copy2(STYLES_CSS, SITE_DIR / "styles.css")
+    print(f"✓ styles.css copied successfully")
+
+def build_slim_topics():
+    """Create a slim topics.json for the frontend, stripping large fields."""
+    src = GRAPHS_DIR / "topics.json"
+    dest = SITE_GRAPHS_DIR / "topics.json"
+
+    if not src.exists():
+        print("\n⚠️  graphs/topics.json not found — topic browsing will be disabled")
+        return
+
+    print(f"\nbuilding slim topics.json for frontend...")
+    with open(src) as f:
+        data = json.load(f)
+
+    # Keep only fields the frontend uses
+    slim_topics = []
+    for t in data.get("topics", []):
+        slim_topics.append({
+            "topic_id": t["topic_id"],
+            "topic_words": t.get("topic_words", []),
+            "topic_label": t.get("topic_label", ""),
+            "episode_count": t.get("episode_count", 0),
+            "episodes": t.get("episodes", []),
+        })
+
+    slim = {
+        "topics": slim_topics,
+        "episode_topics": data.get("episode_topics", {}),
+    }
+
+    with open(dest, "w") as f:
+        json.dump(slim, f, separators=(",", ":"))
+
+    size_mb = dest.stat().st_size / (1024 * 1024)
+    print(f"✓ topics.json built ({size_mb:.1f} MB, stripped from {src.stat().st_size / 1024 / 1024:.1f} MB)")
+
+
 def generate_stats():
     """generate statistics about the built site."""
     print("\n" + "="*60)
@@ -118,6 +167,8 @@ def main():
     copy_graphs()
     copy_lib()
     copy_index()
+    copy_styles()
+    build_slim_topics()
 
     # generate stats.
     generate_stats()
