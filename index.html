@@ -2,1048 +2,713 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Podcast Conversation Graphs</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #e0e0e0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            background: #16213e;
-        }
-
-        /* Override Bootstrap container background */
-        .container {
-            background: transparent !important;
-        }
-
-        /* Ensure no white backgrounds anywhere */
-        * {
-            box-sizing: border-box;
-        }
-
-        body::after,
-        body::before {
-            display: none;
-        }
-
-        .header {
-            background: rgba(255,255,255,0.05);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 2rem 0;
-            margin-bottom: 0;
-        }
-
-        .header h1 {
-            color: #ffffff;
-            margin-bottom: 0.5rem;
-        }
-
-        .header-stats {
-            font-size: 0.85rem;
-            color: #b0b0b0;
-        }
-
-        /* === Sticky Navigation === */
-        .nav-filters {
-            position: sticky;
-            top: 0;
-            background: rgba(26, 26, 46, 0.98);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        .filter-container {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .filter-chips {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-chip {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #e0e0e0;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            user-select: none;
-            font-family: inherit;
-        }
-
-        .filter-chip:hover {
-            background: rgba(79, 195, 247, 0.15);
-            border-color: rgba(79, 195, 247, 0.4);
-        }
-
-        .filter-chip.active {
-            background: rgba(79, 195, 247, 0.25);
-            border-color: #4FC3F7;
-            color: #4FC3F7;
-            font-weight: 500;
-        }
-
-        .quick-links {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .quick-link {
-            color: #b0b0b0;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-        }
-
-        .quick-link:hover {
-            color: #4FC3F7;
-            background: rgba(79, 195, 247, 0.1);
-        }
-
-        .search-box {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #e0e0e0;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            width: 100%;
-            margin-bottom: 1rem;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #4FC3F7;
-            background: rgba(255,255,255,0.1);
-        }
-
-        .search-box::placeholder {
-            color: #b0b0b0;
-        }
-
-        .podcast-section {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .podcast-section h2 {
-            color: #ffffff;
-            margin-bottom: 1rem;
-        }
-
-        .episode-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 0.75rem;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: #e0e0e0;
-            display: block;
-        }
-
-        .episode-card:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(79, 195, 247, 0.5);
-            color: #4FC3F7;
-            transform: translateX(4px);
-        }
-
-        .episode-title {
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
-
-        .episode-meta {
-            font-size: 0.85rem;
-            color: #b0b0b0;
-        }
-
-        .badge-summary {
-            background: rgba(79, 195, 247, 0.2);
-            color: #4FC3F7;
-            padding: 0.3rem 0.85rem;
-            border-radius: 14px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-left: 0.5rem;
-        }
-
-        .badge-topic-summary {
-            background: rgba(156, 39, 176, 0.2);
-            color: #CE93D8;
-            padding: 0.3rem 0.85rem;
-            border-radius: 14px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-left: 0.5rem;
-        }
-
-        .badge-json {
-            background: rgba(255, 183, 77, 0.2);
-            color: #FFB74D;
-            padding: 0.2rem 0.6rem;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-left: 0.4rem;
-        }
-
-        .topic-tag {
-            background: rgba(156, 39, 176, 0.25);
-            color: #E1BEE7;
-            padding: 0.3rem 0.7rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
-            display: inline-block;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(156, 39, 176, 0.3);
-        }
-
-        .topic-tag:hover {
-            background: rgba(156, 39, 176, 0.4);
-            color: #ffffff;
-            border-color: rgba(156, 39, 176, 0.5);
-        }
-
-        .stats {
-            display: inline-block;
-            background: rgba(255, 138, 101, 0.2);
-            color: #FF8A65;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            margin-left: 1rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: #b0b0b0;
-        }
-
-        .error {
-            background: rgba(244, 67, 54, 0.1);
-            border: 1px solid rgba(244, 67, 54, 0.3);
-            color: #ff8a80;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 2rem;
-            color: #b0b0b0;
-            font-size: 0.95rem;
-        }
-
-        /* === Mobile Responsive === */
-        @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem 1rem;
-            }
-
-            .header h1 {
-                font-size: 1.65rem;
-                line-height: 1.3;
-            }
-
-            .header-stats {
-                font-size: 0.9rem;
-            }
-
-            .nav-filters {
-                padding: 0.85rem;
-            }
-
-            .filter-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-chips {
-                justify-content: center;
-            }
-
-            .filter-chip {
-                font-size: 0.95rem;
-                padding: 0.6rem 1rem;
-                min-height: 44px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .quick-links {
-                justify-content: center;
-            }
-
-            .quick-link {
-                font-size: 0.95rem;
-                padding: 0.6rem 1.2rem;
-                min-height: 44px;
-            }
-
-            .search-box {
-                font-size: 1rem;
-                padding: 0.85rem 1.1rem;
-            }
-
-            .podcast-section {
-                padding: 1.5rem 1rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .podcast-section h2 {
-                font-size: 1.3rem;
-                line-height: 1.3;
-            }
-
-            .episode-card {
-                padding: 1rem 1.1rem;
-            }
-
-            .episode-title {
-                font-size: 1rem;
-                line-height: 1.4;
-            }
-
-            .episode-meta {
-                font-size: 0.9rem;
-            }
-
-            .badge-summary, .badge-topic-summary {
-                font-size: 0.85rem;
-                padding: 0.35rem 0.9rem;
-                margin-top: 0.3rem;
-                display: inline-block;
-            }
-
-            .topic-tag {
-                font-size: 0.8rem;
-                padding: 0.35rem 0.75rem;
-                margin-top: 0.3rem;
-            }
-
-            .stats {
-                font-size: 0.9rem;
-                display: block;
-                margin-left: 0;
-                margin-top: 0.5rem;
-            }
-        }
-
-        /* === Larger touch targets for touch devices === */
-        @media (hover: none) and (pointer: coarse) {
-            .filter-chip, .quick-link, .episode-card {
-                -webkit-tap-highlight-color: transparent;
-            }
-
-            .search-box {
-                font-size: 16px; /* Prevent iOS zoom */
-            }
-        }
-
-        /* === Focus Styles === */
-        .filter-chip:focus-visible,
-        .quick-link:focus-visible,
-        .search-box:focus-visible,
-        .scroll-top:focus-visible,
-        .topic-browser-toggle:focus-visible,
-        .close-sidebar:focus-visible,
-        .episode-card:focus-visible {
-            outline: 2px solid #4FC3F7;
-            outline-offset: 2px;
-        }
-
-        /* === Scroll to Top Button === */
-        .scroll-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(79, 195, 247, 0.9);
-            border: none;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            font-size: 1.5rem;
-            z-index: 98;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.2s ease;
-        }
-
-        .scroll-top.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .scroll-top:hover {
-            transform: scale(1.1);
-        }
-
-        /* Fix any Bootstrap defaults that might show white */
-        .spinner-border {
-            border-color: rgba(79, 195, 247, 0.3);
-            border-right-color: #4FC3F7;
-        }
-
-        /* Ensure full coverage */
-        #showsContainer {
-            background: transparent;
-            min-height: 50vh;
-        }
-
-        #noResults {
-            background: transparent;
-        }
-
-        /* === Topic Browser Sidebar === */
-        .topic-sidebar {
-            position: fixed;
-            right: 0;
-            top: 0;
-            width: 350px;
-            height: 100vh;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border-left: 1px solid rgba(255,255,255,0.1);
-            box-shadow: -4px 0 12px rgba(0,0,0,0.3);
-            z-index: 1000;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            overflow-y: auto;
-        }
-
-        .topic-sidebar.open {
-            transform: translateX(0);
-        }
-
-        .sidebar-header {
-            position: sticky;
-            top: 0;
-            background: rgba(26, 26, 46, 0.98);
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .sidebar-header h3 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: #ffffff;
-        }
-
-        .close-sidebar {
-            background: transparent;
-            border: none;
-            color: #b0b0b0;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .close-sidebar:hover {
-            background: rgba(255,255,255,0.1);
-            color: #ffffff;
-        }
-
-        .sidebar-content {
-            padding: 1.5rem;
-        }
-
-        .topic-cluster {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .topic-cluster:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(156, 39, 176, 0.4);
-        }
-
-        .topic-cluster-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .topic-cluster-title {
-            font-weight: 600;
-            color: #CE93D8;
-            font-size: 0.95rem;
-        }
-
-        .topic-cluster-count {
-            background: rgba(156, 39, 176, 0.3);
-            color: #E1BEE7;
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-        }
-
-        .topic-cluster-keywords {
-            font-size: 0.8rem;
-            color: #b0b0b0;
-            margin-bottom: 0.5rem;
-        }
-
-        .topic-cluster-episodes {
-            font-size: 0.75rem;
-            color: #a0a0a0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .topic-cluster.expanded .topic-cluster-episodes {
-            max-height: 500px;
-            margin-top: 0.5rem;
-        }
-
-        .topic-episode-item {
-            padding: 0.3rem 0;
-            color: #b0b0b0;
-        }
-
-        .topic-browser-toggle {
-            position: fixed;
-            right: 20px;
-            bottom: 80px;
-            background: rgba(156, 39, 176, 0.9);
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            font-size: 0.9rem;
-            z-index: 99;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .topic-browser-toggle:hover {
-            background: rgba(156, 39, 176, 1);
-            transform: scale(1.05);
-        }
-
-        @media (max-width: 768px) {
-            .topic-sidebar {
-                width: 100%;
-                max-width: 100%;
-            }
-
-            .sidebar-header {
-                padding: 1.2rem 1rem;
-            }
-
-            .sidebar-header h3 {
-                font-size: 1.15rem;
-            }
-
-            .sidebar-content {
-                padding: 1rem;
-            }
-
-            .topic-cluster {
-                padding: 1.1rem;
-                margin-bottom: 0.85rem;
-            }
-
-            .topic-cluster-title {
-                font-size: 1rem;
-            }
-
-            .topic-cluster-count {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.7rem;
-            }
-
-            .topic-cluster-keywords {
-                font-size: 0.85rem;
-            }
-
-            .topic-episode-item {
-                font-size: 0.85rem;
-                padding: 0.4rem 0;
-            }
-
-            .topic-browser-toggle {
-                bottom: 90px;
-                right: 16px;
-                padding: 14px 24px;
-                font-size: 1rem;
-                min-height: 48px;
-            }
-        }
-    </style>
+    <meta name="description" content="Interactive network visualizations of podcast conversations — explore entity relationships, topics, and sentiment across episodes.">
+    <meta property="og:title" content="Podcast Conversation Graphs">
+    <meta property="og:description" content="Interactive network visualizations of podcast conversations">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="lib/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="header">
+    <a href="#main" class="skip-link">Skip to content</a>
+
+    <header class="header">
         <div class="container">
             <h1>📊 Podcast Conversation Graphs</h1>
-            <p class="mb-0">Interactive network visualizations of podcast conversations</p>
-            <p class="header-stats mt-2 mb-0">
-                <span id="totalStats">Loading...</span>
-            </p>
+            <p class="header-subtitle">Interactive network visualizations of podcast conversations</p>
+            <p class="header-stats" id="totalStats">Loading...</p>
         </div>
-    </div>
+    </header>
 
-    <!-- Sticky Navigation & Filters -->
-    <div class="nav-filters">
+    <!-- Toolbar: search + type filters on one row -->
+    <nav class="toolbar" aria-label="Filters">
         <div class="container">
-            <div class="filter-container">
-                <div class="filter-chips">
-                    <button class="filter-chip active" data-filter="all" aria-pressed="true" onclick="filterByType('all', this)">
-                        All Episodes
-                    </button>
-                    <button class="filter-chip" data-filter="summary" aria-pressed="false" onclick="filterByType('summary', this)">
-                        Summaries Only
-                    </button>
-                    <button class="filter-chip" data-filter="episode" aria-pressed="false" onclick="filterByType('episode', this)">
-                        Episodes Only
-                    </button>
+            <div class="toolbar-row">
+                <div class="search-wrap">
+                    <span class="search-icon" aria-hidden="true">⌕</span>
+                    <input type="search" id="searchBox" class="search-box" placeholder="Search episodes…" aria-label="Search episodes">
+                    <button class="search-clear hidden" id="searchClear" aria-label="Clear search">✕</button>
                 </div>
-
-                <div class="quick-links">
-                    <a href="#" class="quick-link" onclick="scrollToTop(); return false;">↑ Top</a>
+                <div class="type-chips" id="typeFilterChips" role="group" aria-label="Type filter">
+                    <button class="chip chip--type active" data-filter="all" aria-pressed="true">All</button>
+                    <button class="chip chip--type" data-filter="summary" aria-pressed="false">Summaries</button>
+                    <button class="chip chip--type" data-filter="episode" aria-pressed="false">Episodes</button>
                 </div>
             </div>
-
-            <!-- Topic Filters (populated dynamically) -->
-            <div id="topicFilters" style="display: none; margin-top: 1rem;">
-                <div class="filter-container">
-                    <div class="filter-chips" id="topicFilterChips">
-                        <!-- Topic filter chips added here -->
-                    </div>
-                </div>
+            <!-- Show tabs (populated by JS) -->
+            <div class="show-tabs-wrap" id="showTabsWrap" style="display:none;">
+                <div class="show-tabs" id="showTabs" role="tablist" aria-label="Podcast shows"></div>
             </div>
+            <!-- Topic dropdown (populated by JS) -->
+            <div class="topic-dropdown-wrap" id="topicDropdownWrap" style="display:none;">
+                <button class="topic-dropdown-toggle" id="topicDropdownToggle" aria-expanded="false" aria-haspopup="listbox">
+                    <span class="topic-dropdown-label">All Topics</span>
+                    <span class="topic-dropdown-caret" aria-hidden="true">▾</span>
+                </button>
+                <div class="topic-dropdown-menu" id="topicDropdownMenu" role="listbox" aria-label="Topic filter"></div>
+            </div>
+            <!-- Active filter bar -->
+            <div id="filterStatus" class="filter-bar" aria-live="polite" aria-atomic="true" style="display:none;"></div>
         </div>
-    </div>
+    </nav>
+
+    <!-- Sidebar backdrop -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
 
     <!-- Topic Browser Sidebar -->
-    <div id="topicSidebar" class="topic-sidebar" role="complementary" aria-label="Topics browser" style="display: none;">
+    <aside id="topicSidebar" class="topic-sidebar" role="complementary" aria-label="Topics browser">
         <div class="sidebar-header">
             <h3>📚 Topics Browser</h3>
-            <button class="close-sidebar" aria-label="Close topics browser" onclick="toggleTopicSidebar()">✕</button>
+            <button class="close-sidebar" id="closeSidebarBtn" aria-label="Close topics browser">✕</button>
         </div>
-        <div class="sidebar-content" id="topicBrowserContent">
-            <!-- Topic clusters populated here -->
-        </div>
-    </div>
+        <div class="sidebar-content" id="topicBrowserContent"></div>
+    </aside>
 
-    <!-- Topic Browser Toggle Button -->
-    <button id="topicBrowserToggle" class="topic-browser-toggle" aria-expanded="false" aria-controls="topicSidebar" onclick="toggleTopicSidebar()" style="display: none;">
-        📚 Topics
+    <!-- Topic Browser Toggle (FAB) -->
+    <button id="topicBrowserToggle" class="fab fab--topics" aria-expanded="false" aria-controls="topicSidebar" style="display:none;">
+        📚 <span class="fab-label">Topics</span> <span class="kbd-hint">T</span>
     </button>
 
-    <div class="container">
-        <input type="text" id="searchBox" class="search-box" placeholder="🔍 Search episodes..." aria-label="Search episodes">
-
+    <main class="container" id="main">
         <div id="showsContainer">
             <div class="loading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3">Loading graphs...</p>
+                <div class="spinner"></div>
+                <p>Loading graphs…</p>
             </div>
         </div>
-
-        <div id="noResults" class="no-results" style="display: none;">
-            No episodes found matching your search or filter criteria.
+        <div id="noResults" class="empty-state" role="status" style="display:none;">
+            <span class="empty-icon">🔍</span>
+            <div class="empty-title">No episodes found</div>
+            <p class="empty-body">No episodes match your current filters.</p>
+            <div class="empty-actions">
+                <button class="btn-outline" id="noResultsClearAll">Clear all filters</button>
+                <button class="btn-outline" id="noResultsClearSearch">Clear search</button>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Scroll to Top Button -->
-    <button class="scroll-top" id="scrollTopBtn" aria-label="Scroll to top" onclick="scrollToTop()">↑</button>
+    <footer class="site-footer">
+        <div class="container">
+            Podcast Conversation Graphs &middot;
+            Built with <a href="https://github.com/visjs/vis-network" target="_blank" rel="noopener">vis-network</a>
+            &middot; <span class="kbd-hint">/</span> Search &middot; <span class="kbd-hint">T</span> Topics &middot; <span class="kbd-hint">Esc</span> Close
+        </div>
+    </footer>
+
+    <button class="fab fab--top" id="scrollTopBtn" aria-label="Scroll to top">↑</button>
+
+    <noscript>
+        <div style="text-align:center; padding:3rem; color:#e0e0e0;">
+            <h2>JavaScript Required</h2>
+            <p>This application requires JavaScript to load and display podcast conversation graphs.</p>
+        </div>
+    </noscript>
 
     <script>
+        'use strict';
+
+        const EPISODES_PER_PAGE = 24;
+
         let allShows = [];
+        let currentShowIdx = 0;   // which show tab is active (-1 = "All Shows")
         let currentFilter = 'all';
         let currentSearch = '';
         let topicsData = null;
         let currentTopicFilter = null;
+        let searchTimeout = null;
+
+        const _q = (sel) => document.querySelector(sel);
+        const _qa = (sel) => document.querySelectorAll(sel);
+
+        function escapeHTML(str) {
+            var el = document.createElement('span');
+            el.textContent = str;
+            return el.innerHTML;
+        }
 
         // === Load topics data ===
         async function loadTopics() {
             try {
-                const response = await fetch('graphs/topics.json');
-                if (response.ok) {
-                    topicsData = await response.json();
-                }
-            } catch (error) {
-                // topics.json is optional — ignore if missing
-            }
+                const r = await fetch('graphs/topics.json');
+                if (r.ok) topicsData = await r.json();
+            } catch (_) {}
         }
 
-        // === Fetch and display the graph index ===
+        // === Boot ===
         async function loadGraphs() {
             try {
-                // Load topics first
                 await loadTopics();
-
-                const response = await fetch('index.json');
-                if (!response.ok) {
-                    throw new Error(`Failed to load index.json: ${response.status}`);
-                }
-
-                const data = await response.json();
+                const r = await fetch('index.json');
+                if (!r.ok) throw new Error('Failed to load index.json: ' + r.status);
+                const data = await r.json();
                 allShows = data.shows;
-                displayGraphs(data);
-                setupSearch();
-                setupScrollButton();
 
-                // Setup topic filters if topics are available
+                _q('#totalStats').textContent =
+                    data.totalShows + ' show' + (data.totalShows !== 1 ? 's' : '') +
+                    ' · ' + data.totalEpisodes + ' episode' + (data.totalEpisodes !== 1 ? 's' : '');
+
+                buildShowTabs();
+                renderCurrentView();
+                setupEventListeners();
+
                 if (topicsData && topicsData.topics && topicsData.topics.length > 0) {
-                    setupTopicFilters();
+                    buildTopicDropdown();
                     setupTopicBrowser();
-                    document.getElementById('topicBrowserToggle').style.display = 'block';
+                    _q('#topicBrowserToggle').style.display = '';
                 }
             } catch (error) {
                 console.error('Error loading graphs:', error);
-                document.getElementById('showsContainer').innerHTML = `
-                    <div class="error">
-                        <strong>Error:</strong> Failed to load graph index.
-                        Make sure to run <code>uv run scripts/generate_index.py</code> first.
-                        <br><small>${error.message}</small>
-                    </div>
-                `;
+                _q('#showsContainer').innerHTML =
+                    '<div class="error-box"><strong>Error:</strong> Failed to load graph index. ' +
+                    'Run <code>uv run scripts/generate_index.py</code> first.' +
+                    '<br><small>' + error.message + '</small></div>';
             }
         }
 
-        function displayGraphs(data) {
-            // Update total stats
-            document.getElementById('totalStats').textContent =
-                `${data.totalShows} show${data.totalShows !== 1 ? 's' : ''} • ${data.totalEpisodes} episode${data.totalEpisodes !== 1 ? 's' : ''}`;
+        // === Show Tabs ===
+        function buildShowTabs() {
+            var wrap = _q('#showTabsWrap');
+            var tabs = _q('#showTabs');
+            if (allShows.length <= 1) {
+                currentShowIdx = 0;
+                wrap.style.display = 'none';
+                return;
+            }
+            wrap.style.display = '';
 
-            // Build HTML for all shows
-            let html = '';
+            // "All Shows" tab
+            var allTab = document.createElement('button');
+            allTab.className = 'show-tab';
+            allTab.dataset.idx = '-1';
+            allTab.setAttribute('role', 'tab');
+            allTab.setAttribute('aria-selected', 'false');
+            allTab.innerHTML = 'All Shows <span class="show-tab-count">' + allShows.reduce(function(s,sh){return s+sh.episodeCount;},0) + '</span>';
+            tabs.appendChild(allTab);
 
-            if (data.shows.length === 0) {
-                html = `
-                    <div class="podcast-section">
-                        <p class="text-center" style="color: #b0b0b0;">
-                            No graphs found. Run <code>uv run scripts/generate_entity_graphs.py</code> to generate graphs.
-                        </p>
-                    </div>
-                `;
-            } else {
-                data.shows.forEach(show => {
-                    html += `
-                        <div class="podcast-section" data-show="${show.name}">
-                            <h2>${show.displayName} <span class="stats">${show.episodeCount} episode${show.episodeCount !== 1 ? 's' : ''}</span></h2>
-                            <div class="episodes-list">
-                    `;
+            allShows.forEach(function(show, i) {
+                var btn = document.createElement('button');
+                btn.className = 'show-tab' + (i === 0 ? ' active' : '');
+                btn.dataset.idx = String(i);
+                btn.setAttribute('role', 'tab');
+                btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+                btn.innerHTML = escapeHTML(show.displayName) + ' <span class="show-tab-count">' + show.episodeCount + '</span>';
+                tabs.appendChild(btn);
+            });
+            currentShowIdx = 0;
+        }
 
-                    // Add per-topic summaries if available
-                    if (show.topicSummaries && show.topicSummaries.length > 0) {
-                        show.topicSummaries.forEach(topicSummary => {
-                            html += `
-                                <a href="${topicSummary.path}" class="episode-card" data-type="topic-summary">
-                                    <div class="episode-title">📊 ${topicSummary.title} <span class="badge-topic-summary">TOPIC SUMMARY</span></div>
-                                    <div class="episode-meta">Thematic network graph</div>
-                                </a>
-                            `;
-                        });
-                    }
+        // === Render ===
+        function renderCurrentView() {
+            var shows = currentShowIdx === -1 ? allShows : [allShows[currentShowIdx]];
+            var container = _q('#showsContainer');
+            var fragment = document.createDocumentFragment();
 
-                    // Add legacy summary link if available (and no topic summaries)
-                    if (show.summaryPath && (!show.topicSummaries || show.topicSummaries.length === 0)) {
-                        html += `
-                            <a href="${show.summaryPath}" class="episode-card" data-type="summary">
-                                <div class="episode-title">📈 Series Summary <span class="badge-summary">SUMMARY</span></div>
-                                <div class="episode-meta">Aggregate network graph across all episodes</div>
-                            </a>
-                        `;
-                    }
+            if (shows.length === 0 || !shows[0]) {
+                container.innerHTML = '<p class="text-center" style="color:var(--text-secondary);padding:3rem;">No graphs found.</p>';
+                return;
+            }
 
-                    // Add all episodes
-                    show.episodes.forEach(episode => {
-                        // Get topic tags for this episode
-                        let topicTags = '';
-                        let topicInfo = null;
-                        if (topicsData && topicsData.episode_topics) {
-                            const episodeName = episode.filename.replace('_graph.html', '').replace('_graph.json', '');
-                            topicInfo = topicsData.episode_topics[episodeName];
-                            if (topicInfo) {
-                                const topicLabel = topicInfo.topic_label || `Topic ${topicInfo.topic_id}`;
-                                topicTags = `<span class="topic-tag" data-topic-id="${topicInfo.topic_id}">${topicLabel}</span>`;
-                            }
-                        }
+            shows.forEach(function(show) {
+                var section = document.createElement('div');
+                section.className = 'show-section';
+                section.dataset.show = show.name;
 
-                        const isJson = episode.path.endsWith('.json');
-                        const cardClass = isJson ? 'episode-card json-episode' : 'episode-card';
-                        const metaText = isJson ? 'Episode graph data (JSON)' : 'Episode graph visualization';
-                        const badge = isJson ? ' <span class="badge-json">JSON</span>' : '';
+                // show heading (only when viewing "All Shows")
+                if (currentShowIdx === -1) {
+                    var heading = document.createElement('h2');
+                    heading.className = 'show-section-title';
+                    heading.innerHTML = escapeHTML(show.displayName) +
+                        ' <span class="show-section-count">' + show.episodeCount + ' episodes</span>';
+                    section.appendChild(heading);
+                }
 
-                        html += `
-                            <a href="${episode.path}" class="${cardClass}" data-type="episode" data-topic-id="${topicInfo ? topicInfo.topic_id : ''}">
-                                <div class="episode-title">${episode.title}${badge} ${topicTags}</div>
-                                <div class="episode-meta">${metaText}</div>
-                            </a>
-                        `;
+                var grid = document.createElement('div');
+                grid.className = 'card-grid';
+
+                // topic summaries first
+                if (show.topicSummaries && show.topicSummaries.length > 0) {
+                    show.topicSummaries.forEach(function(ts) {
+                        grid.appendChild(makeCard(ts.path, ts.title, 'topic-summary', null));
                     });
+                }
 
-                    html += `
-                            </div>
-                        </div>
-                    `;
+                // legacy summary
+                if (show.summaryPath && (!show.topicSummaries || show.topicSummaries.length === 0)) {
+                    grid.appendChild(makeCard(show.summaryPath, 'Series Summary', 'summary', null));
+                }
+
+                // episodes (paginated)
+                var episodes = show.episodes;
+                var initialCount = Math.min(EPISODES_PER_PAGE, episodes.length);
+                for (var i = 0; i < initialCount; i++) {
+                    grid.appendChild(makeEpisodeCard(episodes[i]));
+                }
+
+                if (episodes.length > EPISODES_PER_PAGE) {
+                    var btn = document.createElement('button');
+                    btn.className = 'load-more-btn';
+                    btn.dataset.showName = show.name;
+                    btn.dataset.offset = String(EPISODES_PER_PAGE);
+                    btn.textContent = 'Load ' + (episodes.length - EPISODES_PER_PAGE) + ' more episodes';
+                    grid.appendChild(btn);
+                }
+
+                section.appendChild(grid);
+                fragment.appendChild(section);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fragment);
+            applyFilters();
+        }
+
+        // === Card builders ===
+        function makeCard(href, title, type, topicId) {
+            var a = document.createElement('a');
+            a.href = href;
+            a.className = 'card';
+            a.dataset.type = type;
+            if (topicId != null) a.dataset.topicId = topicId;
+
+            var icon, badge, accent;
+            if (type === 'topic-summary') {
+                icon = '📊'; badge = 'TOPIC'; accent = 'card--topic';
+            } else {
+                icon = '📈'; badge = 'SUMMARY'; accent = 'card--summary';
+            }
+            a.classList.add(accent);
+
+            a.innerHTML =
+                '<div class="card-icon" aria-hidden="true">' + icon + '</div>' +
+                '<div class="card-body">' +
+                    '<div class="card-title">' + escapeHTML(title) + '</div>' +
+                    '<div class="card-meta">Thematic network graph</div>' +
+                '</div>' +
+                '<span class="card-badge card-badge--' + type + '">' + badge + '</span>';
+            return a;
+        }
+
+        function makeEpisodeCard(episode) {
+            var topicId = '';
+            var topicHTML = '';
+            if (topicsData && topicsData.episode_topics) {
+                var name = episode.filename.replace('_graph.html', '').replace('_graph.json', '');
+                var info = topicsData.episode_topics[name];
+                if (info) {
+                    topicId = String(info.topic_id);
+                    var label = info.curated_label || info.topic_label || ('Topic ' + info.topic_id);
+                    topicHTML = '<span class="card-topic" data-topic-id="' + info.topic_id + '">' + escapeHTML(label) + '</span>';
+                }
+            }
+
+            var a = document.createElement('a');
+            a.href = episode.path;
+            a.className = 'card card--episode';
+            a.dataset.type = 'episode';
+            if (topicId) a.dataset.topicId = topicId;
+
+            a.innerHTML =
+                '<div class="card-icon" aria-hidden="true">🎙️</div>' +
+                '<div class="card-body">' +
+                    '<div class="card-title">' + escapeHTML(episode.title) + '</div>' +
+                    '<div class="card-meta">Episode graph' + (topicHTML ? ' · ' + topicHTML : '') + '</div>' +
+                '</div>' +
+                '<span class="card-arrow" aria-hidden="true">→</span>';
+            return a;
+        }
+
+        // === Event Listeners ===
+        function setupEventListeners() {
+            // Type filter chips
+            _q('#typeFilterChips').addEventListener('click', function(e) {
+                var chip = e.target.closest('.chip');
+                if (!chip) return;
+                _qa('#typeFilterChips .chip').forEach(function(c) {
+                    c.classList.remove('active');
+                    c.setAttribute('aria-pressed', 'false');
+                });
+                chip.classList.add('active');
+                chip.setAttribute('aria-pressed', 'true');
+                currentFilter = chip.dataset.filter;
+                applyFilters();
+            });
+
+            // Show tabs
+            var tabsEl = _q('#showTabs');
+            if (tabsEl) {
+                tabsEl.addEventListener('click', function(e) {
+                    var tab = e.target.closest('.show-tab');
+                    if (!tab) return;
+                    _qa('.show-tab').forEach(function(t) {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+                    currentShowIdx = parseInt(tab.dataset.idx, 10);
+                    renderCurrentView();
+                    scrollToTop();
                 });
             }
 
-            document.getElementById('showsContainer').innerHTML = html;
+            // Search with debounce + clear button
+            var searchBox = _q('#searchBox');
+            var clearBtn = _q('#searchClear');
+            searchBox.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                var val = searchBox.value;
+                clearBtn.classList.toggle('hidden', !val);
+                searchTimeout = setTimeout(function() {
+                    currentSearch = val.toLowerCase();
+                    applyFilters();
+                }, 180);
+            });
+            clearBtn.addEventListener('click', function() {
+                searchBox.value = '';
+                clearBtn.classList.add('hidden');
+                currentSearch = '';
+                applyFilters();
+                searchBox.focus();
+            });
+
+            // Scroll button
+            var scrollBtn = _q('#scrollTopBtn');
+            window.addEventListener('scroll', function() {
+                scrollBtn.classList.toggle('visible', window.scrollY > 300);
+            }, { passive: true });
+            scrollBtn.addEventListener('click', scrollToTop);
+
+            // Topic browser toggle
+            _q('#topicBrowserToggle').addEventListener('click', toggleTopicSidebar);
+            _q('#closeSidebarBtn').addEventListener('click', toggleTopicSidebar);
+            _q('#sidebarBackdrop').addEventListener('click', toggleTopicSidebar);
+
+            // Load-more (delegated)
+            _q('#showsContainer').addEventListener('click', function(e) {
+                var btn = e.target.closest('.load-more-btn');
+                if (!btn) return;
+                var showName = btn.dataset.showName;
+                var offset = parseInt(btn.dataset.offset, 10);
+                var show = allShows.find(function(s) { return s.name === showName; });
+                if (!show) return;
+
+                var grid = btn.parentElement;
+                var next = show.episodes.slice(offset, offset + EPISODES_PER_PAGE);
+                next.forEach(function(ep) { grid.insertBefore(makeEpisodeCard(ep), btn); });
+
+                var newOffset = offset + next.length;
+                var remaining = show.episodes.length - newOffset;
+                if (remaining > 0) {
+                    btn.textContent = 'Load ' + remaining + ' more episodes';
+                    btn.dataset.offset = String(newOffset);
+                } else {
+                    btn.remove();
+                }
+                applyFilters();
+            });
+
+            // No-results actions
+            _q('#noResultsClearAll').addEventListener('click', clearAllFilters);
+            _q('#noResultsClearSearch').addEventListener('click', function() {
+                searchBox.value = '';
+                clearBtn.classList.add('hidden');
+                currentSearch = '';
+                applyFilters();
+                searchBox.focus();
+            });
+
+            // Filter status delegated clicks
+            _q('#filterStatus').addEventListener('click', function(e) {
+                var chip = e.target.closest('[data-clear]');
+                if (!chip) return;
+                var action = chip.dataset.clear;
+
+                if (action === 'type' || action === 'all') {
+                    currentFilter = 'all';
+                    _qa('#typeFilterChips .chip').forEach(function(c) {
+                        c.classList.remove('active');
+                        c.setAttribute('aria-pressed', 'false');
+                    });
+                    var allChip = _q('#typeFilterChips .chip[data-filter="all"]');
+                    if (allChip) { allChip.classList.add('active'); allChip.setAttribute('aria-pressed', 'true'); }
+                }
+                if (action === 'search' || action === 'all') {
+                    currentSearch = '';
+                    searchBox.value = '';
+                    clearBtn.classList.add('hidden');
+                }
+                if (action === 'topic' || action === 'all') {
+                    currentTopicFilter = null;
+                    _q('#topicDropdownToggle .topic-dropdown-label').textContent = 'All Topics';
+                }
+                applyFilters();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    if (e.key === 'Escape') e.target.blur();
+                    return;
+                }
+                if (e.key === '/') {
+                    e.preventDefault();
+                    searchBox.focus();
+                } else if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey) {
+                    toggleTopicSidebar();
+                } else if (e.key === 'Escape') {
+                    var sidebar = _q('#topicSidebar');
+                    if (sidebar && sidebar.classList.contains('open')) toggleTopicSidebar();
+                    closeTopicDropdown();
+                }
+            });
+
+            // Close topic dropdown on outside click
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.topic-dropdown-wrap')) closeTopicDropdown();
+            });
         }
 
-        function setupSearch() {
-            const searchBox = document.getElementById('searchBox');
+        // === Filters ===
+        function applyFilters() {
+            var sections = _qa('.show-section');
+            var totalVisible = 0;
+            var totalCards = 0;
 
-            searchBox.addEventListener('input', (e) => {
-                currentSearch = e.target.value.toLowerCase();
+            sections.forEach(function(section) {
+                var cards = section.querySelectorAll('.card');
+                var sectionVisible = false;
+
+                cards.forEach(function(card) {
+                    totalCards++;
+                    var title = card.querySelector('.card-title').textContent.toLowerCase();
+                    var type = card.dataset.type;
+                    var topicId = card.dataset.topicId;
+
+                    var matchesSearch = !currentSearch || title.includes(currentSearch);
+                    var matchesFilter =
+                        currentFilter === 'all' ||
+                        (currentFilter === 'summary' && (type === 'summary' || type === 'topic-summary')) ||
+                        (currentFilter === 'episode' && type === 'episode');
+                    var matchesTopic = currentTopicFilter === null ||
+                        (topicId && topicId === String(currentTopicFilter));
+
+                    var visible = matchesSearch && matchesFilter && matchesTopic;
+                    card.classList.toggle('hidden', !visible);
+                    if (visible) { sectionVisible = true; totalVisible++; }
+                });
+
+                section.style.display = sectionVisible ? '' : 'none';
+            });
+
+            // Active filter bar
+            var status = _q('#filterStatus');
+            var isFiltered = currentSearch || currentFilter !== 'all' || currentTopicFilter !== null;
+
+            if (isFiltered) {
+                var html = '<span class="filter-bar-text">Showing <strong>' + totalVisible + '</strong> of ' + totalCards + '</span>';
+
+                if (currentFilter !== 'all') {
+                    html += '<button class="filter-pill" data-clear="type">' +
+                        (currentFilter === 'summary' ? 'Summaries' : 'Episodes') + ' ✕</button>';
+                }
+                if (currentSearch) {
+                    html += '<button class="filter-pill" data-clear="search">"' + escapeHTML(currentSearch) + '" ✕</button>';
+                }
+                if (currentTopicFilter !== null) {
+                    var tl = 'Topic ' + currentTopicFilter;
+                    if (topicsData && topicsData.topics) {
+                        var t = topicsData.topics.find(function(tp) { return tp.topic_id === currentTopicFilter; });
+                        if (t) tl = t.curated_label || t.topic_label || tl;
+                    }
+                    html += '<button class="filter-pill filter-pill--topic" data-clear="topic">' + escapeHTML(tl) + ' ✕</button>';
+                }
+                html += '<button class="filter-pill filter-pill--clear" data-clear="all">Clear all</button>';
+                status.innerHTML = html;
+                status.style.display = '';
+            } else {
+                status.innerHTML = '';
+                status.style.display = 'none';
+            }
+
+            _q('#noResults').style.display = (totalVisible === 0 && totalCards > 0) ? '' : 'none';
+        }
+
+        function clearAllFilters() {
+            currentFilter = 'all';
+            currentSearch = '';
+            currentTopicFilter = null;
+            _q('#searchBox').value = '';
+            _q('#searchClear').classList.add('hidden');
+
+            _qa('#typeFilterChips .chip').forEach(function(c) {
+                c.classList.remove('active');
+                c.setAttribute('aria-pressed', 'false');
+            });
+            var allChip = _q('#typeFilterChips .chip[data-filter="all"]');
+            if (allChip) { allChip.classList.add('active'); allChip.setAttribute('aria-pressed', 'true'); }
+
+            var lbl = _q('#topicDropdownToggle .topic-dropdown-label');
+            if (lbl) lbl.textContent = 'All Topics';
+
+            applyFilters();
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // === Topic Dropdown (replaces inline chips) ===
+        function buildTopicDropdown() {
+            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) return;
+            var wrap = _q('#topicDropdownWrap');
+            var menu = _q('#topicDropdownMenu');
+            var toggle = _q('#topicDropdownToggle');
+            wrap.style.display = '';
+
+            // build options
+            var allOpt = document.createElement('div');
+            allOpt.className = 'topic-option active';
+            allOpt.dataset.topicId = 'all';
+            allOpt.setAttribute('role', 'option');
+            allOpt.setAttribute('aria-selected', 'true');
+            allOpt.textContent = 'All Topics';
+            menu.appendChild(allOpt);
+
+            topicsData.topics.forEach(function(topic) {
+                var label = topic.curated_label || topic.topic_label || ('Topic ' + topic.topic_id);
+                var opt = document.createElement('div');
+                opt.className = 'topic-option';
+                opt.dataset.topicId = String(topic.topic_id);
+                opt.setAttribute('role', 'option');
+                opt.setAttribute('aria-selected', 'false');
+                opt.innerHTML = escapeHTML(label) + ' <span class="topic-option-count">' + (topic.episode_count || 0) + '</span>';
+                menu.appendChild(opt);
+            });
+
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var open = menu.classList.toggle('open');
+                toggle.setAttribute('aria-expanded', String(open));
+            });
+
+            menu.addEventListener('click', function(e) {
+                var opt = e.target.closest('.topic-option');
+                if (!opt) return;
+                _qa('.topic-option').forEach(function(o) {
+                    o.classList.remove('active');
+                    o.setAttribute('aria-selected', 'false');
+                });
+                opt.classList.add('active');
+                opt.setAttribute('aria-selected', 'true');
+
+                var id = opt.dataset.topicId;
+                currentTopicFilter = id === 'all' ? null : parseInt(id, 10);
+                toggle.querySelector('.topic-dropdown-label').textContent = opt.textContent.replace(/\d+$/, '').trim() || 'All Topics';
+                closeTopicDropdown();
                 applyFilters();
             });
         }
 
-        function filterByType(type, element) {
-            // Update active state and aria-pressed
-            document.querySelectorAll('.filter-chips > .filter-chip').forEach(chip => {
-                chip.classList.remove('active');
-                chip.setAttribute('aria-pressed', 'false');
-            });
-            element.classList.add('active');
-            element.setAttribute('aria-pressed', 'true');
-
-            currentFilter = type;
-            applyFilters();
+        function closeTopicDropdown() {
+            var menu = _q('#topicDropdownMenu');
+            if (menu) { menu.classList.remove('open'); }
+            var tog = _q('#topicDropdownToggle');
+            if (tog) tog.setAttribute('aria-expanded', 'false');
         }
 
-        function applyFilters() {
-            const sections = document.querySelectorAll('.podcast-section');
-            let hasVisibleContent = false;
+        // === Topic Browser Sidebar ===
+        function setupTopicBrowser() {
+            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) return;
 
-            sections.forEach(section => {
-                const episodeCards = section.querySelectorAll('.episode-card');
-                let sectionHasVisible = false;
+            var content = _q('#topicBrowserContent');
+            var fragment = document.createDocumentFragment();
 
-                episodeCards.forEach(card => {
-                    const title = card.querySelector('.episode-title').textContent.toLowerCase();
-                    const type = card.dataset.type;
-                    const topicId = card.dataset.topicId;
+            topicsData.topics.forEach(function(topic) {
+                var label = topic.curated_label || topic.topic_label || ('Topic ' + topic.topic_id);
+                var keywords = topic.topic_words ? topic.topic_words.slice(0, 5).join(', ') : '';
+                var episodes = topic.episodes || [];
 
-                    // Check search
-                    const matchesSearch = !currentSearch || title.includes(currentSearch);
+                var cluster = document.createElement('div');
+                cluster.className = 'topic-cluster';
+                cluster.dataset.topicId = String(topic.topic_id);
 
-                    // Check type filter
-                    const matchesFilter =
-                        currentFilter === 'all' ||
-                        (currentFilter === 'summary' && (type === 'summary' || type === 'topic-summary')) ||
-                        (currentFilter === 'episode' && type === 'episode');
+                var episodeItems = episodes.slice(0, 10).map(function(ep) {
+                    return '<div class="topic-ep">• ' + escapeHTML(ep.replace(/_/g, ' ')) + '</div>';
+                }).join('');
 
-                    // Check topic filter
-                    const matchesTopic = currentTopicFilter === null ||
-                                       (topicId && topicId === String(currentTopicFilter));
+                var moreText = episodes.length > 10
+                    ? '<div class="topic-ep" style="font-style:italic;">…and ' + (episodes.length - 10) + ' more</div>'
+                    : '';
 
-                    const isVisible = matchesSearch && matchesFilter && matchesTopic;
-                    card.style.display = isVisible ? 'block' : 'none';
+                cluster.innerHTML =
+                    '<div class="topic-cluster-header">' +
+                        '<span class="topic-cluster-title">' + escapeHTML(label) + '</span>' +
+                        '<span class="topic-cluster-count">' + (topic.episode_count || 0) + '</span>' +
+                    '</div>' +
+                    (keywords ? '<div class="topic-cluster-kw">' + escapeHTML(keywords) + '</div>' : '') +
+                    '<div class="topic-cluster-body">' + episodeItems + moreText + '</div>';
 
-                    if (isVisible) {
-                        sectionHasVisible = true;
-                        hasVisibleContent = true;
+                fragment.appendChild(cluster);
+            });
+
+            content.innerHTML = '';
+            content.appendChild(fragment);
+
+            content.addEventListener('click', function(e) {
+                var cluster = e.target.closest('.topic-cluster');
+                if (!cluster) return;
+                cluster.classList.toggle('expanded');
+                var topicId = parseInt(cluster.dataset.topicId, 10);
+                currentTopicFilter = topicId;
+
+                // sync dropdown
+                var lbl = _q('#topicDropdownToggle .topic-dropdown-label');
+                if (lbl) {
+                    var t = topicsData.topics.find(function(tp) { return tp.topic_id === topicId; });
+                    lbl.textContent = t ? (t.curated_label || t.topic_label || 'Topic ' + topicId) : 'Topic ' + topicId;
+                }
+                _qa('.topic-option').forEach(function(o) {
+                    o.classList.remove('active');
+                    o.setAttribute('aria-selected', 'false');
+                    if (o.dataset.topicId === String(topicId)) {
+                        o.classList.add('active');
+                        o.setAttribute('aria-selected', 'true');
                     }
                 });
 
-                section.style.display = sectionHasVisible ? 'block' : 'none';
+                applyFilters();
+                scrollToTop();
             });
-
-            // Show/hide no results message
-            document.getElementById('noResults').style.display =
-                hasVisibleContent ? 'none' : 'block';
-        }
-
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        function setupTopicFilters() {
-            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) {
-                return;
-            }
-
-            const topicFiltersContainer = document.getElementById('topicFilters');
-            const topicFilterChips = document.getElementById('topicFilterChips');
-
-            // Add "All Topics" chip
-            let html = `
-                <button class="filter-chip active" data-topic-id="all" aria-pressed="true" onclick="filterByTopic(null, this)">
-                    All Topics
-                </button>
-            `;
-
-            // Add chips for each topic
-            topicsData.topics.forEach(topic => {
-                const label = topic.topic_label || `Topic ${topic.topic_id}`;
-                const count = topic.episode_count || 0;
-                html += `
-                    <button class="filter-chip" data-topic-id="${topic.topic_id}" aria-pressed="false" onclick="filterByTopic(${topic.topic_id}, this)">
-                        ${label} (${count})
-                    </button>
-                `;
-            });
-
-            topicFilterChips.innerHTML = html;
-            topicFiltersContainer.style.display = 'block';
-        }
-
-        function filterByTopic(topicId, element) {
-            // Update active state and aria-pressed for topic chips
-            document.querySelectorAll('#topicFilterChips .filter-chip').forEach(chip => {
-                chip.classList.remove('active');
-                chip.setAttribute('aria-pressed', 'false');
-            });
-            if (element) {
-                element.classList.add('active');
-                element.setAttribute('aria-pressed', 'true');
-            }
-
-            currentTopicFilter = topicId;
-            applyFilters();
-        }
-
-        function setupTopicBrowser() {
-            if (!topicsData || !topicsData.topics || topicsData.topics.length === 0) {
-                return;
-            }
-
-            const browserContent = document.getElementById('topicBrowserContent');
-            let html = '';
-
-            topicsData.topics.forEach(topic => {
-                const label = topic.topic_label || `Topic ${topic.topic_id}`;
-                const count = topic.episode_count || 0;
-                const keywords = topic.topic_words ? topic.topic_words.slice(0, 5).join(', ') : '';
-                const episodes = topic.episodes || [];
-
-                html += `
-                    <div class="topic-cluster" onclick="toggleTopicCluster(this); filterByTopicFromSidebar(${topic.topic_id});">
-                        <div class="topic-cluster-header">
-                            <div class="topic-cluster-title">${label}</div>
-                            <div class="topic-cluster-count">${count} episodes</div>
-                        </div>
-                        <div class="topic-cluster-keywords">Keywords: ${keywords}</div>
-                        <div class="topic-cluster-episodes">
-                            ${episodes.slice(0, 10).map(ep => `<div class="topic-episode-item">• ${ep.replace(/_/g, ' ')}</div>`).join('')}
-                            ${episodes.length > 10 ? `<div class="topic-episode-item" style="font-style: italic;">...and ${episodes.length - 10} more</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-
-            browserContent.innerHTML = html;
-        }
-
-        function toggleTopicCluster(element) {
-            element.classList.toggle('expanded');
-            event.stopPropagation();
-        }
-
-        function filterByTopicFromSidebar(topicId) {
-            currentTopicFilter = topicId;
-
-            // Update active state in topic filter chips
-            document.querySelectorAll('#topicFilterChips .filter-chip').forEach(chip => {
-                chip.classList.remove('active');
-                if (chip.dataset.topicId === String(topicId)) {
-                    chip.classList.add('active');
-                }
-            });
-
-            applyFilters();
-            scrollToTop();
         }
 
         function toggleTopicSidebar() {
-            const sidebar = document.getElementById('topicSidebar');
-            const toggle = document.getElementById('topicBrowserToggle');
-            sidebar.classList.toggle('open');
-            const isOpen = sidebar.classList.contains('open');
-            if (toggle) {
-                toggle.setAttribute('aria-expanded', String(isOpen));
+            var sidebar = _q('#topicSidebar');
+            var toggle = _q('#topicBrowserToggle');
+            var backdrop = _q('#sidebarBackdrop');
+            var opening = !sidebar.classList.contains('open');
+
+            if (opening) {
+                sidebar.style.display = '';
+                sidebar.offsetHeight;
+            }
+
+            sidebar.classList.toggle('open', opening);
+            backdrop.classList.toggle('visible', opening);
+            document.body.style.overflow = opening ? 'hidden' : '';
+            if (toggle) toggle.setAttribute('aria-expanded', String(opening));
+
+            if (!opening) {
+                sidebar.addEventListener('transitionend', function handler() {
+                    if (!sidebar.classList.contains('open')) sidebar.style.display = 'none';
+                    sidebar.removeEventListener('transitionend', handler);
+                });
             }
         }
 
-        function setupScrollButton() {
-            const scrollBtn = document.getElementById('scrollTopBtn');
-
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) {
-                    scrollBtn.classList.add('visible');
-                } else {
-                    scrollBtn.classList.remove('visible');
-                }
-            });
-        }
-
-        // Close sidebar on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const sidebar = document.getElementById('topicSidebar');
-                if (sidebar && sidebar.classList.contains('open')) {
-                    toggleTopicSidebar();
-                }
-            }
-        });
-
-        // Load graphs when page loads
         document.addEventListener('DOMContentLoaded', loadGraphs);
     </script>
 </body>
