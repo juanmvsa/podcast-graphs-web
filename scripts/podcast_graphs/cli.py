@@ -299,7 +299,10 @@ def generate_entity_graphs(
                 show_persons.update(graph_data.persons)
                 show_places.update(graph_data.places)
 
-                all_episode_graphs[episode_name] = {"graph": graph, "show": show_name}
+                # key by show/episode so identically named episodes in different
+                # shows do not overwrite each other.
+                episode_key = f"{show_name}/{episode_name}"
+                all_episode_graphs[episode_key] = {"graph": graph, "show": show_name}
 
                 # collect text for topic clustering
                 try:
@@ -309,7 +312,7 @@ def generate_entity_graphs(
                         episode_text = prepare_topic_document(segments)
                         if episode_text.strip():
                             episodes_for_clustering.append({
-                                "name": episode_name,
+                                "name": episode_key,
                                 "show": show_name,
                                 "text": episode_text,
                                 "file": str(episode_file),

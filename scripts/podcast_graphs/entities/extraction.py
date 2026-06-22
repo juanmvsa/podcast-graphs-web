@@ -77,7 +77,7 @@ def extract_episode_entities(
     valid_segments: list[tuple[int, TranscriptSegment]] = []
     texts: list[str] = []
     for seg_idx, segment in enumerate(segments):
-        text = segment.get("text", "")
+        text = segment.text
         if not text.strip():
             continue
         valid_segments.append((seg_idx, segment))
@@ -92,19 +92,19 @@ def extract_episode_entities(
         all_persons.update(persons)
         all_places.update(places)
 
-        text_snippet = segment.get("text", "")[:MAX_SEGMENT_TEXT]
-        if len(segment.get("text", "")) > MAX_SEGMENT_TEXT:
+        text_snippet = segment.text[:MAX_SEGMENT_TEXT]
+        if len(segment.text) > MAX_SEGMENT_TEXT:
             text_snippet += "..."
 
         segment_entities.append(
             SegmentEntities(
-                speaker=segment.get("speaker", ""),
-                speaker_name=segment.get("speaker_name", ""),
+                speaker=segment.speaker,
+                speaker_name=segment.speaker_name,
                 persons=sorted(persons),
                 places=sorted(places),
                 text=text_snippet,
                 segment_index=seg_idx,
-                timestamp=segment.get("start", 0),
+                timestamp=segment.start,
             )
         )
 
@@ -141,11 +141,11 @@ def extract_episode_entities(
     # apply resolution to per-segment entities
     blocked = (global_person_blocklist or set()) | (global_place_blocklist or set()) | overlap
     for seg in segment_entities:
-        seg["persons"] = sorted(
-            apply_name_resolution(set(seg["persons"]), person_resolution) - blocked
+        seg.persons = sorted(
+            apply_name_resolution(set(seg.persons), person_resolution) - blocked
         )
-        resolved_places = apply_name_resolution(set(seg["places"]), place_resolution)
-        seg["places"] = sorted(resolved_places - blocked - overlap)
+        resolved_places = apply_name_resolution(set(seg.places), place_resolution)
+        seg.places = sorted(resolved_places - blocked - overlap)
 
     return EntityResult(
         persons=sorted(all_persons),

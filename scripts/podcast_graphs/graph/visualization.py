@@ -987,7 +987,7 @@ def visualize_graph(
         ]
 
         if speakers:
-            hover_parts.append(f"Discussed by: {', '.join(set(speakers))}")
+            hover_parts.append(f"Discussed by: {', '.join(sorted(set(speakers)))}")
 
         # add narrative context snippets
         if contexts:

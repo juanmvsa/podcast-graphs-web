@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import networkx as nx
+from pydantic import ValidationError
 
 from podcast_graphs.constants import AMBIGUOUS_GEO_NAMES
 from podcast_graphs.entities.extraction import (
@@ -175,9 +176,21 @@ def process_episode(
         logger.error("failed to read %s: %s", transcript_path, e)
         return None
 
-    segments: list[TranscriptSegment] = data.get("segments", [])
-    if not segments:
+    raw_segments = data.get("segments", [])
+    if not raw_segments:
         logger.warning("no segments in %s", transcript_path.name)
+        return None
+
+    # validate raw transcript dicts into typed models, skipping malformed ones
+    # (empty text, end <= start, etc.) rather than crashing the whole episode.
+    segments: list[TranscriptSegment] = []
+    for raw in raw_segments:
+        try:
+            segments.append(TranscriptSegment(**raw))
+        except (ValidationError, TypeError) as e:
+            logger.warning("skipping invalid segment in %s: %s", transcript_path.name, e)
+    if not segments:
+        logger.warning("no valid segments in %s", transcript_path.name)
         return None
 
     episode_name = transcript_path.stem
@@ -379,9 +392,14 @@ def apply_topic_curations(
             if tid in curated_labels:
                 ep_data["curated_label"] = curated_labels[tid]
 
-        # remove discarded topics
+        # remove discarded topics and merged-away source topics from the summary
+        # list (their episodes were reassigned to the merge target above).
+        merged_sources = set(merge_map.keys())
         topic_results["topics"] = [
-            t for t in topic_results["topics"] if t["topic_id"] not in discarded_ids
+            t
+            for t in topic_results["topics"]
+            if t["topic_id"] not in discarded_ids
+            and t["topic_id"] not in merged_sources
         ]
         topic_results["episode_topics"] = {
             ep: data
@@ -389,10 +407,21 @@ def apply_topic_curations(
             if data["topic_id"] not in discarded_ids
         }
 
+        # recompute each surviving topic's episode membership from the remapped
+        # episode_topics so merge targets pick up their merged-in episodes.
+        episodes_by_topic: dict[int, list[str]] = {}
+        for ep, data in topic_results["episode_topics"].items():
+            episodes_by_topic.setdefault(data["topic_id"], []).append(ep)
+        for topic in topic_results["topics"]:
+            members = episodes_by_topic.get(topic["topic_id"], [])
+            topic["episodes"] = members
+            topic["episode_count"] = len(members)
+
         # recalculate metrics
         updated_diversity = compute_topic_diversity(topic_results.get("topics", []))
-        topic_results["metrics"]["num_topics"] = len(topic_results.get("topics", []))
-        topic_results["metrics"]["topic_diversity"] = round(updated_diversity, 3)
+        metrics = topic_results.setdefault("metrics", {})
+        metrics["num_topics"] = len(topic_results.get("topics", []))
+        metrics["topic_diversity"] = round(updated_diversity, 3)
 
         console.print(
             f"[dim]Applied curated labels from {labels_path} "

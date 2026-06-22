@@ -33,7 +33,9 @@ def _add_or_update_association_edge(
         edge_data = graph[person][place]
         edge_data["weight"] += 1
         if len(edge_data.get("contexts", [])) < MAX_CONTEXTS_PER_EDGE:
-            sentiment = analyze_sentiment(text)
+            # store sentiment as a plain dict so edge contexts stay json-shaped
+            # for both visualization and serialization.
+            sentiment = analyze_sentiment(text).model_dump()
             edge_data.setdefault("contexts", []).append({
                 "text": text,
                 "speaker": speaker,
@@ -44,7 +46,9 @@ def _add_or_update_association_edge(
         if speaker and speaker not in edge_data.get("speakers", []):
             edge_data.setdefault("speakers", []).append(speaker)
     else:
-        sentiment = analyze_sentiment(text)
+        # store sentiment as a plain dict so edge contexts stay json-shaped
+        # for both visualization and serialization.
+        sentiment = analyze_sentiment(text).model_dump()
         graph.add_edge(
             person,
             place,
@@ -78,12 +82,12 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
     total_segments = len(entity_result.segment_entities)
 
     for seg_ents in entity_result.segment_entities:
-        persons_in_seg = seg_ents["persons"]
-        places_in_seg = seg_ents["places"]
-        speaker = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
-        text = seg_ents.get("text", "")
-        seg_idx = seg_ents.get("segment_index", 0)
-        timestamp = seg_ents.get("timestamp", 0)
+        persons_in_seg = seg_ents.persons
+        places_in_seg = seg_ents.places
+        speaker = seg_ents.speaker_name or seg_ents.speaker or ""
+        text = seg_ents.text or ""
+        seg_idx = seg_ents.segment_index or 0
+        timestamp = seg_ents.timestamp or 0
 
         # calculate temporal position
         position_pct = (seg_idx / total_segments) * 100 if total_segments > 0 else 0
@@ -100,7 +104,7 @@ def build_episode_graph(entity_result: EntityResult) -> nx.DiGraph:
         if persons_in_seg:
             active_persons = persons_in_seg
         else:
-            speaker_name = seg_ents.get("speaker_name") or seg_ents.get("speaker", "")
+            speaker_name = seg_ents.speaker_name or seg_ents.speaker or ""
             if not speaker_name:
                 continue
             speaker_normalized = normalize_entity(speaker_name)

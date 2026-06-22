@@ -111,11 +111,7 @@ def is_garbage_entity(text: str, entity_type: str = "") -> bool:
 
 def _contains_org_or_brand(lower_text: str) -> bool:
     """Check if text contains a known org/brand name as a substring."""
-    all_orgs = ORG_AS_PERSON | frozenset({
-        "blueland", "bud light", "youtube", "instagram",
-        "spotify", "netflix", "reddit", "tiktok", "facebook",
-    })
-    for org in all_orgs:
+    for org in ORG_AS_PERSON:
         if len(org) >= 4 and org in lower_text and lower_text != org:
             return True
     return False

@@ -51,3 +51,28 @@ export interface TopicsData {
 export type FilterType = 'all' | 'summary' | 'episode';
 
 export type CardType = 'episode' | 'summary' | 'topic-summary';
+
+// per-graph edge data, matching the backend SerializedEdge json shape.
+export interface Sentiment {
+  label: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
+  score: number;
+  emoji: string;
+}
+
+export interface Context {
+  text: string;
+  speaker: string;
+  temporal: 'early' | 'middle' | 'late';
+  timestamp: number;
+  sentiment: Sentiment;
+  person?: string | null;
+}
+
+export interface Edge {
+  source: string;
+  target: string;
+  weight: number;
+  relation: string;
+  speakers: string[];
+  contexts: Context[];
+}

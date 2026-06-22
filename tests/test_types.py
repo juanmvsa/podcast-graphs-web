@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from podcast_graphs.types import SentimentResult, TranscriptSegment, ContextEntry, SerializedEdge
+from podcast_graphs.types import ContextEntry, SentimentResult, SerializedEdge, TranscriptSegment
 
 
 class TestSentimentResult:

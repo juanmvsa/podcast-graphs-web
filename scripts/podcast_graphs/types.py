@@ -7,7 +7,7 @@ and topic modeling.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Literal, TypedDict
 
@@ -224,10 +224,17 @@ class EpisodeGraphData:
 
     def to_dict(self) -> dict[str, object]:
         """Convert to a JSON-serializable dictionary."""
-        data = asdict(self)
-        # asdict cannot recurse into pydantic models, so dump edges explicitly.
-        data["edges"] = [edge.model_dump(mode="json") for edge in self.edges]
-        return data
+        # build the dict directly so pydantic edge models are dumped once and
+        # not deep-copied by dataclasses.asdict first.
+        return {
+            "episode": self.episode,
+            "show": self.show,
+            "persons": self.persons,
+            "places": self.places,
+            "nodes": self.nodes,
+            "adjacency_matrix": self.adjacency_matrix,
+            "edges": [edge.model_dump(mode="json") for edge in self.edges],
+        }
 
 
 @dataclass
@@ -244,10 +251,17 @@ class ShowGraphData:
 
     def to_dict(self) -> dict[str, object]:
         """Convert to a JSON-serializable dictionary."""
-        data = asdict(self)
-        # asdict cannot recurse into pydantic models, so dump edges explicitly.
-        data["edges"] = [edge.model_dump(mode="json") for edge in self.edges]
-        return data
+        # build the dict directly so pydantic edge models are dumped once and
+        # not deep-copied by dataclasses.asdict first.
+        return {
+            "show": self.show,
+            "episode_count": self.episode_count,
+            "persons": self.persons,
+            "places": self.places,
+            "nodes": self.nodes,
+            "adjacency_matrix": self.adjacency_matrix,
+            "edges": [edge.model_dump(mode="json") for edge in self.edges],
+        }
 
 
 @dataclass
