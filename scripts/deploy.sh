@@ -9,7 +9,8 @@
 #      only needs .html visualizations; keeps site under 20K file limit)
 #   4. Regenerating index.json inside site/ from the synced graphs
 #   5. Validating all files are under Cloudflare's 25 MB limit
-#   6. Deploying site/ to Cloudflare Pages
+#   6. Guarding against Cloudflare's 20,000-file-per-deployment limit
+#   7. Deploying site/ to Cloudflare Pages
 #
 # Usage: ./scripts/deploy.sh [extra wrangler flags]
 
@@ -56,7 +57,23 @@ echo "🔍 Validating deployment files..."
 uv run scripts/validate_deployment.py
 echo ""
 
-# 6. Deploy
+# 6. Guard against Cloudflare Pages' per-deployment file-count limit.
+# Exceeding it fails the upload with a non-obvious error, so check here first.
+echo "🔢 Checking deployment file count..."
+CF_MAX_FILES=20000
+file_count=$(find site/ -type f | wc -l | tr -d ' ')
+if [ "$file_count" -gt "$CF_MAX_FILES" ]; then
+    echo "✘ site/ has $file_count files, over Cloudflare's $CF_MAX_FILES-file limit."
+    echo "  Reduce the deployment before retrying. Options:"
+    echo "    - exclude one or more shows: rm -rf site/graphs/<show> site/graphs/summaries/<show>"
+    echo "      then reindex: uv run scripts/generate_index.py --graphs-dir site/graphs --output site/index.json"
+    echo "    - or upgrade the Cloudflare Pages plan to raise the limit."
+    exit 1
+fi
+echo "✓ $file_count files (under the $CF_MAX_FILES limit)"
+echo ""
+
+# 7. Deploy
 echo "🚀 Deploying to Cloudflare Pages..."
 npx wrangler pages deploy site --project-name=podcast-graphs-web "$@"
 
