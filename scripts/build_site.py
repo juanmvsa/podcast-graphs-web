@@ -14,6 +14,7 @@ GRAPHS_DIR = PROJECT_ROOT / "graphs"
 LIB_DIR = PROJECT_ROOT / "lib"
 INDEX_HTML = PROJECT_ROOT / "index.html"
 STYLES_CSS = PROJECT_ROOT / "styles.css"
+PIPELINE_DOC = PROJECT_ROOT / "docs" / "pipeline.html"
 SITE_DIR = PROJECT_ROOT / "site"
 SITE_GRAPHS_DIR = SITE_DIR / "graphs"
 
@@ -69,7 +70,7 @@ def copy_lib():
 
     dest_lib = SITE_DIR / "lib"
     shutil.copytree(LIB_DIR, dest_lib, dirs_exist_ok=True)
-    print(f"✓ lib copied successfully")
+    print("✓ lib copied successfully")
 
 def copy_index():
     """copy index.html to site/ root."""
@@ -81,7 +82,7 @@ def copy_index():
 
     dest_index = SITE_DIR / "index.html"
     shutil.copy2(INDEX_HTML, dest_index)
-    print(f"✓ index.html copied successfully")
+    print("✓ index.html copied successfully")
 
 def copy_styles():
     """copy styles.css to site/ root."""
@@ -92,7 +93,19 @@ def copy_styles():
         return
 
     shutil.copy2(STYLES_CSS, SITE_DIR / "styles.css")
-    print(f"✓ styles.css copied successfully")
+    print("✓ styles.css copied successfully")
+
+def copy_pipeline_doc():
+    """copy the pipeline reference doc to site/pipeline.html (served at /pipeline.html)."""
+    print(f"\ncopying pipeline doc from {PIPELINE_DOC} to {SITE_DIR}")
+
+    if not PIPELINE_DOC.exists():
+        print(f"error: {PIPELINE_DOC} does not exist")
+        return
+
+    shutil.copy2(PIPELINE_DOC, SITE_DIR / "pipeline.html")
+    print("✓ pipeline.html copied successfully")
+
 
 def build_slim_topics():
     """Create a slim topics.json for the frontend, stripping large fields."""
@@ -103,7 +116,7 @@ def build_slim_topics():
         print("\n⚠️  graphs/topics.json not found — topic browsing will be disabled")
         return
 
-    print(f"\nbuilding slim topics.json for frontend...")
+    print("\nbuilding slim topics.json for frontend...")
     with open(src) as f:
         data = json.load(f)
 
@@ -168,6 +181,7 @@ def main():
     copy_lib()
     copy_index()
     copy_styles()
+    copy_pipeline_doc()
     build_slim_topics()
 
     # generate stats.

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>podcast-graphs-web · pipeline reference</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-soft: #161922;
+    --bg-code: #1b1f2a;
+    --border: #272c39;
+    --fg: #d7dce5;
+    --fg-dim: #8b93a7;
+    --accent: #7aa2f7;
+    --accent-2: #9ece6a;
+    --accent-3: #e0af68;
+    --accent-4: #bb9af7;
+    --red: #f7768e;
+    --mono: "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--sans); line-height: 1.65; font-size: 15px;
+  }
+  .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+  /* sidebar */
+  nav {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    background: var(--bg-soft); border-right: 1px solid var(--border); padding: 24px 18px;
+  }
+  nav h1 { font-size: 14px; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-dim); margin: 0 0 4px; }
+  nav .sub { font-size: 12px; color: var(--fg-dim); margin-bottom: 20px; font-family: var(--mono); }
+  nav a { display: block; color: var(--fg-dim); text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 13.5px; }
+  nav a:hover { color: var(--fg); background: var(--bg-code); }
+  nav a.group { color: var(--fg); font-weight: 600; margin-top: 14px; }
+  nav a.sub-link { padding-left: 22px; font-size: 12.5px; }
+  /* content */
+  main { padding: 48px 56px 120px; max-width: 1020px; }
+  h2 { font-size: 26px; margin: 56px 0 6px; padding-top: 12px; border-top: 1px solid var(--border); }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 { font-size: 19px; margin: 34px 0 8px; color: var(--accent); }
+  h4 { font-size: 15px; margin: 22px 0 6px; color: var(--accent-4); font-family: var(--mono); }
+  p { color: var(--fg); }
+  code { font-family: var(--mono); font-size: 13px; background: var(--bg-code); padding: 1.5px 6px; border-radius: 4px; color: var(--accent-3); }
+  pre { background: var(--bg-code); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-size: 12.8px; line-height: 1.55; }
+  pre code { background: none; padding: 0; color: var(--fg); font-size: inherit; }
+  .file-tag { display: inline-block; font-family: var(--mono); font-size: 11.5px; color: var(--accent-2); background: rgba(158,206,106,.08); border: 1px solid rgba(158,206,106,.25); border-radius: 5px; padding: 1px 8px; margin-bottom: -2px; }
+  a.x { color: var(--accent); }
+  /* tokens */
+  .k { color: var(--accent-4); }   /* keyword */
+  .s { color: var(--accent-2); }   /* string */
+  .c { color: var(--fg-dim); font-style: italic; } /* comment */
+  .f { color: var(--accent); }     /* function/def name */
+  .n { color: var(--accent-3); }   /* number/decorator */
+  .t { color: #7dcfff; }           /* type */
+  /* callouts */
+  .note, .warn, .stage { border-radius: 10px; padding: 14px 18px; margin: 18px 0; border: 1px solid var(--border); }
+  .note { background: rgba(122,162,247,.07); border-color: rgba(122,162,247,.3); }
+  .warn { background: rgba(247,118,142,.07); border-color: rgba(247,118,142,.35); }
+  .note strong, .warn strong { color: var(--fg); }
+  .lead { font-size: 17px; color: var(--fg-dim); max-width: 760px; }
+  /* table */
+  table { border-collapse: collapse; width: 100%; margin: 18px 0; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--accent); font-weight: 600; border-bottom: 2px solid var(--border); }
+  td code { font-size: 12px; }
+  /* pipeline diagram */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 24px 0; font-family: var(--mono); font-size: 13px; }
+  .flow .box { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  .flow .box b { color: var(--accent); }
+  .flow .arrow { text-align: center; color: var(--fg-dim); padding: 4px 0; }
+  .stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stage { background: var(--bg-soft); }
+  .stage .num { font-family: var(--mono); color: var(--accent-3); font-size: 12px; }
+  .stage b { display: block; margin: 4px 0; color: var(--fg); }
+  .stage span { font-size: 12.5px; color: var(--fg-dim); }
+  .pill { font-family: var(--mono); font-size: 11px; padding: 1px 7px; border-radius: 20px; border: 1px solid var(--border); color: var(--fg-dim); }
+  .meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 0; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .small { font-size: 12.5px; color: var(--fg-dim); }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <h1>Pipeline Reference</h1>
+  <div class="sub">podcast_graphs</div>
+  <a href="#overview">Overview</a>
+  <a href="#dataflow">End-to-end data flow</a>
+  <a href="#twopass">Two-pass processing</a>
+  <a href="#repo-state">Repository state</a>
+
+  <a href="#types" class="group">types &amp; constants</a>
+  <a href="#types-py" class="sub-link">types.py</a>
+  <a href="#constants" class="sub-link">constants.py</a>
+
+  <a href="#entities" class="group">entities/ — NER &amp; resolution</a>
+  <a href="#extraction" class="sub-link">extraction.py</a>
+  <a href="#filtering" class="sub-link">filtering.py</a>
+  <a href="#resolution" class="sub-link">resolution.py</a>
+  <a href="#wikipedia" class="sub-link">wikipedia.py</a>
+
+  <a href="#graph" class="group">graph/ — build &amp; render</a>
+  <a href="#construction" class="sub-link">construction.py</a>
+  <a href="#serialization" class="sub-link">serialization.py</a>
+  <a href="#visualization" class="sub-link">visualization.py</a>
+
+  <a href="#enrich" class="group">enrichment</a>
+  <a href="#sentiment" class="sub-link">sentiment.py</a>
+  <a href="#topics" class="sub-link">topics.py</a>
+
+  <a href="#orchestration" class="group">orchestration</a>
+  <a href="#pipeline" class="sub-link">pipeline.py</a>
+  <a href="#cli" class="sub-link">cli.py</a>
+</nav>
+
+<main>
+
+<h2 id="overview">Pipeline architecture</h2>
+<p class="lead">This is a <strong>static-site generator that turns podcast transcripts into interactive
+entity-relationship network visualizations</strong>. Each show's episodes flow through NER, cross-episode
+entity normalization, graph construction, sentiment-tagged edges, and topic clustering, ending as
+HTML graphs plus a JSON catalog deployed to Cloudflare Pages.</p>
+
+<div class="stages">
+  <div class="stage"><span class="num">layer 0</span><b>types · constants</b><span>Pydantic models (validated runtime data), dataclasses (pipeline state), TypedDicts (JSON-shaped data), and immutable <code>frozenset</code> constants.</span></div>
+  <div class="stage"><span class="num">stage 1</span><b>entities/</b><span>spaCy NER → garbage filtering → partial-name / abbreviation / Wikipedia resolution. Builds show-wide name maps.</span></div>
+  <div class="stage"><span class="num">stage 2</span><b>graph/</b><span>NetworkX PERSON→PLACE graphs with sentiment-bearing context edges; JSON/CSV serialization; pyvis HTML.</span></div>
+  <div class="stage"><span class="num">stage 3</span><b>sentiment · topics</b><span>Lazy DistilBERT per-context sentiment; BERTopic episode clustering with curated labels.</span></div>
+</div>
+
+<p>The package lives under <code>scripts/podcast_graphs/</code> and is driven by a single Click command,
+<code>generate_entity_graphs.py</code> (a thin shim over <a class="x" href="#cli"><code>cli.py</code></a>).
+Models load lazily: spaCy, DistilBERT, and sentence-transformers are imported only when first needed.</p>
+
+<div class="note">
+<strong>Edge constraints are the heart of the model.</strong> Only <strong>PERSON → PLACE</strong> edges are
+created, when a person and a place co-occur in the same transcript segment. A token that is both PERSON and
+PLACE resolves to PERSON. There are no PLACE→PLACE or PERSON→PERSON edges. Every edge carries context
+snippets with sentiment, speaker, and temporal position.
+</div>
+
+<h2 id="dataflow">End-to-end data flow</h2>
+<div class="flow">
+  <div class="box"><b>transcripts_*/&lt;show&gt;/&lt;episode&gt;.json</b> &nbsp;— speaker-labeled segments {text, speaker, start, end}</div>
+  <div class="arrow">│ &nbsp;<code>pass 1: collect_raw_entities</code> — batched spaCy <code>nlp.pipe()</code> over every episode</div>
+  <div class="box">raw <b>{persons, places}</b> sets &nbsp;(per show)</div>
+  <div class="arrow">│ &nbsp;<code>build_global_resolution_maps</code> — partial/abbrev merge · Wikipedia · cross-entity blocklists</div>
+  <div class="box"><b>ResolutionMaps</b> { person_resolution, place_resolution, person/place blocklists }</div>
+  <div class="arrow">│ &nbsp;<code>pass 2: process_episode(nlp, …, global maps)</code></div>
+  <div class="box"><b>extract_episode_entities</b> → <code>EntityResult</code> &nbsp;→&nbsp; <b>build_episode_graph</b> → <code>nx.DiGraph</code> &nbsp;→&nbsp; <b>serialize_graph</b> → <code>EpisodeGraphData</code></div>
+  <div class="arrow">├──────────────┬──────────────────────────────┐</div>
+  <div class="box"><b>per-episode</b> {json, csv, html} &nbsp;&nbsp; <b>merge_graphs</b> → show summary &nbsp;&nbsp; <b>cluster_episode_topics</b> → topics.json → per-topic summaries</div>
+  <div class="arrow">│ &nbsp;<code>generate_index</code></div>
+  <div class="box"><b>index.json</b> — the web-app catalog</div>
+</div>
+<p class="small">Every stage downstream of NER speaks two shapes: live <code>nx.DiGraph</code> edge-attribute
+<strong>dicts</strong> (what visualization reads) and <strong>Pydantic</strong> <code>SerializedEdge</code> /
+<code>ContextEntry</code> models (what serialization dumps to JSON). The contract that keeps them
+interchangeable is that edge contexts are stored as plain dicts — including a dict-shaped <code>sentiment</code>.</p>
+
+<h2 id="twopass">Two-pass processing</h2>
+<p>Entity identity has to be consistent across a whole show — "Sam" in episode 3 and "Sam Altman" in
+episode 40 must be one node. A single streaming pass can't know that, so each show is processed twice:</p>
+<table>
+<tr><th>Pass</th><th>Function</th><th>Produces</th></tr>
+<tr><td><strong>1 — collect</strong></td><td><code>collect_raw_entities(nlp, episode_files)</code></td><td>aggregated raw <code>{persons, places}</code> sets, before any normalization</td></tr>
+<tr><td><strong>build maps</strong></td><td><code>build_global_resolution_maps(persons, places)</code></td><td><code>ResolutionMaps</code> — show-wide name resolution + blocklists, incl. Wikipedia disambiguation</td></tr>
+<tr><td><strong>2 — process</strong></td><td><code>process_episode(nlp, …, global maps)</code></td><td>per-episode graph with names normalized show-wide (e.g. "Sam" → "Sam Altman")</td></tr>
+</table>
+
+<div class="note" id="repo-state">
+<strong>Repository state.</strong> The package was decomposed from a monolithic script into the modular
+<code>podcast_graphs/</code> package and its core data structures migrated to <strong>Pydantic</strong>
+(<code>SentimentResult</code>, <code>TranscriptSegment</code>, <code>ContextEntry</code>,
+<code>SegmentEntities</code>, <code>SerializedEdge</code>). A code review caught that the migration had not been
+propagated to consumers — <code>SegmentEntities</code> was still accessed as a dict in
+<a class="x" href="#extraction"><code>extraction.py</code></a>/<a class="x" href="#construction"><code>construction.py</code></a>, and
+<a class="x" href="#visualization"><code>visualization.py</code></a> called <code>.get()</code> on a now-Pydantic
+<code>SentimentResult</code> — which crashed every run. Those were fixed (attribute access; sentiment stored
+as a dict on edge contexts), segment validation was made real in
+<a class="x" href="#pipeline"><code>process_episode</code></a>, and a smoke test was added that exercises
+build → serialize → visualize. Verified end-to-end on real transcripts: <strong>320 episodes processed,
+0 failed</strong>, with topic clustering and <code>--visualize</code> HTML generation; the test suite passes
+(<strong>22 tests</strong>). The excerpts below are verbatim from the live source.
+</div>
+
+<!-- ============================== TYPES ============================== -->
+<h2 id="types">types &amp; constants — the foundation</h2>
+
+<h3 id="types-py">types.py — three kinds of data shape</h3>
+<span class="file-tag">scripts/podcast_graphs/types.py</span>
+<p>The module deliberately separates three roles: <strong>Pydantic <code>BaseModel</code>s</strong> for data
+that crosses a boundary and deserves runtime validation; <strong>dataclasses</strong> for internal pipeline
+state; and <strong>TypedDicts</strong> for JSON-shaped blobs that flow straight to disk. Three enums
+(<code>EntityType</code>, <code>SentimentLabel</code>, <code>TemporalPosition</code>) pin the vocabularies.</p>
+<pre><code><span class="k">class</span> <span class="t">SentimentResult</span>(<span class="t">BaseModel</span>):
+    <span class="s">"""Result of sentiment analysis on a text snippet."""</span>
+    label: <span class="t">Literal</span>[<span class="s">"POSITIVE"</span>, <span class="s">"NEGATIVE"</span>, <span class="s">"NEUTRAL"</span>]
+    score: <span class="t">float</span> = <span class="f">Field</span>(ge=<span class="n">0.0</span>, le=<span class="n">1.0</span>, description=<span class="s">"confidence score"</span>)
+    emoji: <span class="t">str</span>
+    model_config = <span class="f">ConfigDict</span>(frozen=<span class="k">True</span>)
+
+<span class="k">class</span> <span class="t">TranscriptSegment</span>(<span class="t">BaseModel</span>):
+    <span class="s">"""A single segment from a speaker-labeled transcript file."""</span>
+    text:         <span class="t">str</span> = <span class="f">Field</span>(min_length=<span class="n">1</span>, description=<span class="s">"segment text content"</span>)
+    speaker:      <span class="t">str</span> = <span class="f">Field</span>(description=<span class="s">"speaker identifier"</span>)
+    speaker_name: <span class="t">str</span> | <span class="k">None</span> = <span class="f">Field</span>(default=<span class="k">None</span>, description=<span class="s">"resolved speaker name"</span>)
+    start:        <span class="t">float</span> = <span class="f">Field</span>(ge=<span class="n">0.0</span>, description=<span class="s">"start timestamp in seconds"</span>)
+    end:          <span class="t">float</span> = <span class="f">Field</span>(gt=<span class="n">0.0</span>, description=<span class="s">"end timestamp in seconds"</span>)
+
+    <span class="n">@field_validator</span>(<span class="s">"end"</span>)
+    <span class="n">@classmethod</span>
+    <span class="k">def</span> <span class="f">end_after_start</span>(cls, v, info):
+        <span class="s">"""validate that end is after start."""</span>
+        <span class="k">if</span> <span class="s">"start"</span> <span class="k">in</span> info.data <span class="k">and</span> v &lt;= info.data[<span class="s">"start"</span>]:
+            <span class="k">raise</span> <span class="t">ValueError</span>(<span class="s">"end must be greater than start"</span>)
+        <span class="k">return</span> v
+
+<span class="k">class</span> <span class="t">SerializedEdge</span>(<span class="t">BaseModel</span>):
+    <span class="s">"""A graph edge serialized for JSON output."""</span>
+    source:   <span class="t">str</span>
+    target:   <span class="t">str</span>
+    weight:   <span class="t">int</span> = <span class="f">Field</span>(default=<span class="n">1</span>, ge=<span class="n">1</span>, description=<span class="s">"co-occurrence count"</span>)
+    relation: <span class="t">str</span> = <span class="f">Field</span>(default=<span class="s">"mentioned_in"</span>, description=<span class="s">"edge relation type"</span>)
+    speakers: <span class="t">list</span>[<span class="t">str</span>] = <span class="f">Field</span>(default_factory=<span class="t">list</span>)
+    contexts: <span class="t">list</span>[<span class="t">ContextEntry</span>] = <span class="f">Field</span>(default_factory=<span class="t">list</span>)</code></pre>
+<p>The two serializable dataclasses, <code>EpisodeGraphData</code> and <code>ShowGraphData</code>, expose a
+<code>to_dict()</code> that dumps the Pydantic edge models explicitly — because
+<code>dataclasses.asdict</code> cannot recurse into a <code>BaseModel</code>:</p>
+<pre><code><span class="k">def</span> <span class="f">to_dict</span>(self) -> <span class="t">dict</span>[<span class="t">str</span>, <span class="t">object</span>]:
+    <span class="s">"""Convert to a JSON-serializable dictionary."""</span>
+    <span class="c"># build the dict directly so pydantic edge models are dumped once and</span>
+    <span class="c"># not deep-copied by dataclasses.asdict first.</span>
+    <span class="k">return</span> {
+        <span class="s">"episode"</span>: self.episode, <span class="s">"show"</span>: self.show,
+        <span class="s">"persons"</span>: self.persons, <span class="s">"places"</span>: self.places,
+        <span class="s">"nodes"</span>: self.nodes, <span class="s">"adjacency_matrix"</span>: self.adjacency_matrix,
+        <span class="s">"edges"</span>: [edge.<span class="f">model_dump</span>(mode=<span class="s">"json"</span>) <span class="k">for</span> edge <span class="k">in</span> self.edges],
+    }</code></pre>
+<div class="warn"><strong>Reviewer note.</strong> <code>SerializedEdge.weight</code> carries <code>ge=1</code>. The graph
+always seeds weight at 1 and increments, so this never trips in practice — but a future code path that emits a
+zero-weight edge would raise <code>ValidationError</code> at serialization, by design. Likewise,
+<code>ContextEntry.sentiment</code> is a <code>SentimentResult</code>: contexts must therefore be stored with a
+<strong>dict-shaped sentiment</strong> on the live graph (see <a class="x" href="#construction">construction</a>),
+which Pydantic coerces on the way to JSON.</div>
+
+<h3 id="constants">constants.py — immutable vocabularies</h3>
+<span class="file-tag">scripts/podcast_graphs/constants.py</span>
+<p>All tunables and lexicons in one place. Stopword sets are <code>frozenset</code> (immutable, hashable);
+regexes are pre-compiled module-level <code>re.Pattern</code> objects; thresholds are plain ints. A sample of
+the knobs that the rest of the package reads:</p>
+<table>
+<tr><th>Constant</th><th>Value / kind</th><th>Used by</th></tr>
+<tr><td><code>MAX_CONTEXTS_PER_EDGE</code></td><td><code>3</code></td><td>caps stored context snippets per edge (<a class="x" href="#construction">construction</a>)</td></tr>
+<tr><td><code>EARLY_THRESHOLD</code> / <code>LATE_THRESHOLD</code></td><td><code>33</code> / <code>66</code></td><td>map a segment's position % to early/middle/late</td></tr>
+<tr><td><code>MIN_ENTITY_LENGTH</code> / <code>MAX_ENTITY_TOKENS</code></td><td><code>3</code> / <code>4</code></td><td>garbage-entity bounds (<a class="x" href="#filtering">filtering</a>)</td></tr>
+<tr><td><code>NLP_PIPE_BATCH_SIZE</code></td><td><code>256</code></td><td>spaCy <code>nlp.pipe()</code> batch size</td></tr>
+<tr><td><code>PERSON_STOPWORDS</code>, <code>PLACE_STOPWORDS</code>, <code>ORG_AS_PERSON</code></td><td><code>frozenset[str]</code></td><td>garbage / misclassification filters</td></tr>
+<tr><td><code>PLACE_ABBREVIATIONS</code>, <code>KNOWN_PLACE_MERGES</code></td><td><code>dict[str, str]</code></td><td>place canonicalization &amp; dedup</td></tr>
+<tr><td><code>SENTIMENT_EMOJI</code></td><td><code>dict[str, str]</code></td><td>label → emoji (<a class="x" href="#sentiment">sentiment</a>)</td></tr>
+<tr><td><code>SPEECH_FILLERS</code>, <code>SPEECH_FILLER_PHRASES</code></td><td><code>frozenset[str]</code></td><td>topic-document cleaning (<a class="x" href="#topics">topics</a>)</td></tr>
+</table>
+
+<!-- ============================== ENTITIES ============================== -->
+<h2 id="entities">Stage 1 — entities/ (NER &amp; resolution)</h2>
+<p>Turns raw transcript text into a clean, show-consistent set of PERSON and PLACE entities. The order is:
+extract → filter garbage → normalize → resolve variants across the show.</p>
+
+<h3 id="extraction">extraction.py — batched spaCy NER</h3>
+<span class="file-tag">scripts/podcast_graphs/entities/extraction.py</span>
+<p><code>extract_entities_from_doc</code> pulls PERSON and PLACE entities out of a single processed spaCy doc,
+normalizing and garbage-filtering each. <code>extract_episode_entities</code> runs it over every segment with
+<strong>batched inference</strong> via <code>nlp.pipe()</code>, then layers episode-local resolution maps and
+the show-global maps on top before emitting per-segment associations.</p>
+<pre><code><span class="k">def</span> <span class="f">extract_entities_from_doc</span>(doc) -> <span class="t">tuple</span>[<span class="t">set</span>[<span class="t">str</span>], <span class="t">set</span>[<span class="t">str</span>]]:
+    <span class="s">"""Extract PERSON and PLACE entities from a pre-processed spaCy doc."""</span>
+    persons, places = <span class="f">set</span>(), <span class="f">set</span>()
+    <span class="k">for</span> ent <span class="k">in</span> doc.ents:
+        normalized = <span class="f">normalize_entity</span>(ent.text)
+        <span class="k">if</span> ent.label_ == <span class="s">"PERSON"</span>:
+            <span class="k">if</span> <span class="f">is_garbage_entity</span>(normalized, <span class="s">"PERSON"</span>): <span class="k">continue</span>
+            persons.<span class="f">add</span>(normalized)
+        <span class="k">elif</span> ent.label_ <span class="k">in</span> PLACE_LABELS:
+            <span class="k">if</span> <span class="f">is_garbage_entity</span>(normalized, <span class="s">"PLACE"</span>): <span class="k">continue</span>
+            places.<span class="f">add</span>(<span class="f">canonicalize_place</span>(normalized))
+    <span class="k">return</span> persons, places</code></pre>
+<p>Segments arrive as validated <code>TranscriptSegment</code> models, so they are read by attribute
+(<code>segment.text</code>, <code>segment.speaker</code>, <code>segment.start</code>). Each kept segment becomes a
+<code>SegmentEntities</code> model; after the show maps are known, those models are updated <em>in place by
+attribute</em> — the correct way to mutate a Pydantic model:</p>
+<pre><code><span class="c"># apply resolution to per-segment entities</span>
+blocked = (global_person_blocklist <span class="k">or</span> <span class="f">set</span>()) | (global_place_blocklist <span class="k">or</span> <span class="f">set</span>()) | overlap
+<span class="k">for</span> seg <span class="k">in</span> segment_entities:
+    seg.persons = <span class="f">sorted</span>(<span class="f">apply_name_resolution</span>(<span class="f">set</span>(seg.persons), person_resolution) - blocked)
+    resolved_places = <span class="f">apply_name_resolution</span>(<span class="f">set</span>(seg.places), place_resolution)
+    seg.places = <span class="f">sorted</span>(resolved_places - blocked - overlap)</code></pre>
+
+<h3 id="filtering">filtering.py — normalization &amp; garbage detection</h3>
+<span class="file-tag">scripts/podcast_graphs/entities/filtering.py</span>
+<p><code>normalize_entity</code> applies a fixed cleanup chain (possessives, leading articles/profanity/noise,
+trailing junk, whitespace collapse, title-case). <code>is_garbage_entity</code> is the misclassification gate:
+length bounds, token caps, repetition checks, an alphabetic-ratio floor, digit rejection, and stopword /
+org-name membership.</p>
+<pre><code><span class="k">def</span> <span class="f">is_garbage_entity</span>(text, entity_type=<span class="s">""</span>) -> <span class="t">bool</span>:
+    <span class="s">"""Return True if the entity is garbage / noise / misclassified."""</span>
+    <span class="k">if</span> <span class="f">len</span>(text) &lt; MIN_ENTITY_LENGTH: <span class="k">return</span> <span class="k">True</span>
+    tokens = text.<span class="f">split</span>()
+    <span class="k">if</span> <span class="f">len</span>(tokens) > MAX_ENTITY_TOKENS: <span class="k">return</span> <span class="k">True</span>
+    <span class="k">if</span> <span class="f">len</span>(tokens) == <span class="n">1</span> <span class="k">and</span> <span class="f">len</span>(text) &lt; MIN_SINGLE_TOKEN_LENGTH: <span class="k">return</span> <span class="k">True</span>
+    <span class="c"># reject heavy repetition, repeated-word entities, &lt;50% alphabetic, digits ...</span>
+    alpha_count = <span class="f">len</span>(NON_ALPHA.<span class="f">sub</span>(<span class="s">""</span>, text))
+    <span class="k">if</span> alpha_count / <span class="f">max</span>(<span class="f">len</span>(text), <span class="n">1</span>) &lt; <span class="n">0.5</span>: <span class="k">return</span> <span class="k">True</span>
+    <span class="k">if</span> CONTAINS_DIGIT.<span class="f">search</span>(text): <span class="k">return</span> <span class="k">True</span>
+    <span class="c"># ... then PERSON/PLACE-specific stopword + org/brand checks.</span></code></pre>
+<p>A second helper, <code>normalize_abbreviation</code>, collapses dotted initials so that
+<code>J. K. Rowling</code> and <code>J.K. Rowling</code> both key to <code>Jk Rowling</code> — the grouping key the
+resolver relies on. <code>canonicalize_place</code> expands known abbreviations (<code>la</code> →
+<code>Los Angeles</code>) via the <code>PLACE_ABBREVIATIONS</code> table.</p>
+
+<h3 id="resolution">resolution.py — merging name variants</h3>
+<span class="file-tag">scripts/podcast_graphs/entities/resolution.py</span>
+<p>Four map-builders plus a transitive-closure helper. They all return <code>dict[str, str]</code> mappings
+that <code>apply_name_resolution</code> applies as a set-replace.</p>
+<table>
+<tr><th>Function</th><th>Merges</th></tr>
+<tr><td><code>resolve_partial_names</code></td><td>single-token name → its unique longer form ("Sam" → "Sam Altman"), only when exactly one longer form starts/ends with it</td></tr>
+<tr><td><code>resolve_abbreviation_variants</code></td><td>dotted/undotted initials, keeping the longest as canonical (groups by <code>normalize_abbreviation</code>)</td></tr>
+<tr><td><code>resolve_place_duplicates</code></td><td>canonicalized places, "X Of Y" → "X", and the <code>KNOWN_PLACE_MERGES</code> table</td></tr>
+<tr><td><code>close_resolution_map</code></td><td>makes a map transitive: A→B, B→C becomes A→C</td></tr>
+</table>
+<pre><code><span class="k">def</span> <span class="f">close_resolution_map</span>(resolution) -> <span class="t">dict</span>[<span class="t">str</span>, <span class="t">str</span>]:
+    <span class="s">"""Make a resolution map transitive. If A → B and B → C, ensures A → C."""</span>
+    changed = <span class="k">True</span>
+    <span class="k">while</span> changed:
+        changed = <span class="k">False</span>
+        <span class="k">for</span> key, val <span class="k">in</span> <span class="f">list</span>(resolution.<span class="f">items</span>()):
+            <span class="k">if</span> val <span class="k">in</span> resolution <span class="k">and</span> resolution[val] != val:
+                resolution[key] = resolution[val]; changed = <span class="k">True</span>
+    <span class="k">return</span> resolution</code></pre>
+
+<h3 id="wikipedia">wikipedia.py — disambiguation with a disk cache</h3>
+<span class="file-tag">scripts/podcast_graphs/entities/wikipedia.py</span>
+<p>For groups of names that share tokens (subset of each other, or a shared multi-token surname),
+<code>resolve_persons_via_wikipedia</code> queries the Wikipedia API to find a canonical page title, confirms
+it describes a person (via <code>WIKIPEDIA_PERSON_INDICATORS</code> in the summary), and maps every variant to
+it. Results — hits <em>and</em> misses — are cached to <code>graphs/.wiki_cache.json</code> so reruns make no
+network calls.</p>
+<pre><code><span class="k">for</span> candidate <span class="k">in</span> sorted_by_len:
+    <span class="k">if</span> candidate <span class="k">in</span> disk_cache:
+        <span class="k">if</span> disk_cache[candidate]: canonical = disk_cache[candidate]; <span class="k">break</span>
+        <span class="k">continue</span>
+    page = wiki.<span class="f">page</span>(candidate); queries_made += <span class="n">1</span>
+    <span class="k">try</span>:
+        exists = page.<span class="f">exists</span>()
+    <span class="k">except</span> (<span class="t">KeyError</span>, <span class="t">Exception</span>) <span class="k">as</span> exc:
+        logger.<span class="f">warning</span>(<span class="s">"Wikipedia API error for '%s': %s — skipping"</span>, candidate, exc)
+        disk_cache[candidate] = <span class="k">None</span>; <span class="k">continue</span>
+    <span class="k">if</span> exists:
+        is_person = <span class="f">any</span>(ind <span class="k">in</span> summary_start <span class="k">for</span> ind <span class="k">in</span> WIKIPEDIA_PERSON_INDICATORS)
+        <span class="k">if</span> is_person: canonical = wiki_title; disk_cache[candidate] = canonical; <span class="k">break</span></code></pre>
+<div class="warn"><strong>Reviewer note.</strong> <code>except (KeyError, Exception)</code> is redundant
+(<code>Exception</code> already subsumes <code>KeyError</code>) and broad: a genuine bug in this block would be
+logged as a transient "Wikipedia API error" and cached as a miss rather than surfaced. Disambiguation is
+best-effort; a missing <code>wikipedia-api</code> install short-circuits the whole step to <code>{}</code>.</div>
+
+<!-- ============================== GRAPH ============================== -->
+<h2 id="graph">Stage 2 — graph/ (build, serialize, render)</h2>
+
+<h3 id="construction">construction.py — episode graphs &amp; merging</h3>
+<span class="file-tag">scripts/podcast_graphs/graph/construction.py</span>
+<p><code>build_episode_graph</code> reads the per-segment <code>SegmentEntities</code> by attribute, computes each
+segment's temporal bucket from its position, and draws a PERSON→PLACE edge for every person/place pair in a
+segment (falling back to the speaker as the "person" when none were detected).
+<code>_add_or_update_association_edge</code> accumulates weight and appends sentiment-tagged context — capping
+contexts at <code>MAX_CONTEXTS_PER_EDGE</code>.</p>
+<pre><code><span class="k">else</span>:
+    <span class="c"># store sentiment as a plain dict so edge contexts stay json-shaped</span>
+    <span class="c"># for both visualization and serialization.</span>
+    sentiment = <span class="f">analyze_sentiment</span>(text).<span class="f">model_dump</span>()
+    graph.<span class="f">add_edge</span>(
+        person, place,
+        weight=<span class="n">1</span>, relation=<span class="s">"mentioned_in"</span>,
+        contexts=[{<span class="s">"text"</span>: text, <span class="s">"speaker"</span>: speaker, <span class="s">"temporal"</span>: temporal,
+                   <span class="s">"timestamp"</span>: timestamp, <span class="s">"sentiment"</span>: sentiment}],
+        speakers=[speaker] <span class="k">if</span> speaker <span class="k">else</span> [],
+    )</code></pre>
+<p><code>merge_graphs</code> combines per-episode graphs into a show- or topic-level summary, summing edge
+weights and unioning speakers and (capped) contexts. Because the live graph stores everything as dicts, the
+merge is plain dict arithmetic — no model coercion until serialization.</p>
+
+<h3 id="serialization">serialization.py — JSON / CSV / adjacency</h3>
+<span class="file-tag">scripts/podcast_graphs/graph/serialization.py</span>
+<p><code>serialize_edges</code> turns live edge dicts into validated <code>SerializedEdge</code> models in one
+construction — Pydantic coerces each context dict (including its dict-shaped sentiment) into a
+<code>ContextEntry</code>. <code>save_graph_data</code> then writes via <code>to_dict()</code>, which knows how to
+dump the models.</p>
+<pre><code><span class="k">def</span> <span class="f">serialize_edges</span>(graph) -> <span class="t">list</span>[<span class="t">SerializedEdge</span>]:
+    <span class="s">"""Serialize graph edges including contexts, sentiment, and speakers."""</span>
+    edges = []
+    <span class="k">for</span> u, v, data <span class="k">in</span> graph.<span class="f">edges</span>(data=<span class="k">True</span>):
+        <span class="c"># pydantic coerces context dicts into ContextEntry and applies defaults.</span>
+        edge = <span class="f">SerializedEdge</span>(
+            source=u, target=v,
+            weight=data.<span class="f">get</span>(<span class="s">"weight"</span>, <span class="n">1</span>),
+            relation=data.<span class="f">get</span>(<span class="s">"relation"</span>, <span class="s">"mentioned_in"</span>),
+            speakers=data.<span class="f">get</span>(<span class="s">"speakers"</span>, []),
+            contexts=data.<span class="f">get</span>(<span class="s">"contexts"</span>, []),
+        )
+        edges.<span class="f">append</span>(edge)
+    <span class="k">return</span> edges</code></pre>
+<p>An adjacency matrix is also emitted (a node-ordered <code>list[list[int]]</code> alongside a polars
+DataFrame CSV), so downstream tools can consume either the edge list or the matrix form.</p>
+
+<h3 id="visualization">visualization.py — pyvis HTML</h3>
+<span class="file-tag">scripts/podcast_graphs/graph/visualization.py</span>
+<p>A ~1,100-line module that renders a graph to a self-contained interactive HTML page (custom CSS/JS,
+node sizing by degree, a sentiment legend, rich edge tooltips). It reads edge data straight off the live
+graph as <strong>dicts</strong>, which is exactly why contexts store a dict-shaped sentiment:</p>
+<pre><code><span class="k">def</span> <span class="f">_dominant_sentiment</span>(contexts: <span class="t">list</span>[<span class="t">dict</span>[<span class="t">str</span>, <span class="t">object</span>]]) -> <span class="t">str</span>:
+    <span class="s">"""Determine the dominant sentiment from a list of edge contexts."""</span>
+    sentiments = [
+        ctx.<span class="f">get</span>(<span class="s">"sentiment"</span>, {}).<span class="f">get</span>(<span class="s">"label"</span>, <span class="s">"NEUTRAL"</span>)
+        <span class="k">for</span> ctx <span class="k">in</span> contexts <span class="k">if</span> ctx.<span class="f">get</span>(<span class="s">"sentiment"</span>)
+    ]
+    <span class="c"># ... tally and return the most common label.</span></code></pre>
+<div class="warn"><strong>Reviewer note.</strong> This <code>.get()</code>-on-sentiment is correct <em>only</em> because
+<a class="x" href="#construction">construction</a> stores <code>sentiment</code> as a dict. If sentiment were ever
+stored as a <code>SentimentResult</code> object again, every <code>--visualize</code> run would raise
+<code>AttributeError</code> here. Speaker lists are rendered with <code>sorted(set(speakers))</code> so
+regenerated HTML is deterministic.</div>
+
+<!-- ============================== ENRICHMENT ============================== -->
+<h2 id="enrich">Stage 3 — enrichment (sentiment &amp; topics)</h2>
+
+<h3 id="sentiment">sentiment.py — lazy DistilBERT</h3>
+<span class="file-tag">scripts/podcast_graphs/sentiment.py</span>
+<p>A singleton DistilBERT sentiment pipeline, loaded on first use. <code>analyze_sentiment</code> short-circuits
+to <code>NEUTRAL</code> for trivially short text (under 10 stripped chars) — which also means tests and small
+inputs never pay the model-load cost — and degrades to <code>NEUTRAL</code> on any inference error.</p>
+<pre><code><span class="k">def</span> <span class="f">analyze_sentiment</span>(text: <span class="t">str</span>) -> <span class="t">SentimentResult</span>:
+    <span class="k">if</span> <span class="k">not</span> text <span class="k">or</span> <span class="f">len</span>(text.<span class="f">strip</span>()) &lt; <span class="n">10</span>:
+        <span class="k">return</span> <span class="f">SentimentResult</span>(label=<span class="s">"NEUTRAL"</span>, score=<span class="n">0.0</span>, emoji=<span class="s">"😐"</span>)
+    <span class="k">try</span>:
+        analyzer = <span class="f">get_sentiment_analyzer</span>()
+        result = <span class="f">analyzer</span>(text[:<span class="n">512</span>])[<span class="n">0</span>]
+        <span class="k">return</span> <span class="f">SentimentResult</span>(
+            label=result[<span class="s">"label"</span>], score=result[<span class="s">"score"</span>],
+            emoji=SENTIMENT_EMOJI.<span class="f">get</span>(result[<span class="s">"label"</span>], <span class="s">"😐"</span>),
+        )
+    <span class="k">except</span> <span class="t">Exception</span> <span class="k">as</span> e:
+        logger.<span class="f">warning</span>(<span class="s">"Sentiment analysis failed: %s"</span>, e)
+        <span class="k">return</span> <span class="f">SentimentResult</span>(label=<span class="s">"NEUTRAL"</span>, score=<span class="n">0.0</span>, emoji=<span class="s">"😐"</span>)</code></pre>
+
+<h3 id="topics">topics.py — BERTopic clustering</h3>
+<span class="file-tag">scripts/podcast_graphs/topics.py</span>
+<p><code>prepare_topic_document</code> cleans an episode's transcript into one string (drops short segments,
+strips speech fillers). <code>cluster_episode_topics</code> embeds those documents with
+<code>all-MiniLM-L6-v2</code>, clusters with BERTopic (KeyBERT-inspired labels), and returns topic summaries,
+an episode→topic map, and quality metrics. <code>compute_topic_diversity</code> scores how distinct the topic
+vocabularies are.</p>
+<pre><code>topic_model = <span class="f">BERTopic</span>(
+    embedding_model=embedding_model,
+    vectorizer_model=vectorizer,             <span class="c"># CountVectorizer, ngram (1,2), english stopwords</span>
+    representation_model=<span class="f">KeyBERTInspired</span>(),
+    min_topic_size=min_topic_size, nr_topics=nr_topics,
+    top_n_words=<span class="n">10</span>, calculate_probabilities=<span class="k">False</span>, verbose=<span class="k">False</span>,
+)
+topics, _ = topic_model.<span class="f">fit_transform</span>(texts)</code></pre>
+<p class="small">Topic <code>-1</code> is BERTopic's outlier bucket and is excluded from both the episode map and
+the summaries; the count of <code>-1</code> assignments is reported as <code>num_outlier_episodes</code>. The
+whole heavy import block (<code>bertopic</code>, <code>sentence_transformers</code>, <code>sklearn</code>) is inside
+the function so importing the package never pulls them in.</p>
+
+<!-- ============================== ORCHESTRATION ============================== -->
+<h2 id="orchestration">Orchestration</h2>
+
+<h3 id="pipeline">pipeline.py — passes, episodes, summaries, curation</h3>
+<span class="file-tag">scripts/podcast_graphs/pipeline.py</span>
+<p>The functions that wire stages together. <code>collect_raw_entities</code> is pass 1;
+<code>build_global_resolution_maps</code> turns raw sets into show-wide <code>ResolutionMaps</code> (including
+the cross-entity blocklist that enforces PERSON-over-PLACE priority); <code>process_episode</code> is pass 2.</p>
+<pre><code><span class="k">def</span> <span class="f">process_episode</span>(nlp, transcript_path, show_name, **global_maps):
+    <span class="s">"""Process a single episode transcript and return graph data."""</span>
+    <span class="c"># ... load json ...</span>
+    raw_segments = data.<span class="f">get</span>(<span class="s">"segments"</span>, [])
+    <span class="k">if</span> <span class="k">not</span> raw_segments: <span class="k">return</span> <span class="k">None</span>
+
+    <span class="c"># validate raw transcript dicts into typed models, skipping malformed ones</span>
+    <span class="c"># (empty text, end &lt;= start, etc.) rather than crashing the whole episode.</span>
+    segments: <span class="t">list</span>[<span class="t">TranscriptSegment</span>] = []
+    <span class="k">for</span> raw <span class="k">in</span> raw_segments:
+        <span class="k">try</span>:
+            segments.<span class="f">append</span>(<span class="f">TranscriptSegment</span>(**raw))
+        <span class="k">except</span> (<span class="t">ValidationError</span>, <span class="t">TypeError</span>) <span class="k">as</span> e:
+            logger.<span class="f">warning</span>(<span class="s">"skipping invalid segment in %s: %s"</span>, transcript_path.name, e)
+    <span class="k">if</span> <span class="k">not</span> segments: <span class="k">return</span> <span class="k">None</span>
+
+    entity_result = <span class="f">extract_episode_entities</span>(nlp, segments, **global_maps)
+    graph = <span class="f">build_episode_graph</span>(entity_result)
+    <span class="k">return</span> <span class="f">serialize_graph</span>(graph, transcript_path.stem, show_name, entity_result), graph</code></pre>
+<p><code>generate_per_topic_summaries</code> groups episodes by show and topic and emits a merged graph per
+topic batch. <code>apply_topic_curations</code> overlays the human edits from <code>topic_labels.json</code> —
+relabel, discard, and <em>merge</em> — onto a <code>TopicResults</code> in place. The merge path drops the
+merged-away source topics and recomputes each surviving topic's episode membership so counts stay
+consistent:</p>
+<pre><code><span class="c"># remove discarded topics and merged-away source topics from the summary list.</span>
+merged_sources = <span class="f">set</span>(merge_map.<span class="f">keys</span>())
+topic_results[<span class="s">"topics"</span>] = [
+    t <span class="k">for</span> t <span class="k">in</span> topic_results[<span class="s">"topics"</span>]
+    <span class="k">if</span> t[<span class="s">"topic_id"</span>] <span class="k">not</span> <span class="k">in</span> discarded_ids <span class="k">and</span> t[<span class="s">"topic_id"</span>] <span class="k">not</span> <span class="k">in</span> merged_sources
+]
+<span class="c"># recompute each surviving topic's episode membership from the remapped</span>
+<span class="c"># episode_topics so merge targets pick up their merged-in episodes.</span>
+episodes_by_topic = {}
+<span class="k">for</span> ep, d <span class="k">in</span> topic_results[<span class="s">"episode_topics"</span>].<span class="f">items</span>():
+    episodes_by_topic.<span class="f">setdefault</span>(d[<span class="s">"topic_id"</span>], []).<span class="f">append</span>(ep)</code></pre>
+
+<h3 id="cli">cli.py — the Click command</h3>
+<span class="file-tag">scripts/podcast_graphs/cli.py</span>
+<p>One <code>@click.command()</code> entry point, <code>generate_entity_graphs</code>, exposed through the thin
+<code>scripts/generate_entity_graphs.py</code> shim. It supports single-file (<code>-i/-o</code>), per-show, and
+recursive (<code>-d</code>) modes; <code>--visualize</code> emits HTML; <code>--force</code> regenerates existing
+outputs. For each show it runs the two passes, then merges, clusters, and indexes:</p>
+<pre><code><span class="c"># pass 1: collect entities for global normalization</span>
+show_raw_persons, show_raw_places = <span class="f">collect_raw_entities</span>(nlp, episode_files, progress, task)
+maps = <span class="f">build_global_resolution_maps</span>(show_raw_persons, show_raw_places)
+
+<span class="c"># pass 2: process episodes with global normalization</span>
+result = <span class="f">process_episode</span>(
+    nlp, episode_file, show_name,
+    global_person_resolution=maps.person_resolution,
+    global_place_resolution=maps.place_resolution,
+    global_person_blocklist=maps.person_blocklist,
+    global_place_blocklist=maps.place_blocklist,
+)</code></pre>
+<p>Episode graphs collected for topic summaries are keyed by <code>f"{show_name}/{episode_name}"</code> so two
+shows with an identically named episode file never overwrite each other. The common invocations:</p>
+<pre><code><span class="c"># generate everything, with HTML.</span>
+uv run scripts/generate_entity_graphs.py --visualize
+
+<span class="c"># a single show, or a single file.</span>
+uv run scripts/generate_entity_graphs.py --shows my_podcast --visualize
+uv run scripts/generate_entity_graphs.py -i transcripts_*/my_show/episode.json -o /tmp/out.json
+
+<span class="c"># regenerate from scratch.</span>
+uv run scripts/generate_entity_graphs.py --visualize --force</code></pre>
+
+<hr>
+<p class="small">Generated as a manual-review reference for <code>scripts/podcast_graphs/</code>. Code excerpts are
+verbatim from the live source (some long functions elided with <code>...</code>). Commands run via
+<code>uv</code>; the pipeline was verified end-to-end on real transcripts (320 episodes, 0 failed) and the
+test suite passes (22 tests). Output structure, edge constraints, and deployment are documented in the
+repository <code>CLAUDE.md</code>.</p>
+
+</main>
+</div>
+</body>
+</html>
